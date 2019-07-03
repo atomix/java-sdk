@@ -24,8 +24,6 @@ import io.atomix.api.controller.ControllerServiceGrpc;
 import io.atomix.api.controller.GetPartitionGroupsRequest;
 import io.atomix.api.controller.GetPartitionGroupsResponse;
 import io.atomix.api.controller.PartitionGroup;
-import io.atomix.server.NodeConfig;
-import io.atomix.server.ServerConfig;
 import io.atomix.server.management.impl.ServiceRegistryImpl;
 import io.atomix.utils.component.Managed;
 import io.grpc.stub.StreamObserver;
@@ -34,46 +32,41 @@ import io.grpc.stub.StreamObserver;
  * Test controller.
  */
 public class TestController extends ControllerServiceGrpc.ControllerServiceImplBase implements Managed {
-    private final ServiceRegistryImpl serviceRegistry = new ServiceRegistryImpl();
-    private final int port;
-    private final Collection<PartitionGroup> groups;
+  private final ServiceRegistryImpl serviceRegistry;
+  private final Collection<PartitionGroup> groups;
 
-    public TestController(int port, Collection<PartitionGroup> groups) {
-        this.port = port;
-        this.groups = groups;
-    }
+  public TestController(int port, Collection<PartitionGroup> groups) {
+    this.serviceRegistry = new ServiceRegistryImpl(port);
+    this.groups = groups;
+  }
 
-    @Override
-    public void getPartitionGroups(GetPartitionGroupsRequest request, StreamObserver<GetPartitionGroupsResponse> responseObserver) {
-        String name = !Strings.isNullOrEmpty(request.getId().getName()) ? request.getId().getName() : null;
-        String namespace = !Strings.isNullOrEmpty(request.getId().getNamespace()) ? request.getId().getNamespace() : null;
-        if (name != null && namespace != null) {
-            responseObserver.onNext(GetPartitionGroupsResponse.newBuilder()
-                .addAllGroups(groups.stream()
-                    .filter(group -> group.getId().getName().equals(name) && group.getId().getNamespace().equals(namespace))
-                    .collect(Collectors.toList()))
-                .build());
-        } else if (namespace != null) {
-            responseObserver.onNext(GetPartitionGroupsResponse.newBuilder()
-                .addAllGroups(groups.stream()
-                    .filter(group -> group.getId().getNamespace().equals(namespace))
-                    .collect(Collectors.toList()))
-                .build());
-        } else {
-            responseObserver.onNext(GetPartitionGroupsResponse.newBuilder()
-                .addAllGroups(groups)
-                .build());
-        }
-        responseObserver.onCompleted();
+  @Override
+  public void getPartitionGroups(GetPartitionGroupsRequest request, StreamObserver<GetPartitionGroupsResponse> responseObserver) {
+    String name = !Strings.isNullOrEmpty(request.getId().getName()) ? request.getId().getName() : null;
+    String namespace = !Strings.isNullOrEmpty(request.getId().getNamespace()) ? request.getId().getNamespace() : null;
+    if (name != null && namespace != null) {
+      responseObserver.onNext(GetPartitionGroupsResponse.newBuilder()
+          .addAllGroups(groups.stream()
+              .filter(group -> group.getId().getName().equals(name) && group.getId().getNamespace().equals(namespace))
+              .collect(Collectors.toList()))
+          .build());
+    } else if (namespace != null) {
+      responseObserver.onNext(GetPartitionGroupsResponse.newBuilder()
+          .addAllGroups(groups.stream()
+              .filter(group -> group.getId().getNamespace().equals(namespace))
+              .collect(Collectors.toList()))
+          .build());
+    } else {
+      responseObserver.onNext(GetPartitionGroupsResponse.newBuilder()
+          .addAllGroups(groups)
+          .build());
     }
+    responseObserver.onCompleted();
+  }
 
-    @Override
-    public CompletableFuture<Void> start() {
-        return serviceRegistry.start(ServerConfig.newBuilder()
-            .setNode(NodeConfig.newBuilder()
-                .setPort(port)
-                .build())
-            .build())
-            .thenRun(() -> serviceRegistry.register(this));
-    }
+  @Override
+  public CompletableFuture<Void> start() {
+    return serviceRegistry.start()
+        .thenRun(() -> serviceRegistry.register(this));
+  }
 }

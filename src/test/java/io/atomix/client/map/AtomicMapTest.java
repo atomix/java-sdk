@@ -15,6 +15,7 @@
  */
 package io.atomix.client.map;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Maps;
 import io.atomix.client.AbstractPrimitiveTest;
 import io.atomix.client.Versioned;
+import io.atomix.client.utils.serializer.Serializer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -129,6 +131,35 @@ public class AtomicMapTest extends AbstractPrimitiveTest {
         assertNull(map.computeIfPresent("foo", (k, v) -> null));
         assertEquals(value1, map.computeIf("foo", v -> v == null, (k, v) -> value1).value());
         assertEquals(value2, map.compute("foo", (k, v) -> value2).value());
+    }
+
+    @Test
+    public void testMapIterators() throws Throwable {
+        AtomicMap<String, String> map = client().<String, String>atomicMapBuilder("testMapIterators")
+            .withSessionTimeout(Duration.ofSeconds(5))
+            .withSerializer(new Serializer() {
+                @Override
+                public <T> byte[] encode(T object) {
+                    return object.toString().getBytes(StandardCharsets.UTF_8);
+                }
+
+                @Override
+                public <T> T decode(byte[] bytes) {
+                    return (T) new String(bytes, StandardCharsets.UTF_8);
+                }
+            })
+            .build();
+        map.put("foo", "bar");
+        map.put("bar", "baz");
+        map.put("baz", "foo");
+        assertEquals("bar", map.get("foo").value());
+        assertEquals("baz", map.get("bar").value());
+        assertEquals("foo", map.get("baz").value());
+        int count = 0;
+        for (Map.Entry<String, Versioned<String>> entry : map.entrySet()) {
+            count++;
+        }
+        assertEquals(3, count);
     }
 
     @Test

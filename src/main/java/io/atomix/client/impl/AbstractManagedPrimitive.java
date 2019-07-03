@@ -59,18 +59,24 @@ public abstract class AbstractManagedPrimitive<S, P extends AsyncPrimitive> exte
     }
 
     private RequestHeader getSessionHeader() {
-        return RequestHeader.newBuilder()
-            .setName(getName())
-            .setSessionId(state.getSessionId())
-            .setSequenceNumber(state.getCommandResponse())
-            .addAllStreams(sequencer.streams().stream()
-                .map(stream -> StreamHeader.newBuilder()
-                    .setStreamId(stream.streamId())
-                    .setIndex(stream.getStreamIndex())
-                    .setLastItemNumber(stream.getStreamSequence())
-                    .build())
-                .collect(Collectors.toList()))
-            .build();
+        if (state != null) {
+            return RequestHeader.newBuilder()
+                .setName(getName())
+                .setSessionId(state.getSessionId())
+                .setSequenceNumber(state.getCommandResponse())
+                .addAllStreams(sequencer.streams().stream()
+                    .map(stream -> StreamHeader.newBuilder()
+                        .setStreamId(stream.streamId())
+                        .setIndex(stream.getStreamIndex())
+                        .setLastItemNumber(stream.getStreamSequence())
+                        .build())
+                    .collect(Collectors.toList()))
+                .build();
+        } else {
+            return RequestHeader.newBuilder()
+                .setName(getName())
+                .build();
+        }
     }
 
     protected <T> CompletableFuture<T> session(BiConsumer<RequestHeader, StreamObserver<T>> function) {

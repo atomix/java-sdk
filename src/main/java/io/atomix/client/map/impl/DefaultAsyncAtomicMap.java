@@ -470,6 +470,7 @@ public class DefaultAsyncAtomicMap extends AbstractManagedPrimitive<MapServiceGr
     @Override
     protected CompletableFuture<Long> openSession(Duration timeout) {
         return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
+            .setHeader(header)
             .setTimeout(com.google.protobuf.Duration.newBuilder()
                 .setSeconds(timeout.getSeconds())
                 .setNanos(timeout.getNano())
@@ -481,6 +482,7 @@ public class DefaultAsyncAtomicMap extends AbstractManagedPrimitive<MapServiceGr
     @Override
     protected CompletableFuture<Boolean> keepAlive() {
         return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
+            .setHeader(header)
             .build(), observer))
             .thenApply(response -> true);
     }
@@ -488,6 +490,7 @@ public class DefaultAsyncAtomicMap extends AbstractManagedPrimitive<MapServiceGr
     @Override
     protected CompletableFuture<Void> close(boolean delete) {
         return this.<CloseResponse>session((header, observer) -> getService().close(CloseRequest.newBuilder()
+            .setHeader(header)
             .setDelete(delete)
             .build(), observer))
             .thenApply(v -> null);

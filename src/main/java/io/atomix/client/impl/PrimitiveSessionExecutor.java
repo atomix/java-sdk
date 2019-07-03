@@ -661,10 +661,8 @@ final class PrimitiveSessionExecutor<S> {
                 });
             }
 
-            sequencer.sequenceStream(header.getStreams(0), () -> {
-                state.setResponseIndex(header.getIndex());
-                responseObserver.onNext(response);
-            });
+            state.setResponseIndex(header.getIndex());
+            responseObserver.onNext(response);
         }
 
         @Override
