@@ -15,7 +15,7 @@
  */
 package io.atomix.client.cache;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.impl.ManagedPrimitiveBuilder;

@@ -42,7 +42,7 @@ import io.atomix.api.election.PromoteRequest;
 import io.atomix.api.election.PromoteResponse;
 import io.atomix.api.election.WithdrawRequest;
 import io.atomix.api.election.WithdrawResponse;
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.election.AsyncLeaderElection;
 import io.atomix.client.election.Leader;
 import io.atomix.client.election.LeaderElection;

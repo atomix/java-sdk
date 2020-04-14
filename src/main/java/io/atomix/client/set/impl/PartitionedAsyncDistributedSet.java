@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.impl.PartitionedAsyncPrimitive;
 import io.atomix.client.iterator.AsyncIterator;

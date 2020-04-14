@@ -15,36 +15,8 @@
  */
 package io.atomix.client.set.impl;
 
-import java.time.Duration;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-
-import io.atomix.api.headers.Name;
-import io.atomix.api.set.AddRequest;
-import io.atomix.api.set.AddResponse;
-import io.atomix.api.set.ClearRequest;
-import io.atomix.api.set.ClearResponse;
-import io.atomix.api.set.CloseRequest;
-import io.atomix.api.set.CloseResponse;
-import io.atomix.api.set.ContainsRequest;
-import io.atomix.api.set.ContainsResponse;
-import io.atomix.api.set.CreateRequest;
-import io.atomix.api.set.CreateResponse;
-import io.atomix.api.set.EventRequest;
-import io.atomix.api.set.EventResponse;
-import io.atomix.api.set.IterateRequest;
-import io.atomix.api.set.IterateResponse;
-import io.atomix.api.set.KeepAliveRequest;
-import io.atomix.api.set.KeepAliveResponse;
-import io.atomix.api.set.RemoveRequest;
-import io.atomix.api.set.RemoveResponse;
-import io.atomix.api.set.SetServiceGrpc;
-import io.atomix.api.set.SizeRequest;
-import io.atomix.api.set.SizeResponse;
+import io.atomix.api.primitive.Name;
+import io.atomix.api.set.*;
 import io.atomix.client.collection.CollectionEvent;
 import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.impl.AbstractManagedPrimitive;
@@ -57,6 +29,14 @@ import io.atomix.client.set.DistributedSet;
 import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.concurrent.ThreadContext;
 import io.grpc.stub.StreamObserver;
+
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 /**
  * Default distributed set primitive.
@@ -153,7 +133,7 @@ public class DefaultAsyncDistributedSet
     private synchronized CompletableFuture<Void> listen() {
         if (listenFuture == null && !eventListeners.isEmpty()) {
             listenFuture = command(
-                (header, observer) -> getService().listen(EventRequest.newBuilder()
+                (header, observer) -> getService().events(EventRequest.newBuilder()
                     .setHeader(header)
                     .build(), observer),
                 EventResponse::getHeader,

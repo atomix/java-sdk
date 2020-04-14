@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import com.google.common.collect.Maps;
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.PrimitiveCache;
 

@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveState;
 
 import static com.google.common.base.Preconditions.checkNotNull;

@@ -33,7 +33,7 @@ import io.atomix.api.counter.IncrementRequest;
 import io.atomix.api.counter.IncrementResponse;
 import io.atomix.api.counter.SetRequest;
 import io.atomix.api.counter.SetResponse;
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.api.headers.ResponseHeader;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;

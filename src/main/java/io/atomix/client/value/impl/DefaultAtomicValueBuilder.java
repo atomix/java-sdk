@@ -18,7 +18,7 @@ package io.atomix.client.value.impl;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.common.io.BaseEncoding;
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.utils.serializer.Serializer;
 import io.atomix.client.value.AsyncAtomicValue;

@@ -15,7 +15,7 @@
  */
 package io.atomix.client;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 
 /**
  * Primitive type.

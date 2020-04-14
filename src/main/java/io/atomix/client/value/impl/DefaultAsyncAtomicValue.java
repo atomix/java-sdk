@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import com.google.protobuf.ByteString;
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.api.value.CheckAndSetRequest;
 import io.atomix.api.value.CheckAndSetResponse;
 import io.atomix.api.value.CloseRequest;

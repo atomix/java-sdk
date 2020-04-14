@@ -23,7 +23,7 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import com.google.common.collect.Maps;
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.Versioned;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;

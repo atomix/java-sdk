@@ -15,19 +15,19 @@
  */
 package io.atomix.client.map.impl;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AsyncDistributedMap;
 import io.atomix.client.map.DistributedMap;
 import io.atomix.client.map.DistributedMapBuilder;
 import io.atomix.client.utils.serializer.Serializer;
+
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Default distributed map builder.

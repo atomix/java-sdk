@@ -17,7 +17,7 @@ package io.atomix.client.log.impl;
 
 import java.util.concurrent.CompletableFuture;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.log.DistributedLog;
 import io.atomix.client.log.DistributedLogBuilder;

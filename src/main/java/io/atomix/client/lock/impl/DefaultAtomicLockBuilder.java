@@ -17,7 +17,7 @@ package io.atomix.client.lock.impl;
 
 import java.util.concurrent.CompletableFuture;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.lock.AsyncAtomicLock;
 import io.atomix.client.lock.AtomicLock;

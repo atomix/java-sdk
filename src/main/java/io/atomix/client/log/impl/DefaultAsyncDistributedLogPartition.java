@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import com.google.protobuf.ByteString;
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.api.log.ConsumeRequest;
 import io.atomix.api.log.LogRecord;
 import io.atomix.api.log.LogServiceGrpc;

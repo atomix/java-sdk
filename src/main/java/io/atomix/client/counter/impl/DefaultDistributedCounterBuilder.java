@@ -17,7 +17,7 @@ package io.atomix.client.counter.impl;
 
 import java.util.concurrent.CompletableFuture;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.counter.AsyncDistributedCounter;
 import io.atomix.client.counter.DistributedCounter;

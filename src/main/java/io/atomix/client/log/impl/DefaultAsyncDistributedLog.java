@@ -24,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 import com.google.common.io.BaseEncoding;
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.api.log.LogServiceGrpc;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.log.AsyncDistributedLog;

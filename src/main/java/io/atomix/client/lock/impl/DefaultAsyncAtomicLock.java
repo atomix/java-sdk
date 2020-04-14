@@ -20,7 +20,7 @@ import java.util.OptionalLong;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.api.lock.CloseRequest;
 import io.atomix.api.lock.CloseResponse;
 import io.atomix.api.lock.CreateRequest;

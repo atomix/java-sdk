@@ -15,10 +15,10 @@
  */
 package io.atomix.client;
 
+import io.atomix.api.primitive.Name;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-
-import io.atomix.api.headers.Name;
 
 /**
  * Atomix primitive cache.

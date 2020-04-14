@@ -17,7 +17,7 @@ package io.atomix.client.idgenerator.impl;
 
 import java.util.concurrent.CompletableFuture;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.counter.impl.DefaultAsyncAtomicCounter;
 import io.atomix.client.idgenerator.AsyncAtomicIdGenerator;

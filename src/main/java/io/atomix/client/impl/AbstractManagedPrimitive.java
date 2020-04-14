@@ -15,18 +15,10 @@
  */
 package io.atomix.client.impl;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import io.atomix.api.headers.Name;
 import io.atomix.api.headers.RequestHeader;
 import io.atomix.api.headers.ResponseHeader;
 import io.atomix.api.headers.StreamHeader;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.ManagedAsyncPrimitive;
 import io.atomix.client.PrimitiveState;
@@ -34,6 +26,14 @@ import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.concurrent.Scheduled;
 import io.atomix.client.utils.concurrent.ThreadContext;
 import io.grpc.stub.StreamObserver;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Primitive session.
@@ -139,7 +139,7 @@ public abstract class AbstractManagedPrimitive<S, P extends AsyncPrimitive> exte
         if (!open.compareAndSet(false, true)) {
             return Futures.exceptionalFuture(new IllegalStateException());
         }
-        return openSession(timeout).thenApply(sessionId -> {
+        return create().thenApply(sessionId -> {
             ManagedPrimitiveContext context = new ManagedPrimitiveContext(
                 sessionId,
                 name(),
@@ -154,12 +154,11 @@ public abstract class AbstractManagedPrimitive<S, P extends AsyncPrimitive> exte
     }
 
     /**
-     * Opens the primitive session.
+     * Creates the primitive.
      *
-     * @param timeout the session timeout
      * @return a future to be completed with the session ID
      */
-    protected abstract CompletableFuture<Long> openSession(Duration timeout);
+    protected abstract CompletableFuture<Long> create();
 
     /**
      * Keeps the primitive session alive.

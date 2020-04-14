@@ -15,12 +15,12 @@
  */
 package io.atomix.client.impl;
 
-import java.time.Duration;
-
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveBuilder;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.SyncPrimitive;
+
+import java.time.Duration;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

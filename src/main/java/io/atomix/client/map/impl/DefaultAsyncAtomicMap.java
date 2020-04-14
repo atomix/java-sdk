@@ -15,44 +15,10 @@
  */
 package io.atomix.client.map.impl;
 
-import java.time.Duration;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
-
 import com.google.common.collect.Maps;
 import com.google.protobuf.ByteString;
-import io.atomix.api.headers.Name;
-import io.atomix.api.map.ClearRequest;
-import io.atomix.api.map.ClearResponse;
-import io.atomix.api.map.CloseRequest;
-import io.atomix.api.map.CloseResponse;
-import io.atomix.api.map.CreateRequest;
-import io.atomix.api.map.CreateResponse;
-import io.atomix.api.map.EntriesRequest;
-import io.atomix.api.map.EntriesResponse;
-import io.atomix.api.map.EventRequest;
-import io.atomix.api.map.EventResponse;
-import io.atomix.api.map.ExistsRequest;
-import io.atomix.api.map.ExistsResponse;
-import io.atomix.api.map.GetRequest;
-import io.atomix.api.map.GetResponse;
-import io.atomix.api.map.KeepAliveRequest;
-import io.atomix.api.map.KeepAliveResponse;
-import io.atomix.api.map.MapServiceGrpc;
-import io.atomix.api.map.PutRequest;
-import io.atomix.api.map.PutResponse;
-import io.atomix.api.map.RemoveRequest;
-import io.atomix.api.map.RemoveResponse;
-import io.atomix.api.map.ReplaceRequest;
-import io.atomix.api.map.ReplaceResponse;
-import io.atomix.api.map.ResponseStatus;
-import io.atomix.api.map.SizeRequest;
-import io.atomix.api.map.SizeResponse;
+import io.atomix.api.map.*;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.Versioned;
 import io.atomix.client.collection.AsyncDistributedCollection;
@@ -73,6 +39,15 @@ import io.atomix.client.set.impl.UnsupportedAsyncDistributedSet;
 import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.concurrent.ThreadContext;
 import io.grpc.stub.StreamObserver;
+
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 /**
  * Default asynchronous atomic map primitive.

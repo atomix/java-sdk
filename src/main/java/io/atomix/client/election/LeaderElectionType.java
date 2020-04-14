@@ -15,7 +15,7 @@
  */
 package io.atomix.client.election;
 
-import io.atomix.api.headers.Name;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.election.impl.DefaultLeaderElectionBuilder;
