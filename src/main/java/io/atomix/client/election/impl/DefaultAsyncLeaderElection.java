@@ -15,44 +15,18 @@
  */
 package io.atomix.client.election.impl;
 
-import java.time.Duration;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArraySet;
-
-import com.google.common.base.Strings;
-import io.atomix.api.election.AnointRequest;
-import io.atomix.api.election.AnointResponse;
-import io.atomix.api.election.CloseRequest;
-import io.atomix.api.election.CloseResponse;
-import io.atomix.api.election.CreateRequest;
-import io.atomix.api.election.CreateResponse;
-import io.atomix.api.election.EnterRequest;
-import io.atomix.api.election.EnterResponse;
-import io.atomix.api.election.EventRequest;
-import io.atomix.api.election.EventResponse;
-import io.atomix.api.election.EvictRequest;
-import io.atomix.api.election.EvictResponse;
-import io.atomix.api.election.GetLeadershipRequest;
-import io.atomix.api.election.GetLeadershipResponse;
-import io.atomix.api.election.KeepAliveRequest;
-import io.atomix.api.election.KeepAliveResponse;
-import io.atomix.api.election.LeaderElectionServiceGrpc;
-import io.atomix.api.election.PromoteRequest;
-import io.atomix.api.election.PromoteResponse;
-import io.atomix.api.election.WithdrawRequest;
-import io.atomix.api.election.WithdrawResponse;
+import io.atomix.api.election.*;
 import io.atomix.api.primitive.Name;
-import io.atomix.client.election.AsyncLeaderElection;
-import io.atomix.client.election.Leader;
-import io.atomix.client.election.LeaderElection;
-import io.atomix.client.election.Leadership;
-import io.atomix.client.election.LeadershipEvent;
-import io.atomix.client.election.LeadershipEventListener;
+import io.atomix.client.election.*;
 import io.atomix.client.impl.AbstractManagedPrimitive;
 import io.atomix.client.partition.Partition;
 import io.atomix.client.utils.concurrent.ThreadContext;
 import io.grpc.stub.StreamObserver;
+
+import java.time.Duration;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Distributed resource providing the {@link AsyncLeaderElection} primitive.
@@ -69,7 +43,7 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Leadership<String>> run(String identifier) {
-        return command(
+        /*return command(
             (header, observer) -> getService().enter(EnterRequest.newBuilder()
                 .setHeader(header)
                 .setCandidateId(identifier)
@@ -77,7 +51,8 @@ public class DefaultAsyncLeaderElection
             .thenApply(response -> new Leadership<>(!Strings.isNullOrEmpty(response.getLeader())
                 ? new Leader<>(response.getLeader(), response.getTerm(), response.getTimestamp())
                 : null,
-                response.getCandidatesList()));
+                response.getCandidatesList()));*/
+        return null;
     }
 
     @Override
@@ -92,12 +67,13 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Boolean> anoint(String identifier) {
-        return command(
+        /*return command(
             (header, observer) -> getService().anoint(AnointRequest.newBuilder()
                 .setHeader(header)
                 .setCandidateId(identifier)
                 .build(), observer), AnointResponse::getHeader)
-            .thenApply(response -> response.getSucceeded());
+            .thenApply(response -> response.getSucceeded());*/
+        return null;
     }
 
     @Override
@@ -112,24 +88,26 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Boolean> promote(String identifier) {
-        return command(
+        /*return command(
             (header, observer) -> getService().promote(PromoteRequest.newBuilder()
                 .setHeader(header)
                 .setCandidateId(identifier)
                 .build(), observer), PromoteResponse::getHeader)
-            .thenApply(response -> response.getSucceeded());
+            .thenApply(response -> response.getSucceeded());*/
+        return null;
     }
 
     @Override
     public CompletableFuture<Leadership<String>> getLeadership() {
-        return query(
+        /*return query(
             (header, observer) -> getService().getLeadership(GetLeadershipRequest.newBuilder()
                 .setHeader(header)
                 .build(), observer), GetLeadershipResponse::getHeader)
             .thenApply(response -> new Leadership<>(!Strings.isNullOrEmpty(response.getLeader())
                 ? new Leader<>(response.getLeader(), response.getTerm(), response.getTimestamp())
                 : null,
-                response.getCandidatesList()));
+                response.getCandidatesList()));*/
+        return null;
     }
 
     private synchronized CompletableFuture<Void> listen() {
@@ -145,13 +123,13 @@ public class DefaultAsyncLeaderElection
                         LeadershipEvent<String> event = null;
                         switch (response.getType()) {
                             case CHANGED:
-                                event = new LeadershipEvent<>(
+                                /*event = new LeadershipEvent<>(
                                     LeadershipEvent.Type.CHANGED,
                                     new Leadership<>(!Strings.isNullOrEmpty(response.getLeader())
                                         ? new Leader<>(response.getLeader(), response.getTerm(), response.getTimestamp())
                                         : null,
                                         response.getCandidatesList()));
-                                break;
+                                break;*/
                         }
                         onEvent(event);
                     }
@@ -189,22 +167,18 @@ public class DefaultAsyncLeaderElection
         return CompletableFuture.completedFuture(null);
     }
 
+
     @Override
-    protected CompletableFuture<Long> openSession(Duration timeout) {
-        return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
-            .setTimeout(com.google.protobuf.Duration.newBuilder()
-                .setSeconds(timeout.getSeconds())
-                .setNanos(timeout.getNano())
-                .build())
-            .build(), observer))
-            .thenApply(response -> response.getHeader().getSessionId());
+    protected CompletableFuture<Long> create() {
+        return null;
     }
 
     @Override
     protected CompletableFuture<Boolean> keepAlive() {
-        return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
+        /*return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
             .build(), observer))
-            .thenApply(response -> true);
+            .thenApply(response -> true);*/
+        return null;
     }
 
     @Override

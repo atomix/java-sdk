@@ -15,6 +15,13 @@
  */
 package io.atomix.client.impl;
 
+import io.atomix.api.headers.RequestHeader;
+import io.atomix.api.headers.ResponseHeader;
+import io.atomix.client.PrimitiveException;
+import io.atomix.client.PrimitiveState;
+import io.atomix.client.utils.concurrent.ThreadContext;
+import io.grpc.stub.StreamObserver;
+
 import java.net.ConnectException;
 import java.nio.channels.ClosedChannelException;
 import java.time.Duration;
@@ -28,13 +35,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import io.atomix.api.headers.RequestHeader;
-import io.atomix.api.headers.ResponseHeader;
-import io.atomix.client.PrimitiveException;
-import io.atomix.client.PrimitiveState;
-import io.atomix.client.utils.concurrent.ThreadContext;
-import io.grpc.stub.StreamObserver;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -118,7 +118,7 @@ final class PrimitiveSessionExecutor<S> {
         RequestHeader header = RequestHeader.newBuilder()
             .setName(state.getName())
             .setSessionId(state.getSessionId())
-            .setSequenceNumber(state.nextCommandRequest())
+            .setIndex(state.nextCommandRequest())
             .build();
         invoke(new CommandAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, future));
     }
@@ -134,7 +134,7 @@ final class PrimitiveSessionExecutor<S> {
         RequestHeader header = RequestHeader.newBuilder()
             .setName(state.getName())
             .setSessionId(state.getSessionId())
-            .setSequenceNumber(state.nextCommandRequest())
+            .setIndex(state.nextCommandRequest())
             .build();
         invoke(new CommandStreamAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, observer, future));
     }
@@ -149,7 +149,7 @@ final class PrimitiveSessionExecutor<S> {
         RequestHeader header = RequestHeader.newBuilder()
             .setName(state.getName())
             .setSessionId(state.getSessionId())
-            .setSequenceNumber(state.getCommandRequest())
+            .setIndex(state.getCommandRequest())
             .build();
         invoke(new QueryAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, future));
     }
@@ -165,9 +165,9 @@ final class PrimitiveSessionExecutor<S> {
         RequestHeader header = RequestHeader.newBuilder()
             .setName(state.getName())
             .setSessionId(state.getSessionId())
-            .setSequenceNumber(state.getCommandRequest())
+            .setIndex(state.getCommandRequest())
             .build();
-        invoke(new QueryStreamAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, observer, future));
+        //invoke(new QueryStreamAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, observer, future));
     }
 
     /**
@@ -570,24 +570,24 @@ final class PrimitiveSessionExecutor<S> {
 
         @Override
         public void onNext(T response) {
-            ResponseHeader header = getHeader(response);
+            /*ResponseHeader header = getHeader(response);
             if (complete.compareAndSet(false, true)) {
                 sequence(header, () -> future.complete(header.getIndex()));
             }
-            sequencer.sequenceStream(header.getStreams(0), () -> responseObserver.onNext(response));
+            sequencer.sequenceStream(header.getStreams(0), () -> responseObserver.onNext(response));*/
         }
 
         @Override
         public void onCompleted() {
-            if (complete.compareAndSet(false, true)) {
+            /*if (complete.compareAndSet(false, true)) {
                 sequence(null, () -> future.complete(null));
             }
-            sequencer.closeStream(requestHeader.getSequenceNumber(), () -> responseObserver.onCompleted());
+            sequencer.closeStream(requestHeader.getSequenceNumber(), () -> responseObserver.onCompleted());*/
         }
 
         @Override
         public void onError(Throwable error) {
-            if (complete.compareAndSet(false, true)) {
+            /*if (complete.compareAndSet(false, true)) {
                 sequence(null, () -> future.completeExceptionally(error));
             }
             if (EXPIRED_PREDICATE.test(error) || (error instanceof CompletionException && EXPIRED_PREDICATE.test(error.getCause()))) {
@@ -601,7 +601,7 @@ final class PrimitiveSessionExecutor<S> {
             } else {
                 responseObserver.onError(error);
             }
-        }
+        }*/
     }
 
     /**
@@ -689,4 +689,5 @@ final class PrimitiveSessionExecutor<S> {
             }
         }
     }
+}
 }

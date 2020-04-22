@@ -15,23 +15,10 @@
  */
 package io.atomix.client.test;
 
-import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
-import com.google.common.base.Strings;
-import io.atomix.api.controller.ControllerServiceGrpc;
-import io.atomix.api.controller.GetPartitionGroupsRequest;
-import io.atomix.api.controller.GetPartitionGroupsResponse;
-import io.atomix.api.controller.PartitionGroup;
-import io.atomix.server.management.impl.ServiceRegistryImpl;
-import io.atomix.utils.component.Managed;
-import io.grpc.stub.StreamObserver;
-
 /**
  * Test controller.
  */
-public class TestController extends ControllerServiceGrpc.ControllerServiceImplBase implements Managed {
+/*public class TestController extends ControllerServiceGrpc.ControllerServiceImplBase implements Managed {
   private final ServiceRegistryImpl serviceRegistry;
   private final Collection<PartitionGroup> groups;
 
@@ -69,4 +56,4 @@ public class TestController extends ControllerServiceGrpc.ControllerServiceImplB
     return serviceRegistry.start()
         .thenRun(() -> serviceRegistry.register(this));
   }
-}
+}*/

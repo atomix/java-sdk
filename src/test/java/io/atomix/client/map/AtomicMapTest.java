@@ -15,32 +15,10 @@
  */
 package io.atomix.client.map;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
-
-import com.google.common.collect.Maps;
-import io.atomix.client.AbstractPrimitiveTest;
-import io.atomix.client.Versioned;
-import io.atomix.client.utils.serializer.Serializer;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Unit tests for {@link AtomicMap}.
  */
-public class AtomicMapTest extends AbstractPrimitiveTest {
+/*public class AtomicMapTest extends AbstractPrimitiveTest {
 
     @Test
     public void testBasicMapOperations() throws Throwable {
@@ -338,4 +316,4 @@ public class AtomicMapTest extends AbstractPrimitiveTest {
             return queue.take();
         }
     }
-}
+}*/

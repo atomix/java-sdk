@@ -15,31 +15,10 @@
  */
 package io.atomix.client.map;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import io.atomix.client.AbstractPrimitiveTest;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Unit tests for {@link DistributedMap}.
  */
-public class DistributedMapTest extends AbstractPrimitiveTest {
+/*public class DistributedMapTest extends AbstractPrimitiveTest {
 
     @Test
     public void testBasicMapOperations() throws Throwable {
@@ -234,12 +213,12 @@ public class DistributedMapTest extends AbstractPrimitiveTest {
             map.put(String.valueOf(100 * i), String.valueOf(100 * i));
         }
         assertEquals(String.valueOf(100), map.get(String.valueOf(100)));
-    }
+    }*/
 
     /**
      * Tests a map with complex types.
      */
-    @Test
+/*    @Test
     public void testComplexTypes() throws Throwable {
         DistributedMap<Key, Pair<String, Integer>> map = client()
             .<Key, Pair<String, Integer>>mapBuilder("testComplexTypes").build();
@@ -277,4 +256,4 @@ public class DistributedMapTest extends AbstractPrimitiveTest {
             return queue.poll(10, TimeUnit.SECONDS);
         }
     }
-}
+}*/

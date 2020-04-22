@@ -84,24 +84,27 @@ public class DefaultAsyncDistributedSet
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<Boolean> addAll(Collection<? extends String> c) {
-        return command(
+
+        /*return command(
             (header, observer) -> getService().add(AddRequest.newBuilder()
                 .setHeader(header)
                 .addAllValues((Collection) c)
                 .build(), observer),
             AddResponse::getHeader)
-            .thenApply(response -> response.getAdded());
+            .thenApply(response -> response.getAdded());*/
+        return null;
     }
 
     @Override
     public CompletableFuture<Boolean> containsAll(Collection<? extends String> c) {
-        return query(
+        /*return query(
             (header, observer) -> getService().contains(ContainsRequest.newBuilder()
                 .setHeader(header)
                 .addAllValues((Collection) c)
                 .build(), observer),
             ContainsResponse::getHeader)
-            .thenApply(response -> response.getContains());
+            .thenApply(response -> response.getContains());*/
+        return null;
     }
 
     @Override
@@ -111,13 +114,14 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> removeAll(Collection<? extends String> c) {
-        return command(
+       /* return command(
             (header, observer) -> getService().remove(RemoveRequest.newBuilder()
                 .setHeader(header)
                 .addAllValues((Collection) c)
                 .build(), observer),
             RemoveResponse::getHeader)
-            .thenApply(response -> response.getRemoved());
+            .thenApply(response -> response.getRemoved());*/
+        return null;
     }
 
     @Override
@@ -203,22 +207,18 @@ public class DefaultAsyncDistributedSet
         return iterator;
     }
 
+
     @Override
-    protected CompletableFuture<Long> openSession(Duration timeout) {
-        return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
-            .setTimeout(com.google.protobuf.Duration.newBuilder()
-                .setSeconds(timeout.getSeconds())
-                .setNanos(timeout.getNano())
-                .build())
-            .build(), observer))
-            .thenApply(response -> response.getHeader().getSessionId());
+    protected CompletableFuture<Long> create() {
+        return null;
     }
 
     @Override
     protected CompletableFuture<Boolean> keepAlive() {
-        return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
+        /*return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
             .build(), observer))
-            .thenApply(response -> true);
+            .thenApply(response -> true);*/
+        return null;
     }
 
     @Override

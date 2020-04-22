@@ -52,7 +52,9 @@ import java.util.function.Predicate;
 /**
  * Default asynchronous atomic map primitive.
  */
-public class DefaultAsyncAtomicMap extends AbstractManagedPrimitive<MapServiceGrpc.MapServiceStub, AsyncAtomicMap<String, byte[]>> implements AsyncAtomicMap<String, byte[]> {
+public class DefaultAsyncAtomicMap extends
+        AbstractManagedPrimitive<MapServiceGrpc.MapServiceStub, AsyncAtomicMap<String, byte[]>>
+        implements AsyncAtomicMap<String, byte[]> {
     private volatile CompletableFuture<Long> listenFuture;
     private final Map<AtomicMapEventListener<String, byte[]>, Executor> eventListeners = new ConcurrentHashMap<>();
 
@@ -201,7 +203,10 @@ public class DefaultAsyncAtomicMap extends AbstractManagedPrimitive<MapServiceGr
                 .setHeader(header)
                 .setKey(key)
                 .setValue(ByteString.copyFrom(value))
-                .setTtl(ttl.toMillis())
+                .setTtl(com.google.protobuf.Duration.newBuilder()
+                        .setSeconds(ttl.getSeconds())
+                        .setNanos(ttl.getNano())
+                        .build())
                 .build(), observer),
             PutResponse::getHeader)
             .thenCompose(response -> {
@@ -219,12 +224,15 @@ public class DefaultAsyncAtomicMap extends AbstractManagedPrimitive<MapServiceGr
     public CompletableFuture<Versioned<byte[]>> putIfAbsent(String key, byte[] value, Duration ttl) {
         return command(
             (header, observer) -> getService().put(PutRequest.newBuilder()
-                .setHeader(header)
-                .setKey(key)
-                .setValue(ByteString.copyFrom(value))
-                .setVersion(-1)
-                .setTtl(ttl.toMillis())
-                .build(), observer),
+                    .setHeader(header)
+                    .setKey(key)
+                    .setValue(ByteString.copyFrom(value))
+                    .setTtl(com.google.protobuf.Duration.newBuilder()
+                            .setSeconds(ttl.getSeconds())
+                            .setNanos(ttl.getNano())
+                            .build())
+                    .setVersion(-1)
+                    .build(), observer),
             PutResponse::getHeader)
             .thenCompose(response -> {
                 if (response.getStatus() == ResponseStatus.WRITE_LOCK) {
@@ -388,23 +396,23 @@ public class DefaultAsyncAtomicMap extends AbstractManagedPrimitive<MapServiceGr
                                 event = new AtomicMapEvent<>(
                                     AtomicMapEvent.Type.INSERTED,
                                     response.getKey(),
-                                    new Versioned<>(response.getNewValue().toByteArray(), response.getNewVersion()),
+                                    new Versioned<>(response.getValue().toByteArray(), response.getVersion()),
                                     null);
                                 break;
                             case UPDATED:
-                                event = new AtomicMapEvent<>(
+                                /*event = new AtomicMapEvent<>(
                                     AtomicMapEvent.Type.UPDATED,
                                     response.getKey(),
-                                    new Versioned<>(response.getNewValue().toByteArray(), response.getNewVersion()),
+                                    new Versioned<>(response.getValue().toByteArray(), response.getVersion()),
                                     new Versioned<>(response.getOldValue().toByteArray(), response.getOldVersion()));
-                                break;
+                                break;*/
                             case REMOVED:
-                                event = new AtomicMapEvent<>(
+                                /*event = new AtomicMapEvent<>(
                                     AtomicMapEvent.Type.REMOVED,
                                     response.getKey(),
                                     null,
                                     new Versioned<>(response.getOldValue().toByteArray(), response.getOldVersion()));
-                                break;
+                                break;*/
                         }
                         onEvent(event);
                     }
@@ -443,24 +451,15 @@ public class DefaultAsyncAtomicMap extends AbstractManagedPrimitive<MapServiceGr
     }
 
     @Override
-    protected CompletableFuture<Long> openSession(Duration timeout) {
-        return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
-            .setHeader(header)
-            .setTimeout(com.google.protobuf.Duration.newBuilder()
-                .setSeconds(timeout.getSeconds())
-                .setNanos(timeout.getNano())
-                .build())
-            .build(), observer))
-            .thenApply(response -> response.getHeader().getSessionId());
+    protected CompletableFuture<Long> create() {
+        return null;
     }
 
     @Override
     protected CompletableFuture<Boolean> keepAlive() {
-        return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
-            .setHeader(header)
-            .build(), observer))
-            .thenApply(response -> true);
+        return null;
     }
+
 
     @Override
     protected CompletableFuture<Void> close(boolean delete) {

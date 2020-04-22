@@ -23,18 +23,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import com.google.protobuf.ByteString;
 import io.atomix.api.primitive.Name;
-import io.atomix.api.value.CheckAndSetRequest;
-import io.atomix.api.value.CheckAndSetResponse;
 import io.atomix.api.value.CloseRequest;
 import io.atomix.api.value.CloseResponse;
-import io.atomix.api.value.CreateRequest;
-import io.atomix.api.value.CreateResponse;
 import io.atomix.api.value.EventRequest;
 import io.atomix.api.value.EventResponse;
 import io.atomix.api.value.GetRequest;
 import io.atomix.api.value.GetResponse;
-import io.atomix.api.value.KeepAliveRequest;
-import io.atomix.api.value.KeepAliveResponse;
 import io.atomix.api.value.SetRequest;
 import io.atomix.api.value.SetResponse;
 import io.atomix.api.value.ValueServiceGrpc;
@@ -74,14 +68,15 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Versioned<String>> getAndSet(String value) {
-        return command(
+        /*return command(
             (header, observer) -> getService().set(SetRequest.newBuilder()
                 .setHeader(header)
                 .setValue(ByteString.copyFromUtf8(value))
                 .build(), observer), SetResponse::getHeader)
-            .thenApply(response -> response.getPreviousVersion() > 0
-                ? new Versioned<>(response.getPreviousValue().toStringUtf8(), response.getPreviousVersion())
-                : null);
+            .thenApply(response -> response.getVersion() > 0
+                ? new Versioned<>(response.getPreviousValue().toStringUtf8(), response.getVersion())
+                : null);*/
+        return null;
     }
 
     @Override
@@ -98,32 +93,34 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Optional<Versioned<String>>> compareAndSet(String expect, String update) {
-        return command(
+        /*return command(
             (header, observer) -> getService().checkAndSet(CheckAndSetRequest.newBuilder()
                 .setHeader(header)
                 .setCheck(ByteString.copyFromUtf8(expect))
                 .setUpdate(ByteString.copyFromUtf8(update))
                 .build(), observer), CheckAndSetResponse::getHeader)
             .thenApply(response -> Optional.ofNullable(
-                response.getSucceeded() ? new Versioned<>(update, response.getVersion()) : null));
+                response.getSucceeded() ? new Versioned<>(update, response.getVersion()) : null));*/
+        return null;
     }
 
     @Override
     public CompletableFuture<Optional<Versioned<String>>> compareAndSet(long version, String value) {
-        return command(
+        /*return command(
             (header, observer) -> getService().checkAndSet(CheckAndSetRequest.newBuilder()
                 .setHeader(header)
                 .setVersion(version)
                 .setUpdate(ByteString.copyFromUtf8(value))
                 .build(), observer), CheckAndSetResponse::getHeader)
             .thenApply(response -> Optional.ofNullable(
-                response.getSucceeded() ? new Versioned<>(value, response.getVersion()) : null));
+                response.getSucceeded() ? new Versioned<>(value, response.getVersion()) : null));*/
+        return null;
     }
 
     private synchronized CompletableFuture<Void> listen() {
         if (listenFuture == null && !eventListeners.isEmpty()) {
             listenFuture = command(
-                (header, observer) -> getService().event(EventRequest.newBuilder()
+                (header, observer) -> getService().events(EventRequest.newBuilder()
                     .setHeader(header)
                     .build(), observer),
                 EventResponse::getHeader,
@@ -175,22 +172,18 @@ public class DefaultAsyncAtomicValue
         return CompletableFuture.completedFuture(null);
     }
 
+
     @Override
-    protected CompletableFuture<Long> openSession(Duration timeout) {
-        return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
-            .setTimeout(com.google.protobuf.Duration.newBuilder()
-                .setSeconds(timeout.getSeconds())
-                .setNanos(timeout.getNano())
-                .build())
-            .build(), observer))
-            .thenApply(response -> response.getHeader().getSessionId());
+    protected CompletableFuture<Long> create() {
+        return null;
     }
 
     @Override
     protected CompletableFuture<Boolean> keepAlive() {
-        return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
+        /*return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
             .build(), observer))
-            .thenApply(response -> true);
+            .thenApply(response -> true);*/
+        return null;
     }
 
     @Override

@@ -15,24 +15,10 @@
  */
 package io.atomix.client.test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.google.protobuf.Empty;
-import io.atomix.api.controller.PartitionId;
-import io.atomix.server.management.ProtocolManagementService;
-import io.atomix.server.protocol.Protocol;
-import io.atomix.server.protocol.ProtocolClient;
-import io.atomix.server.protocol.ServiceProtocol;
-import io.atomix.utils.component.Component;
-
 /**
  * Test protocol.
  */
-public class TestProtocol implements ServiceProtocol {
+/*public class TestProtocol implements ServiceProtocol {
   public static final Type TYPE = new Type();
 
   private static final Map<PartitionId, TestProtocol> partitions = new ConcurrentHashMap<>();
@@ -71,4 +57,4 @@ public class TestProtocol implements ServiceProtocol {
   public ProtocolClient getServiceClient() {
     return new TestProtocolClient(managementService.getServiceTypeRegistry());
   }
-}
+}*/

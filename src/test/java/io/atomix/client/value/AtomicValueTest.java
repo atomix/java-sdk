@@ -15,22 +15,10 @@
  */
 package io.atomix.client.value;
 
-import io.atomix.client.AbstractPrimitiveTest;
-import io.atomix.client.Versioned;
-import org.junit.Test;
-
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Raft atomic value test.
  */
-public class AtomicValueTest extends AbstractPrimitiveTest {
+/*public class AtomicValueTest extends AbstractPrimitiveTest {
     @Test
     public void testValue() throws Exception {
         AtomicValue<String> value = client().<String>atomicValueBuilder("test-value").build();
@@ -77,22 +65,23 @@ public class AtomicValueTest extends AbstractPrimitiveTest {
         event = listener2.nextEvent();
         assertEquals("Hello world back!", event.newValue().value());
         assertEquals(value.version(), event.newValue().version());
-    }
+    }*/
 
-    private static class BlockingAtomicValueListener<T> implements AtomicValueEventListener<T> {
+  /*  private static class BlockingAtomicValueListener<T> implements AtomicValueEventListener<T> {
         private final BlockingQueue<AtomicValueEvent<T>> events = new LinkedBlockingQueue<>();
 
         @Override
         public void event(AtomicValueEvent<T> event) {
             events.add(event);
-        }
+        }*/
 
         /**
          * Returns the next event.
          *
          * @return the next event
          */
-        AtomicValueEvent<T> nextEvent() {
+
+        /*AtomicValueEvent<T> nextEvent() {
             try {
                 return events.take();
             } catch (InterruptedException e) {
@@ -100,4 +89,4 @@ public class AtomicValueTest extends AbstractPrimitiveTest {
             }
         }
     }
-}
+}*/

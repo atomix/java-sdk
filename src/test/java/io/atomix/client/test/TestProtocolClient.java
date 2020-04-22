@@ -15,24 +15,10 @@
  */
 package io.atomix.client.test;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicLong;
-
-import io.atomix.server.protocol.ProtocolClient;
-import io.atomix.service.Command;
-import io.atomix.service.Query;
-import io.atomix.service.ServiceTypeRegistry;
-import io.atomix.service.StateMachine;
-import io.atomix.service.impl.ServiceManagerStateMachine;
-import io.atomix.service.operation.OperationType;
-import io.atomix.utils.stream.StreamHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Test protocol client.
  */
-public class TestProtocolClient implements ProtocolClient {
+/*public class TestProtocolClient implements ProtocolClient {
   private final StateMachine stateMachine;
   private final Context context = new Context();
 
@@ -98,4 +84,4 @@ public class TestProtocolClient implements ProtocolClient {
       return logger;
     }
   }
-}
+}*/

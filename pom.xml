@@ -61,6 +61,11 @@
             <version>${protobuf.version}</version>
         </dependency>
         <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
             <version>${grpc.version}</version>
@@ -206,7 +211,7 @@
                 <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <shutdown>kill</shutdown>
-                    <argLine>${argLine} ${argLine.extras} ${argLine.common}</argLine>
+                    <argLine>${surefire.argLine}</argLine>
                 </configuration>
             </plugin>
 

@@ -15,50 +15,20 @@
  */
 package io.atomix.client;
 
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import com.google.protobuf.Empty;
-import io.atomix.api.controller.NodeConfig;
-import io.atomix.api.controller.Partition;
-import io.atomix.api.controller.PartitionConfig;
-import io.atomix.api.controller.PartitionEndpoint;
-import io.atomix.api.controller.PartitionGroup;
-import io.atomix.api.controller.PartitionGroupId;
-import io.atomix.api.controller.PartitionGroupSpec;
-import io.atomix.api.controller.PartitionId;
-import io.atomix.client.test.TestController;
-import io.atomix.client.test.TestProtocol;
-import io.atomix.client.utils.concurrent.Futures;
-import io.atomix.server.AtomixServer;
-import org.junit.After;
-import org.junit.Before;
-
 /**
  * Base Atomix test.
  */
 public abstract class AbstractPrimitiveTest {
-  private TestController controller;
-  private List<AtomixServer> servers;
-  private List<AtomixClient> clients;
+  //private TestController controller;
+  //private List<AtomixServer> servers;
+  //private List<AtomixClient> clients;
 
   /**
    * Returns a new Atomix instance.
    *
    * @return a new Atomix instance.
    */
-  protected AtomixClient client() throws Exception {
+  /*protected AtomixClient client() throws Exception {
     AtomixClient client = AtomixClient.builder()
         .withServer("localhost", 6000)
         .build();
@@ -164,5 +134,5 @@ public abstract class AbstractPrimitiveTest {
         }
       });
     }
-  }
+  }*/
 }

@@ -15,23 +15,18 @@
  */
 package io.atomix.client.log.impl;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-
-import com.google.protobuf.ByteString;
-import io.atomix.api.primitive.Name;
-import io.atomix.api.log.ConsumeRequest;
-import io.atomix.api.log.LogRecord;
+import io.atomix.api.log.CreateRequest;
 import io.atomix.api.log.LogServiceGrpc;
-import io.atomix.api.log.ProduceRequest;
-import io.atomix.api.log.ProduceResponse;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.log.AsyncDistributedLogPartition;
 import io.atomix.client.log.DistributedLogPartition;
 import io.atomix.client.log.Record;
-import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.serializer.Serializer;
 import io.grpc.stub.StreamObserver;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * Default asynchronous distributed log partition implementation.
@@ -41,7 +36,7 @@ public class DefaultAsyncDistributedLogPartition<E> implements AsyncDistributedL
     private final int partitionId;
     private final LogServiceGrpc.LogServiceStub log;
     private final Serializer serializer;
-    private volatile StreamObserver<ProduceRequest> producer;
+    private volatile StreamObserver<CreateRequest> producer;
 
     public DefaultAsyncDistributedLogPartition(Name name, int partitionId, LogServiceGrpc.LogServiceStub log, Serializer serializer) {
         this.name = name;
@@ -89,7 +84,7 @@ public class DefaultAsyncDistributedLogPartition<E> implements AsyncDistributedL
      * @return a future to be completed once the bytes have been written to the partition
      */
     CompletableFuture<Void> produce(byte[] bytes) {
-        if (producer == null) {
+        /*if (producer == null) {
             synchronized (this) {
                 if (producer == null) {
                     producer = log.produce(new StreamObserver<ProduceResponse>() {
@@ -116,7 +111,8 @@ public class DefaultAsyncDistributedLogPartition<E> implements AsyncDistributedL
         producer.onNext(ProduceRequest.newBuilder()
             .setValue(ByteString.copyFrom(bytes))
             .build());
-        return CompletableFuture.completedFuture(null);
+        return CompletableFuture.completedFuture(null);*/
+        return null;
     }
 
     @Override
@@ -126,7 +122,7 @@ public class DefaultAsyncDistributedLogPartition<E> implements AsyncDistributedL
 
     @Override
     public CompletableFuture<Void> consume(long offset, Consumer<Record<E>> consumer) {
-        log.consume(ConsumeRequest.newBuilder()
+        /*log.consume(ConsumeRequest.newBuilder()
                 .setOffset(offset)
                 .build(),
             new StreamObserver<LogRecord>() {
@@ -161,5 +157,22 @@ public class DefaultAsyncDistributedLogPartition<E> implements AsyncDistributedL
     @Override
     public DistributedLogPartition<E> sync(Duration operationTimeout) {
         return new BlockingDistributedLogPartition<>(this, operationTimeout.toMillis());
+    }*/
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Void> close() {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Void> delete() {
+        return null;
+    }
+
+    @Override
+    public DistributedLogPartition<E> sync(Duration operationTimeout) {
+        return null;
     }
 }
