@@ -27,8 +27,6 @@ import io.atomix.client.lock.AtomicLockBuilder;
 import io.atomix.client.lock.AtomicLockType;
 import io.atomix.client.lock.DistributedLockBuilder;
 import io.atomix.client.lock.DistributedLockType;
-import io.atomix.client.log.DistributedLogBuilder;
-import io.atomix.client.log.DistributedLogType;
 import io.atomix.client.map.AtomicMapBuilder;
 import io.atomix.client.map.AtomicMapType;
 import io.atomix.client.map.DistributedMapBuilder;
@@ -78,16 +76,6 @@ public interface PrimitiveClient extends PrimitiveFactory {
      * @return the primitive thread context factory
      */
     ThreadContextFactory getThreadFactory();
-
-    /**
-     * Creates a new log primitive builder.
-     *
-     * @param <E> the log entry type
-     * @return the log builder
-     */
-    default <E> DistributedLogBuilder<E> logBuilder() {
-        return primitiveBuilder("log", DistributedLogType.instance());
-    }
 
     /**
      * Creates a new named {@link io.atomix.client.map.DistributedMap} builder.
