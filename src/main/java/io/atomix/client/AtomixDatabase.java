@@ -16,7 +16,7 @@
 package io.atomix.client;
 
 import io.atomix.api.primitive.Name;
-import io.atomix.client.channel.ChannelProvider;
+import io.atomix.client.utils.concurrent.ThreadContextFactory;
 
 /**
  * Client for a single database.
@@ -24,12 +24,12 @@ import io.atomix.client.channel.ChannelProvider;
 public class AtomixDatabase implements PrimitiveClient {
     private final String name;
     private final String namespace;
-    private final ChannelProvider channelProvider;
+    private final PrimitiveManagementService managementService;
 
-    public AtomixDatabase(String name, String namespace, ChannelProvider channelProvider) {
+    public AtomixDatabase(String name, String namespace, PrimitiveManagementService managementService) {
         this.name = name;
         this.namespace = namespace;
-        this.channelProvider = channelProvider;
+        this.managementService = managementService;
     }
 
     /**
@@ -48,6 +48,11 @@ public class AtomixDatabase implements PrimitiveClient {
      */
     public String getNamespace() {
         return namespace;
+    }
+
+    @Override
+    public ThreadContextFactory getThreadFactory() {
+        return managementService.getThreadFactory();
     }
 
     private Name getPrimitiveName(String name) {

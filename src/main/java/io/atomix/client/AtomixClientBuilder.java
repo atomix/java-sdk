@@ -110,6 +110,6 @@ public class AtomixClientBuilder implements Builder<AtomixClient> {
 
     @Override
     public AtomixClient build() {
-        return new AtomixClient(namespace, channelProvider);
+        return new AtomixClient(new AsyncAtomixClient(namespace, channelProvider));
     }
 }
