@@ -41,14 +41,11 @@ public class DefaultDistributedSetBuilder<E> extends DistributedSetBuilder<E> {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<DistributedSet<E>> buildAsync() {
-        return managementService.getPartitionService().getPartitionGroup(group)
-            .thenCompose(group -> {
-                Map<Integer, AsyncDistributedSet<String>> partitions = group.getPartitions().stream()
-                    .map(partition -> Maps.immutableEntry(partition.id(), new DefaultAsyncDistributedSet(
-                        getName(), partition, managementService.getThreadFactory().createContext(), sessionTimeout)))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                return new PartitionedAsyncDistributedSet(name, partitions, partitioner).connect();
-            })
+        Map<Integer, AsyncDistributedSet<String>> partitions = managementService.getPartitionService().getPartitions().stream()
+            .map(partition -> Maps.immutableEntry(partition.id(), new DefaultAsyncDistributedSet(
+                getName(), partition, managementService.getThreadFactory().createContext(), sessionTimeout)))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return new PartitionedAsyncDistributedSet(name, partitions, partitioner).connect()
             .thenApply(rawSet -> {
                 Serializer serializer = serializer();
                 return new TranscodingAsyncDistributedSet<E, String>(

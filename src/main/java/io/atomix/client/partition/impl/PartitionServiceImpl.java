@@ -15,60 +15,43 @@
  */
 package io.atomix.client.partition.impl;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-
-import io.atomix.api.controller.ControllerServiceGrpc;
-import io.atomix.api.controller.GetPartitionGroupsRequest;
-import io.atomix.api.controller.GetPartitionGroupsResponse;
-import io.atomix.api.controller.PartitionGroupId;
-import io.atomix.client.channel.ChannelFactory;
-import io.atomix.client.partition.PartitionGroup;
+import io.atomix.client.partition.Partition;
 import io.atomix.client.partition.PartitionService;
-import io.grpc.stub.StreamObserver;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Partition service implementation.
  */
 public class PartitionServiceImpl implements PartitionService {
-    private final ControllerServiceGrpc.ControllerServiceStub service;
+    private final Map<Integer, Partition> partitions = new ConcurrentHashMap<>();
+    private final List<Integer> partitionIds = new CopyOnWriteArrayList<>();
 
-    public PartitionServiceImpl(ChannelFactory channelFactory) {
-        this.service = ControllerServiceGrpc.newStub(channelFactory.getChannel());
+    public PartitionServiceImpl(io.atomix.api.controller.Database database) {
+        database.getPartitionsList().forEach(partition -> {
+            partitions.put(partition.getPartitionId(), new PartitionImpl(partition));
+            partitionIds.add(partition.getPartitionId());
+        });
+        Collections.sort(partitionIds);
     }
 
     @Override
-    public CompletableFuture<PartitionGroup> getPartitionGroup(PartitionGroupId id) {
-        return this.<GetPartitionGroupsResponse>execute(observer ->
-            service.getPartitionGroups(GetPartitionGroupsRequest.newBuilder()
-                .setId(id)
-                .build(), observer))
-            .thenApply(response -> {
-                if (response.getGroupsList().isEmpty()) {
-                    return null;
-                }
-                return new PartitionGroupImpl(response.getGroups(0));
-            });
+    public Partition getPartition(int partitionId) {
+        return partitions.get(partitionId);
     }
 
-    private <T> CompletableFuture<T> execute(Consumer<StreamObserver<T>> callback) {
-        CompletableFuture<T> future = new CompletableFuture<>();
-        callback.accept(new StreamObserver<T>() {
-            @Override
-            public void onNext(T value) {
-                future.complete(value);
-            }
+    @Override
+    public List<Integer> getPartitionIds() {
+        return partitionIds;
+    }
 
-            @Override
-            public void onError(Throwable t) {
-                future.completeExceptionally(t);
-            }
-
-            @Override
-            public void onCompleted() {
-
-            }
-        });
-        return future;
+    @Override
+    public Collection<Partition> getPartitions() {
+        return partitions.values();
     }
 }

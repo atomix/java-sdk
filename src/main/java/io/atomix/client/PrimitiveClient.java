@@ -70,7 +70,7 @@ import io.atomix.client.value.DistributedValueType;
  *   }
  * </pre>
  */
-public interface AtomixClientService extends PrimitiveFactory {
+public interface PrimitiveClient extends PrimitiveFactory {
 
     /**
      * Returns the Atomix primitive thread factory.

@@ -15,10 +15,6 @@
  */
 package io.atomix.client.map.impl;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
 import io.atomix.api.primitive.Name;
@@ -27,6 +23,10 @@ import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AtomicMap;
 import io.atomix.client.map.AtomicMapBuilder;
 import io.atomix.client.utils.serializer.Serializer;
+
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Default {@link AsyncAtomicMap} builder.
@@ -42,13 +42,10 @@ public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicMap<K, V>> buildAsync() {
-        return managementService.getPartitionService().getPartitionGroup(group)
-            .thenCompose(group -> {
-                Map<Integer, AsyncAtomicMap<String, byte[]>> partitions = group.getPartitions().stream()
-                    .map(partition -> Maps.immutableEntry(partition.id(), new DefaultAsyncAtomicMap(getName(), partition, managementService.getThreadFactory().createContext(), sessionTimeout)))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                return new PartitionedAsyncAtomicMap(name, partitions, partitioner).connect();
-            })
+        Map<Integer, AsyncAtomicMap<String, byte[]>> partitions = managementService.getPartitionService().getPartitions().stream()
+            .map(partition -> Maps.immutableEntry(partition.id(), new DefaultAsyncAtomicMap(getName(), partition, managementService.getThreadFactory().createContext(), sessionTimeout)))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return new PartitionedAsyncAtomicMap(name, partitions, partitioner).connect()
             .thenApply(rawMap -> {
                 Serializer serializer = serializer();
                 return new TranscodingAsyncAtomicMap<K, V, String, byte[]>(

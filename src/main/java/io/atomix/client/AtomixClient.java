@@ -15,21 +15,26 @@
  */
 package io.atomix.client;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.controller.*;
+import io.atomix.client.channel.ChannelConfig;
 import io.atomix.client.channel.ChannelProvider;
+import io.atomix.client.channel.ServiceChannelProvider;
 import io.atomix.client.impl.DefaultPrimitiveManagementService;
 import io.atomix.client.impl.PrimitiveCacheImpl;
 import io.atomix.client.partition.impl.PartitionServiceImpl;
 import io.atomix.client.utils.concurrent.BlockingAwareThreadPoolContextFactory;
 import io.atomix.client.utils.concurrent.ThreadContextFactory;
+import io.grpc.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Primary interface for managing Atomix clusters and operating on distributed primitives.
@@ -80,7 +85,7 @@ import static com.google.common.base.Preconditions.checkState;
  *   }
  * </pre>
  */
-public class AtomixClient implements AtomixClientService {
+public class AtomixClient {
 
     /**
      * Returns a new Atomix client builder.
@@ -105,31 +110,53 @@ public class AtomixClient implements AtomixClientService {
         this.channelProvider = channelProvider;
     }
 
-    @Override
-    public ThreadContextFactory getThreadFactory() {
-        return threadContextFactory;
-    }
+    /**
+     * Returns a list of databases in the cluster.
+     *
+     * @return a list of databases supported by the controller
+     */
+    public Collection<AtomixDatabase> getDatabases() {
+        Channel channel = channelProvider.getFactory().getChannel();
+        ControllerServiceGrpc.ControllerServiceBlockingStub controller = ControllerServiceGrpc.newBlockingStub(channel);
+        GetDatabasesResponse response = controller.getDatabases(GetDatabasesRequest.newBuilder()
+            .setId(DatabaseId.newBuilder()
+                .setNamespace(namespace)
+                .build())
+            .build());
 
-    private Name getPrimitiveName(String name) {
-        return Name.newBuilder()
-            .setName(name)
-            .setNamespace(namespace)
-            .build();
-    }
-
-    @Override
-    public <B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> B primitiveBuilder(
-        String name,
-        PrimitiveType<B, P> primitiveType) {
-        checkRunning();
-        return primitiveType.newBuilder(getPrimitiveName(name), managementService);
+        List<AtomixDatabase> databases = new ArrayList<>();
+        for (Database database : response.getDatabasesList()) {
+            databases.add(new AtomixDatabase(
+                database.getId().getName(),
+                database.getId().getNamespace(),
+                new ServiceChannelProvider(database.getId().getName(), new ChannelConfig())));
+        }
+        return databases;
     }
 
     /**
-     * Checks that the instance is running.
+     * Returns a database by name.
+     *
+     * @param name the database name
+     * @return the database
      */
-    private void checkRunning() {
-        checkState(isRunning(), "Atomix instance is not running");
+    public AtomixDatabase getDatabase(String name) {
+        Channel channel = channelProvider.getFactory().getChannel();
+        ControllerServiceGrpc.ControllerServiceBlockingStub controller = ControllerServiceGrpc.newBlockingStub(channel);
+        GetDatabasesResponse response = controller.getDatabases(GetDatabasesRequest.newBuilder()
+            .setId(DatabaseId.newBuilder()
+                .setNamespace(namespace)
+                .setName(name)
+                .build())
+            .build());
+        if (response.getDatabasesCount() == 0) {
+            return null;
+        }
+        Database database = response.getDatabases(0);
+        return new AtomixDatabase(
+            database.getId().getName(),
+            database.getId().getNamespace(),
+            new ServiceChannelProvider(database.getId().getName(), new ChannelConfig()));
     }
 
     /**

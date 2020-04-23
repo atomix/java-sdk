@@ -15,7 +15,6 @@
  */
 package io.atomix.client;
 
-import io.atomix.api.controller.PartitionGroupId;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.partition.Partitioner;
 import io.atomix.client.utils.serializer.Serializer;
@@ -33,7 +32,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> {
     protected final Name name;
-    protected PartitionGroupId group;
     protected Partitioner<String> partitioner = Partitioner.MURMUR3;
     protected boolean readOnly;
     protected Serializer serializer;
@@ -41,9 +39,6 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
 
     protected PrimitiveBuilder(Name name, PrimitiveManagementService managementService) {
         this.name = checkNotNull(name, "name cannot be null");
-        this.group = PartitionGroupId.newBuilder()
-            .setNamespace(name.getNamespace())
-            .build();
         this.managementService = checkNotNull(managementService, "managementService cannot be null");
     }
 
@@ -54,20 +49,6 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      */
     protected Name getName() {
         return name;
-    }
-
-    /**
-     * Sets the primitive partition group.
-     *
-     * @param name the primitive partition group
-     * @return the primitive builder
-     */
-    @SuppressWarnings("unchecked")
-    public B withGroup(String name) {
-        this.group = PartitionGroupId.newBuilder(this.group)
-            .setName(name)
-            .build();
-        return (B) this;
     }
 
     /**

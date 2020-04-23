@@ -15,14 +15,14 @@
  */
 package io.atomix.client.idgenerator.impl;
 
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.counter.impl.DefaultAsyncAtomicCounter;
 import io.atomix.client.idgenerator.AsyncAtomicIdGenerator;
 import io.atomix.client.idgenerator.AtomicIdGenerator;
 import io.atomix.client.idgenerator.AtomicIdGeneratorBuilder;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Default implementation of AtomicIdGeneratorBuilder.
@@ -34,13 +34,12 @@ public class DelegatingAtomicIdGeneratorBuilder extends AtomicIdGeneratorBuilder
 
     @Override
     public CompletableFuture<AtomicIdGenerator> buildAsync() {
-        return managementService.getPartitionService().getPartitionGroup(group)
-            .thenCompose(group -> new DefaultAsyncAtomicCounter(
-                getName(),
-                group.getPartition(partitioner.partition(getName().getName(), group.getPartitionIds())),
-                managementService.getThreadFactory().createContext())
-                .connect()
-                .thenApply(DelegatingAtomicIdGenerator::new)
-                .thenApply(AsyncAtomicIdGenerator::sync));
+        return new DefaultAsyncAtomicCounter(
+            getName(),
+            managementService.getPartitionService().getPartition(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
+            managementService.getThreadFactory().createContext())
+            .connect()
+            .thenApply(DelegatingAtomicIdGenerator::new)
+            .thenApply(AsyncAtomicIdGenerator::sync);
     }
 }

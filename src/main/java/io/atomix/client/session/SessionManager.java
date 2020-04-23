@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package io.atomix.client.session;
 
 /**
- * Distributed log primitive interfaces.
+ * Manages sessions for a single database.
  */
-package io.atomix.client.log;
+public class SessionManager {
+}

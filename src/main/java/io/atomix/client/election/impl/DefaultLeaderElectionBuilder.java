@@ -15,8 +15,6 @@
  */
 package io.atomix.client.election.impl;
 
-import java.util.concurrent.CompletableFuture;
-
 import com.google.common.io.BaseEncoding;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
@@ -24,6 +22,8 @@ import io.atomix.client.election.AsyncLeaderElection;
 import io.atomix.client.election.LeaderElection;
 import io.atomix.client.election.LeaderElectionBuilder;
 import io.atomix.client.utils.serializer.Serializer;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Default implementation of {@code LeaderElectorBuilder}.
@@ -36,20 +36,19 @@ public class DefaultLeaderElectionBuilder<T> extends LeaderElectionBuilder<T> {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<LeaderElection<T>> buildAsync() {
-        return managementService.getPartitionService().getPartitionGroup(group)
-            .thenCompose(group -> new DefaultAsyncLeaderElection(
-                getName(),
-                group.getPartition(partitioner.partition(getName().getName(), group.getPartitionIds())),
-                managementService.getThreadFactory().createContext(),
-                sessionTimeout)
-                .connect()
-                .thenApply(election -> {
-                    Serializer serializer = serializer();
-                    return new TranscodingAsyncLeaderElection<T, String>(
-                        election,
-                        id -> BaseEncoding.base16().encode(serializer.encode(id)),
-                        string -> serializer.decode(BaseEncoding.base16().decode(string)));
-                })
-                .thenApply(AsyncLeaderElection::sync));
+        return new DefaultAsyncLeaderElection(
+            getName(),
+            managementService.getPartitionService().getPartition(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
+            managementService.getThreadFactory().createContext(),
+            sessionTimeout)
+            .connect()
+            .thenApply(election -> {
+                Serializer serializer = serializer();
+                return new TranscodingAsyncLeaderElection<T, String>(
+                    election,
+                    id -> BaseEncoding.base16().encode(serializer.encode(id)),
+                    string -> serializer.decode(BaseEncoding.base16().decode(string)));
+            })
+            .thenApply(AsyncLeaderElection::sync);
     }
 }

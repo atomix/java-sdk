@@ -15,8 +15,6 @@
  */
 package io.atomix.client.value.impl;
 
-import java.util.concurrent.CompletableFuture;
-
 import com.google.common.io.BaseEncoding;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
@@ -24,6 +22,8 @@ import io.atomix.client.utils.serializer.Serializer;
 import io.atomix.client.value.AsyncAtomicValue;
 import io.atomix.client.value.AtomicValue;
 import io.atomix.client.value.AtomicValueBuilder;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Default implementation of AtomicValueBuilder.
@@ -38,20 +38,19 @@ public class DefaultAtomicValueBuilder<V> extends AtomicValueBuilder<V> {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicValue<V>> buildAsync() {
-        return managementService.getPartitionService().getPartitionGroup(group)
-            .thenCompose(group -> new DefaultAsyncAtomicValue(
-                getName(),
-                group.getPartition(partitioner.partition(getName().getName(), group.getPartitionIds())),
-                managementService.getThreadFactory().createContext(),
-                sessionTimeout)
-                .connect()
-                .thenApply(rawValue -> {
-                    Serializer serializer = serializer();
-                    return new TranscodingAsyncAtomicValue<V, String>(
-                        rawValue,
-                        value -> BaseEncoding.base16().encode(serializer.encode(value)),
-                        string -> serializer.decode(BaseEncoding.base16().decode(string)));
-                })
-                .thenApply(AsyncAtomicValue::sync));
+        return new DefaultAsyncAtomicValue(
+            getName(),
+            managementService.getPartitionService().getPartition(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
+            managementService.getThreadFactory().createContext(),
+            sessionTimeout)
+            .connect()
+            .thenApply(rawValue -> {
+                Serializer serializer = serializer();
+                return new TranscodingAsyncAtomicValue<V, String>(
+                    rawValue,
+                    value -> BaseEncoding.base16().encode(serializer.encode(value)),
+                    string -> serializer.decode(BaseEncoding.base16().decode(string)));
+            })
+            .thenApply(AsyncAtomicValue::sync);
     }
 }
