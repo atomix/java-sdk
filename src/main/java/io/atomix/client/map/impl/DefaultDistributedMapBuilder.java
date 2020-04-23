@@ -40,8 +40,8 @@ public class DefaultDistributedMapBuilder<K, V> extends DistributedMapBuilder<K,
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<DistributedMap<K, V>> buildAsync() {
-        Map<Integer, AsyncAtomicMap<String, byte[]>> partitions = managementService.getPartitionService().getPartitions().stream()
-            .map(partition -> Maps.immutableEntry(partition.id(), new DefaultAsyncAtomicMap(getName(), partition, managementService.getThreadFactory().createContext(), sessionTimeout)))
+        Map<Integer, AsyncAtomicMap<String, byte[]>> partitions = managementService.getSessionService().getSessions().stream()
+            .map(session -> Maps.immutableEntry(session.getPartition().id(), new DefaultAsyncAtomicMap(getName(), session, managementService.getThreadFactory().createContext())))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return new PartitionedAsyncAtomicMap(name, partitions, partitioner).connect()
             .thenApply(rawMap -> {

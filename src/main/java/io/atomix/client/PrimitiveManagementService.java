@@ -16,12 +16,20 @@
 package io.atomix.client;
 
 import io.atomix.client.partition.PartitionService;
+import io.atomix.client.session.SessionService;
 import io.atomix.client.utils.concurrent.ThreadContextFactory;
 
 /**
  * Primitive management service.
  */
 public interface PrimitiveManagementService {
+
+    /**
+     * Returns the session service.
+     *
+     * @return the session service
+     */
+    SessionService getSessionService();
 
     /**
      * Returns the partition service.

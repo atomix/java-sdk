@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.atomix.client.impl;
+package io.atomix.client.session;
+
+import io.atomix.client.PrimitiveState;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
-
-import io.atomix.api.primitive.Name;
-import io.atomix.client.PrimitiveState;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Primitive session state.
  */
-public final class PrimitiveSessionState {
-    private final Name name;
+public final class SessionState {
     private final long sessionId;
     private final long timeout;
     private volatile PrimitiveState state = PrimitiveState.CONNECTED;
@@ -39,21 +37,11 @@ public final class PrimitiveSessionState {
     private volatile long eventIndex;
     private final Set<Consumer<PrimitiveState>> changeListeners = new CopyOnWriteArraySet<>();
 
-    PrimitiveSessionState(Name name, long sessionId, long timeout) {
-        this.name = checkNotNull(name);
+    SessionState(long sessionId, long timeout) {
         this.sessionId = sessionId;
         this.timeout = timeout;
         this.responseIndex = sessionId;
         this.eventIndex = sessionId;
-    }
-
-    /**
-     * Returns the primitive name.
-     *
-     * @return the primitive name
-     */
-    public Name getName() {
-        return name;
     }
 
     /**

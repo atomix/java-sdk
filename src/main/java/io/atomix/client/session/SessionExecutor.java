@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.atomix.client.impl;
+package io.atomix.client.session;
 
 import io.atomix.api.headers.RequestHeader;
 import io.atomix.api.headers.ResponseHeader;
+import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.PrimitiveState;
 import io.atomix.client.utils.concurrent.ThreadContext;
@@ -41,7 +42,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Session operation submitter.
  */
-final class PrimitiveSessionExecutor<S> {
+final class SessionExecutor {
     private static final int[] FIBONACCI = new int[]{1, 1, 2, 3, 5};
     private static final Predicate<Throwable> EXCEPTION_PREDICATE = e ->
         e instanceof ConnectException
@@ -51,60 +52,58 @@ final class PrimitiveSessionExecutor<S> {
         e instanceof PrimitiveException.UnknownClient
             || e instanceof PrimitiveException.UnknownSession;
     private static final Predicate<Throwable> CLOSED_PREDICATE = e ->
-        e instanceof PrimitiveException.ConcurrentModification
-            || e instanceof PrimitiveException.ConcurrentModification;
+        e instanceof PrimitiveException.UnknownClient
+            || e instanceof PrimitiveException.UnknownSession;
 
-    private final S service;
-    private final PrimitiveSessionState state;
-    private final ManagedPrimitiveContext context;
-    private final PrimitiveSessionSequencer sequencer;
+    private final SessionState state;
+    private final SessionSequencer sequencer;
     private final ThreadContext threadContext;
     private final Map<Long, OperationAttempt> attempts = new LinkedHashMap<>();
 
-    PrimitiveSessionExecutor(
-        S service,
-        PrimitiveSessionState state,
-        ManagedPrimitiveContext context,
-        PrimitiveSessionSequencer sequencer,
+    SessionExecutor(
+        SessionState state,
+        SessionSequencer sequencer,
         ThreadContext threadContext) {
-        this.service = checkNotNull(service, "service cannot be null");
         this.state = checkNotNull(state, "state cannot be null");
-        this.context = checkNotNull(context, "context cannot be null");
         this.sequencer = checkNotNull(sequencer, "sequencer cannot be null");
         this.threadContext = checkNotNull(threadContext, "threadContext cannot be null");
     }
 
     protected <T> CompletableFuture<T> executeCommand(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> responseHeaderFunction) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        threadContext.execute(() -> invokeCommand(function, responseHeaderFunction, future));
+        threadContext.execute(() -> invokeCommand(name, function, responseHeaderFunction, future));
         return future;
     }
 
     protected <T> CompletableFuture<Long> executeCommand(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> responseHeaderFunction,
         StreamObserver<T> observer) {
         CompletableFuture<Long> future = new CompletableFuture<>();
-        threadContext.execute(() -> invokeCommand(function, responseHeaderFunction, observer, future));
+        threadContext.execute(() -> invokeCommand(name, function, responseHeaderFunction, observer, future));
         return future;
     }
 
     protected <T> CompletableFuture<T> executeQuery(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> responseHeaderFunction) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        threadContext.execute(() -> invokeQuery(function, responseHeaderFunction, future));
+        threadContext.execute(() -> invokeQuery(name, function, responseHeaderFunction, future));
         return future;
     }
 
     protected <T> CompletableFuture<Void> executeQuery(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> responseHeaderFunction,
         StreamObserver<T> observer) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        threadContext.execute(() -> invokeQuery(function, responseHeaderFunction, observer, future));
+        threadContext.execute(() -> invokeQuery(name, function, responseHeaderFunction, observer, future));
         return future;
     }
 
@@ -112,11 +111,12 @@ final class PrimitiveSessionExecutor<S> {
      * Submits a command request to the cluster.
      */
     private <T> void invokeCommand(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> requestFunction,
         Function<T, ResponseHeader> responseHeaderFunction,
         CompletableFuture<T> future) {
         RequestHeader header = RequestHeader.newBuilder()
-            .setName(state.getName())
+            .setName(name)
             .setSessionId(state.getSessionId())
             .setIndex(state.nextCommandRequest())
             .build();
@@ -127,12 +127,13 @@ final class PrimitiveSessionExecutor<S> {
      * Submits a command request to the cluster.
      */
     private <T> void invokeCommand(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> requestFunction,
         Function<T, ResponseHeader> responseHeaderFunction,
         StreamObserver<T> observer,
         CompletableFuture<Long> future) {
         RequestHeader header = RequestHeader.newBuilder()
-            .setName(state.getName())
+            .setName(name)
             .setSessionId(state.getSessionId())
             .setIndex(state.nextCommandRequest())
             .build();
@@ -143,11 +144,12 @@ final class PrimitiveSessionExecutor<S> {
      * Submits a query request to the cluster.
      */
     private <T> void invokeQuery(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> requestFunction,
         Function<T, ResponseHeader> responseHeaderFunction,
         CompletableFuture<T> future) {
         RequestHeader header = RequestHeader.newBuilder()
-            .setName(state.getName())
+            .setName(name)
             .setSessionId(state.getSessionId())
             .setIndex(state.getCommandRequest())
             .build();
@@ -158,16 +160,17 @@ final class PrimitiveSessionExecutor<S> {
      * Submits a query request to the cluster.
      */
     private <T> void invokeQuery(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> requestFunction,
         Function<T, ResponseHeader> responseHeaderFunction,
         StreamObserver<T> observer,
         CompletableFuture<Void> future) {
         RequestHeader header = RequestHeader.newBuilder()
-            .setName(state.getName())
+            .setName(name)
             .setSessionId(state.getSessionId())
             .setIndex(state.getCommandRequest())
             .build();
-        //invoke(new QueryStreamAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, observer, future));
+        invoke(new QueryStreamAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, observer, future));
     }
 
     /**
@@ -602,6 +605,8 @@ final class PrimitiveSessionExecutor<S> {
                 responseObserver.onError(error);
             }
         }*/
+        }
+
     }
 
     /**
@@ -689,5 +694,4 @@ final class PrimitiveSessionExecutor<S> {
             }
         }
     }
-}
 }

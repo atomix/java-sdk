@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.atomix.client.impl;
+package io.atomix.client.session;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.atomix.api.headers.ResponseHeader;
@@ -54,9 +54,9 @@ import java.util.*;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-final class PrimitiveSessionSequencer {
+final class SessionSequencer {
     private final Logger log;
-    private final PrimitiveSessionState state;
+    private final SessionState state;
     @VisibleForTesting
     long requestSequence;
     @VisibleForTesting
@@ -64,12 +64,10 @@ final class PrimitiveSessionSequencer {
     private final Map<Long, StreamSequencer> streams = new HashMap<>();
     private final Map<Long, ResponseCallback> responseCallbacks = new HashMap<>();
 
-    PrimitiveSessionSequencer(PrimitiveSessionState state, ManagedPrimitiveContext context) {
+    SessionSequencer(SessionState state) {
         this.state = state;
         this.log = ContextualLoggerFactory.getLogger(getClass(), LoggerContext.builder(DistributedPrimitive.class)
             .addValue(state.getSessionId())
-            .add("type", context.type().getClass().getSimpleName())
-            .add("name", context.name())
             .build());
     }
 

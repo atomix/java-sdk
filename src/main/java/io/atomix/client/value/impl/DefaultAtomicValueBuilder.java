@@ -40,9 +40,8 @@ public class DefaultAtomicValueBuilder<V> extends AtomicValueBuilder<V> {
     public CompletableFuture<AtomicValue<V>> buildAsync() {
         return new DefaultAsyncAtomicValue(
             getName(),
-            managementService.getPartitionService().getPartition(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
-            managementService.getThreadFactory().createContext(),
-            sessionTimeout)
+            managementService.getSessionService().getSession(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
+            managementService.getThreadFactory().createContext())
             .connect()
             .thenApply(rawValue -> {
                 Serializer serializer = serializer();

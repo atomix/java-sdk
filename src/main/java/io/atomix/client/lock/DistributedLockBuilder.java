@@ -16,14 +16,14 @@
 package io.atomix.client.lock;
 
 import io.atomix.api.primitive.Name;
+import io.atomix.client.PrimitiveBuilder;
 import io.atomix.client.PrimitiveManagementService;
-import io.atomix.client.impl.ManagedPrimitiveBuilder;
 
 /**
  * Builder for DistributedLock.
  */
 public abstract class DistributedLockBuilder
-    extends ManagedPrimitiveBuilder<DistributedLockBuilder, DistributedLock> {
+    extends PrimitiveBuilder<DistributedLockBuilder, DistributedLock> {
     protected DistributedLockBuilder(Name name, PrimitiveManagementService managementService) {
         super(name, managementService);
     }

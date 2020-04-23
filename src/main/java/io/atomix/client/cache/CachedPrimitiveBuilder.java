@@ -16,9 +16,9 @@
 package io.atomix.client.cache;
 
 import io.atomix.api.primitive.Name;
+import io.atomix.client.PrimitiveBuilder;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.SyncPrimitive;
-import io.atomix.client.impl.ManagedPrimitiveBuilder;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -26,7 +26,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  * Cached distributed primitive builder.
  */
 public abstract class CachedPrimitiveBuilder<B extends CachedPrimitiveBuilder<B, P>, P extends SyncPrimitive>
-    extends ManagedPrimitiveBuilder<B, P> {
+    extends PrimitiveBuilder<B, P> {
     private static final int DEFAULT_CACHE_SIZE = 1000;
 
     protected boolean cacheEnabled = false;

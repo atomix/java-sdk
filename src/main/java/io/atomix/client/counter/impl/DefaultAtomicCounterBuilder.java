@@ -15,13 +15,13 @@
  */
 package io.atomix.client.counter.impl;
 
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.counter.AtomicCounterBuilder;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Atomic counter proxy builder.
@@ -34,12 +34,11 @@ public class DefaultAtomicCounterBuilder extends AtomicCounterBuilder {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicCounter> buildAsync() {
-        return managementService.getPartitionService().getPartitionGroup(group)
-            .thenCompose(group -> new DefaultAsyncAtomicCounter(
-                getName(),
-                group.getPartition(partitioner.partition(getName().getName(), group.getPartitionIds())),
-                managementService.getThreadFactory().createContext())
-                .connect()
-                .thenApply(AsyncAtomicCounter::sync));
+        return new DefaultAsyncAtomicCounter(
+            getName(),
+            managementService.getSessionService().getSession(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
+            managementService.getThreadFactory().createContext())
+            .connect()
+            .thenApply(AsyncAtomicCounter::sync);
     }
 }

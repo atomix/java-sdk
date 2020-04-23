@@ -1,27 +1,12 @@
-/*
- * Copyright 2019-present Open Networking Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package io.atomix.client.impl;
+package io.atomix.client.session;
 
 import io.atomix.api.headers.RequestHeader;
 import io.atomix.api.headers.ResponseHeader;
 import io.atomix.api.headers.StreamHeader;
 import io.atomix.api.primitive.Name;
-import io.atomix.client.AsyncPrimitive;
-import io.atomix.client.ManagedAsyncPrimitive;
+import io.atomix.api.session.*;
 import io.atomix.client.PrimitiveState;
+import io.atomix.client.partition.Partition;
 import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.concurrent.Scheduled;
 import io.atomix.client.utils.concurrent.ThreadContext;
@@ -36,32 +21,52 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Primitive session.
+ * Manages a single session.
  */
-public abstract class AbstractManagedPrimitive<S, P extends AsyncPrimitive> extends AbstractAsyncPrimitive<S, P> implements ManagedAsyncPrimitive<P> {
+public class Session {
     private static final double TIMEOUT_FACTOR = .5;
     private static final long MIN_TIMEOUT_DELTA = 2500;
 
+    private final Partition partition;
+    private final SessionServiceGrpc.SessionServiceStub service;
+
+    private final ThreadContext context;
     private final Duration timeout;
     private final AtomicBoolean open = new AtomicBoolean();
-    private PrimitiveSessionState state;
-    private PrimitiveSessionSequencer sequencer;
-    private PrimitiveSessionExecutor<S> executor;
+    private SessionState state;
+    private SessionSequencer sequencer;
+    private SessionExecutor executor;
     private Scheduled keepAliveTimer;
 
-    protected AbstractManagedPrimitive(
-        Name name,
-        S service,
-        ThreadContext context,
-        Duration timeout) {
-        super(name, service, context);
+    Session(Partition partition, ThreadContext context, Duration timeout) {
+        this.partition = partition;
+        this.context = context;
         this.timeout = timeout;
+        this.service = SessionServiceGrpc.newStub(partition.getChannelFactory().getChannel());
     }
 
-    private RequestHeader getSessionHeader() {
+    /**
+     * Returns the session identifier.
+     *
+     * @return the session identifier
+     */
+    public long id() {
+        return state.getSessionId();
+    }
+
+    /**
+     * Returns the session partition.
+     *
+     * @return the session partition
+     */
+    public Partition getPartition() {
+        return partition;
+    }
+
+    private RequestHeader getSessionHeader(Name name) {
         if (state != null) {
             return RequestHeader.newBuilder()
-                .setName(getName())
+                .setName(name)
                 .setSessionId(state.getSessionId())
                 //.setSequenceNumber(state.getCommandResponse())
                 .addAllStreams(sequencer.streams().stream()
@@ -74,14 +79,14 @@ public abstract class AbstractManagedPrimitive<S, P extends AsyncPrimitive> exte
                 .build();
         } else {
             return RequestHeader.newBuilder()
-                .setName(getName())
+                .setName(name)
                 .build();
         }
     }
 
-    protected <T> CompletableFuture<T> session(BiConsumer<RequestHeader, StreamObserver<T>> function) {
+    public <T> CompletableFuture<T> session(Name name, BiConsumer<RequestHeader, StreamObserver<T>> function) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        function.accept(getSessionHeader(), new StreamObserver<T>() {
+        function.accept(getSessionHeader(name), new StreamObserver<T>() {
             @Override
             public void onNext(T response) {
                 future.complete(response);
@@ -99,71 +104,76 @@ public abstract class AbstractManagedPrimitive<S, P extends AsyncPrimitive> exte
         return future;
     }
 
-    protected <T> CompletableFuture<T> command(
+    public <T> CompletableFuture<T> command(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction) {
-        return executor.executeCommand(function, headerFunction);
+        return executor.executeCommand(name, function, headerFunction);
     }
 
-    protected <T> CompletableFuture<Long> command(
+    public <T> CompletableFuture<Long> command(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction,
         StreamObserver<T> handler) {
-        return executor.executeCommand(function, headerFunction, handler);
+        return executor.executeCommand(name, function, headerFunction, handler);
     }
 
-    protected <T> CompletableFuture<T> query(
+    public <T> CompletableFuture<T> query(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction) {
-        return executor.executeQuery(function, headerFunction);
+        return executor.executeQuery(name, function, headerFunction);
     }
 
-    protected <T> CompletableFuture<Void> query(
+    public <T> CompletableFuture<Void> query(
+        Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction,
         StreamObserver<T> handler) {
-        return executor.executeQuery(function, headerFunction, handler);
+        return executor.executeQuery(name, function, headerFunction, handler);
     }
 
-    protected void state(Consumer<PrimitiveState> consumer) {
+    public void state(Consumer<PrimitiveState> consumer) {
         state.addStateChangeListener(consumer);
     }
 
-    protected PrimitiveState getState() {
-        return state.getState();
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public CompletableFuture<P> connect() {
+    /**
+     * Connects the session.
+     *
+     * @return a future to be completed once the session has been connected
+     */
+    CompletableFuture<Void> connect() {
         if (!open.compareAndSet(false, true)) {
             return Futures.exceptionalFuture(new IllegalStateException());
         }
-        return create().thenApply(sessionId -> {
-            ManagedPrimitiveContext context = new ManagedPrimitiveContext(
-                sessionId,
-                name(),
-                type(),
-                timeout);
-            state = new PrimitiveSessionState(getName(), sessionId, timeout.toMillis());
-            sequencer = new PrimitiveSessionSequencer(state, context);
-            executor = new PrimitiveSessionExecutor<>(getService(), state, context, sequencer, context());
-            keepAlive(System.currentTimeMillis());
-            return (P) this;
-        });
-    }
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        service.openSession(OpenSessionRequest.newBuilder().build(), new StreamObserver<>() {
+            @Override
+            public void onNext(OpenSessionResponse response) {
+                state = new SessionState(response.getHeader().getSessionId(), timeout.toMillis());
+                sequencer = new SessionSequencer(state);
+                executor = new SessionExecutor(state, sequencer, context);
+                keepAlive(System.currentTimeMillis());
+            }
 
-    /**
-     * Creates the primitive.
-     *
-     * @return a future to be completed with the session ID
-     */
-    protected abstract CompletableFuture<Long> create();
+            @Override
+            public void onError(Throwable t) {
+                future.completeExceptionally(t);
+            }
+
+            @Override
+            public void onCompleted() {
+                future.complete(null);
+            }
+        });
+        return future;
+    }
 
     /**
      * Keeps the primitive session alive.
      */
-    protected void keepAlive(long lastKeepAliveTime) {
+    private void keepAlive(long lastKeepAliveTime) {
         long keepAliveTime = System.currentTimeMillis();
         keepAlive().whenComplete((succeeded, error) -> {
             if (open.get()) {
@@ -186,12 +196,25 @@ public abstract class AbstractManagedPrimitive<S, P extends AsyncPrimitive> exte
         });
     }
 
-    /**
-     * Sends a keep-alive request to the cluster.
-     *
-     * @return a future indicating whether the request was successful
-     */
-    protected abstract CompletableFuture<Boolean> keepAlive();
+    private CompletableFuture<Boolean> keepAlive() {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        service.keepAlive(KeepAliveRequest.newBuilder().build(), new StreamObserver<>() {
+            @Override
+            public void onNext(KeepAliveResponse response) {
+                future.complete(true);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                future.completeExceptionally(t);
+            }
+
+            @Override
+            public void onCompleted() {
+            }
+        });
+        return future;
+    }
 
     /**
      * Schedules a keep-alive request.
@@ -204,32 +227,36 @@ public abstract class AbstractManagedPrimitive<S, P extends AsyncPrimitive> exte
         Duration delay = Duration.ofMillis(
             Math.max(Math.max((long) (timeout.toMillis() * TIMEOUT_FACTOR) - delta,
                 timeout.toMillis() - MIN_TIMEOUT_DELTA - delta), 0));
-        keepAliveTimer = context().schedule(delay, () -> {
+        keepAliveTimer = context.schedule(delay, () -> {
             if (open.get()) {
                 keepAlive(lastKeepAliveTime);
             }
         });
     }
 
-    @Override
-    public CompletableFuture<Void> close() {
-        if (!open.compareAndSet(true, false)) {
-            return Futures.exceptionalFuture(new IllegalStateException());
-        }
-        keepAliveTimer.cancel();
-        return close(false);
-    }
-
     /**
-     * Sends a close request to the cluster.
+     * Closes the session.
      *
-     * @param delete whether to delete the service
-     * @return a future to be completed once the close is complete
+     * @return a future to be completed once the session has been closed
      */
-    protected abstract CompletableFuture<Void> close(boolean delete);
+    CompletableFuture<Void> close() {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        service.openSession(OpenSessionRequest.newBuilder().build(), new StreamObserver<>() {
+            @Override
+            public void onNext(OpenSessionResponse value) {
 
-    @Override
-    public CompletableFuture<Void> delete() {
-        return close(true);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                future.completeExceptionally(t);
+            }
+
+            @Override
+            public void onCompleted() {
+                future.complete(null);
+            }
+        });
+        return future;
     }
 }

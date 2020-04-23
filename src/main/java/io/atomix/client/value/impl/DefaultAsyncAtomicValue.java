@@ -15,26 +15,12 @@
  */
 package io.atomix.client.value.impl;
 
-import java.time.Duration;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import com.google.protobuf.ByteString;
 import io.atomix.api.primitive.Name;
-import io.atomix.api.value.CloseRequest;
-import io.atomix.api.value.CloseResponse;
-import io.atomix.api.value.EventRequest;
-import io.atomix.api.value.EventResponse;
-import io.atomix.api.value.GetRequest;
-import io.atomix.api.value.GetResponse;
-import io.atomix.api.value.SetRequest;
-import io.atomix.api.value.SetResponse;
-import io.atomix.api.value.ValueServiceGrpc;
+import io.atomix.api.value.*;
 import io.atomix.client.Versioned;
-import io.atomix.client.impl.AbstractManagedPrimitive;
-import io.atomix.client.partition.Partition;
+import io.atomix.client.impl.AbstractAsyncPrimitive;
+import io.atomix.client.session.Session;
 import io.atomix.client.utils.concurrent.ThreadContext;
 import io.atomix.client.value.AsyncAtomicValue;
 import io.atomix.client.value.AtomicValue;
@@ -42,17 +28,23 @@ import io.atomix.client.value.AtomicValueEvent;
 import io.atomix.client.value.AtomicValueEventListener;
 import io.grpc.stub.StreamObserver;
 
+import java.time.Duration;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 /**
  * Default asynchronous atomic value primitive.
  */
 public class DefaultAsyncAtomicValue
-    extends AbstractManagedPrimitive<ValueServiceGrpc.ValueServiceStub, AsyncAtomicValue<String>>
+    extends AbstractAsyncPrimitive<ValueServiceGrpc.ValueServiceStub, AsyncAtomicValue<String>>
     implements AsyncAtomicValue<String> {
     private volatile CompletableFuture<Long> listenFuture;
     private final Set<AtomicValueEventListener<String>> eventListeners = new CopyOnWriteArraySet<>();
 
-    public DefaultAsyncAtomicValue(Name name, Partition partition, ThreadContext context, Duration timeout) {
-        super(name, ValueServiceGrpc.newStub(partition.getChannelFactory().getChannel()), context, timeout);
+    public DefaultAsyncAtomicValue(Name name, Session session, ThreadContext context) {
+        super(name, ValueServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override
@@ -174,16 +166,10 @@ public class DefaultAsyncAtomicValue
 
 
     @Override
-    protected CompletableFuture<Long> create() {
-        return null;
-    }
-
-    @Override
-    protected CompletableFuture<Boolean> keepAlive() {
-        /*return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
+    protected CompletableFuture<Void> create() {
+        return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
             .build(), observer))
-            .thenApply(response -> true);*/
-        return null;
+            .thenApply(v -> null);
     }
 
     @Override

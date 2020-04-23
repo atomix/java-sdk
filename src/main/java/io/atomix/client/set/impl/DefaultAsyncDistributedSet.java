@@ -19,11 +19,11 @@ import io.atomix.api.primitive.Name;
 import io.atomix.api.set.*;
 import io.atomix.client.collection.CollectionEvent;
 import io.atomix.client.collection.CollectionEventListener;
-import io.atomix.client.impl.AbstractManagedPrimitive;
+import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.impl.TranscodingStreamObserver;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.iterator.impl.StreamObserverIterator;
-import io.atomix.client.partition.Partition;
+import io.atomix.client.session.Session;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.utils.concurrent.Futures;
@@ -42,13 +42,13 @@ import java.util.concurrent.Executor;
  * Default distributed set primitive.
  */
 public class DefaultAsyncDistributedSet
-    extends AbstractManagedPrimitive<SetServiceGrpc.SetServiceStub, AsyncDistributedSet<String>>
+    extends AbstractAsyncPrimitive<SetServiceGrpc.SetServiceStub, AsyncDistributedSet<String>>
     implements AsyncDistributedSet<String> {
     private volatile CompletableFuture<Long> listenFuture;
     private final Map<CollectionEventListener<String>, Executor> eventListeners = new ConcurrentHashMap<>();
 
-    public DefaultAsyncDistributedSet(Name name, Partition partition, ThreadContext context, Duration timeout) {
-        super(name, SetServiceGrpc.newStub(partition.getChannelFactory().getChannel()), context, timeout);
+    public DefaultAsyncDistributedSet(Name name, Session session, ThreadContext context) {
+        super(name, SetServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override
@@ -209,16 +209,10 @@ public class DefaultAsyncDistributedSet
 
 
     @Override
-    protected CompletableFuture<Long> create() {
-        return null;
-    }
-
-    @Override
-    protected CompletableFuture<Boolean> keepAlive() {
-        /*return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
+    protected CompletableFuture<Void> create() {
+        return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
             .build(), observer))
-            .thenApply(response -> true);*/
-        return null;
+            .thenApply(v -> null);
     }
 
     @Override

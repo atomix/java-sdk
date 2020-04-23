@@ -19,19 +19,22 @@ import io.atomix.api.controller.*;
 import io.atomix.client.channel.ChannelProvider;
 import io.atomix.client.impl.DefaultPrimitiveManagementService;
 import io.atomix.client.impl.PrimitiveCacheImpl;
+import io.atomix.client.partition.PartitionService;
 import io.atomix.client.partition.impl.PartitionServiceImpl;
+import io.atomix.client.session.SessionService;
 import io.atomix.client.utils.concurrent.BlockingAwareThreadPoolContextFactory;
+import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.concurrent.ThreadContextFactory;
 import io.grpc.Channel;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
@@ -50,6 +53,7 @@ public class AsyncAtomixClient {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncAtomixClient.class);
+    private static final Duration SESSION_TIMEOUT = Duration.ofSeconds(30);
 
     private final String namespace;
     private final ChannelProvider channelProvider;
@@ -81,17 +85,15 @@ public class AsyncAtomixClient {
                 if (response.getDatabasesCount() == 0) {
                     future.complete(null);
                 } else {
-                    List<AtomixDatabase> databases = new ArrayList<>();
-                    for (Database database : response.getDatabasesList()) {
-                        databases.add(new AtomixDatabase(
-                            database.getId().getName(),
-                            database.getId().getNamespace(),
-                            new DefaultPrimitiveManagementService(
-                                new PartitionServiceImpl(database),
-                                primitiveCache,
-                                threadContextFactory)));
-                    }
-                    future.complete(databases);
+                    Futures.allOf(response.getDatabasesList().stream()
+                        .map(AsyncAtomixClient.this::createDatabase)
+                        .collect(Collectors.toList())).whenComplete((databases, error) -> {
+                        if (error != null) {
+                            future.completeExceptionally(error);
+                        } else {
+                            future.complete(databases);
+                        }
+                    });
                 }
             }
 
@@ -129,14 +131,13 @@ public class AsyncAtomixClient {
                 if (response.getDatabasesCount() == 0) {
                     future.complete(null);
                 } else {
-                    Database database = response.getDatabases(0);
-                    future.complete(new AtomixDatabase(
-                        database.getId().getName(),
-                        database.getId().getNamespace(),
-                        new DefaultPrimitiveManagementService(
-                            new PartitionServiceImpl(database),
-                            primitiveCache,
-                            threadContextFactory)));
+                    createDatabase(response.getDatabases(0)).whenComplete((database, error) -> {
+                        if (error != null) {
+                            future.completeExceptionally(error);
+                        } else {
+                            future.complete(database);
+                        }
+                    });
                 }
             }
 
@@ -151,6 +152,19 @@ public class AsyncAtomixClient {
             }
         });
         return future;
+    }
+
+    private CompletableFuture<AtomixDatabase> createDatabase(Database database) {
+        PartitionService partitionService = new PartitionServiceImpl(database);
+        SessionService sessionService = new SessionService(partitionService, threadContextFactory, SESSION_TIMEOUT);
+        return sessionService.connect().thenApply(v -> new AtomixDatabase(
+            database.getId().getName(),
+            database.getId().getNamespace(),
+            new DefaultPrimitiveManagementService(
+                partitionService,
+                sessionService,
+                primitiveCache,
+                threadContextFactory)));
     }
 
     /**

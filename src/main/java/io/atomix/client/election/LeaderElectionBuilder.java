@@ -16,14 +16,14 @@
 package io.atomix.client.election;
 
 import io.atomix.api.primitive.Name;
+import io.atomix.client.PrimitiveBuilder;
 import io.atomix.client.PrimitiveManagementService;
-import io.atomix.client.impl.ManagedPrimitiveBuilder;
 
 /**
  * Builder for constructing new {@link AsyncLeaderElection} instances.
  */
 public abstract class LeaderElectionBuilder<T>
-    extends ManagedPrimitiveBuilder<LeaderElectionBuilder<T>, LeaderElection<T>> {
+    extends PrimitiveBuilder<LeaderElectionBuilder<T>, LeaderElection<T>> {
     protected LeaderElectionBuilder(Name name, PrimitiveManagementService managementService) {
         super(name, managementService);
     }

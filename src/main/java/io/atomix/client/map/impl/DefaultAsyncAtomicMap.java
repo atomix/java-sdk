@@ -25,7 +25,7 @@ import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;
 import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.collection.impl.UnsupportedAsyncDistributedCollection;
-import io.atomix.client.impl.AbstractManagedPrimitive;
+import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.impl.TranscodingStreamObserver;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.iterator.impl.StreamObserverIterator;
@@ -33,7 +33,7 @@ import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AtomicMap;
 import io.atomix.client.map.AtomicMapEvent;
 import io.atomix.client.map.AtomicMapEventListener;
-import io.atomix.client.partition.Partition;
+import io.atomix.client.session.Session;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.impl.UnsupportedAsyncDistributedSet;
 import io.atomix.client.utils.concurrent.Futures;
@@ -53,13 +53,13 @@ import java.util.function.Predicate;
  * Default asynchronous atomic map primitive.
  */
 public class DefaultAsyncAtomicMap extends
-        AbstractManagedPrimitive<MapServiceGrpc.MapServiceStub, AsyncAtomicMap<String, byte[]>>
-        implements AsyncAtomicMap<String, byte[]> {
+    AbstractAsyncPrimitive<MapServiceGrpc.MapServiceStub, AsyncAtomicMap<String, byte[]>>
+    implements AsyncAtomicMap<String, byte[]> {
     private volatile CompletableFuture<Long> listenFuture;
     private final Map<AtomicMapEventListener<String, byte[]>, Executor> eventListeners = new ConcurrentHashMap<>();
 
-    public DefaultAsyncAtomicMap(Name name, Partition partition, ThreadContext context, Duration timeout) {
-        super(name, MapServiceGrpc.newStub(partition.getChannelFactory().getChannel()), context, timeout);
+    public DefaultAsyncAtomicMap(Name name, Session session, ThreadContext context) {
+        super(name, MapServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override
@@ -204,9 +204,9 @@ public class DefaultAsyncAtomicMap extends
                 .setKey(key)
                 .setValue(ByteString.copyFrom(value))
                 .setTtl(com.google.protobuf.Duration.newBuilder()
-                        .setSeconds(ttl.getSeconds())
-                        .setNanos(ttl.getNano())
-                        .build())
+                    .setSeconds(ttl.getSeconds())
+                    .setNanos(ttl.getNano())
+                    .build())
                 .build(), observer),
             PutResponse::getHeader)
             .thenCompose(response -> {
@@ -224,15 +224,15 @@ public class DefaultAsyncAtomicMap extends
     public CompletableFuture<Versioned<byte[]>> putIfAbsent(String key, byte[] value, Duration ttl) {
         return command(
             (header, observer) -> getService().put(PutRequest.newBuilder()
-                    .setHeader(header)
-                    .setKey(key)
-                    .setValue(ByteString.copyFrom(value))
-                    .setTtl(com.google.protobuf.Duration.newBuilder()
-                            .setSeconds(ttl.getSeconds())
-                            .setNanos(ttl.getNano())
-                            .build())
-                    .setVersion(-1)
-                    .build(), observer),
+                .setHeader(header)
+                .setKey(key)
+                .setValue(ByteString.copyFrom(value))
+                .setTtl(com.google.protobuf.Duration.newBuilder()
+                    .setSeconds(ttl.getSeconds())
+                    .setNanos(ttl.getNano())
+                    .build())
+                .setVersion(-1)
+                .build(), observer),
             PutResponse::getHeader)
             .thenCompose(response -> {
                 if (response.getStatus() == ResponseStatus.WRITE_LOCK) {
@@ -451,15 +451,12 @@ public class DefaultAsyncAtomicMap extends
     }
 
     @Override
-    protected CompletableFuture<Long> create() {
-        return null;
+    protected CompletableFuture<Void> create() {
+        return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
+            .setHeader(header)
+            .build(), observer))
+            .thenApply(v -> null);
     }
-
-    @Override
-    protected CompletableFuture<Boolean> keepAlive() {
-        return null;
-    }
-
 
     @Override
     protected CompletableFuture<Void> close(boolean delete) {

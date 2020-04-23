@@ -18,8 +18,8 @@ package io.atomix.client.election.impl;
 import io.atomix.api.election.*;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.election.*;
-import io.atomix.client.impl.AbstractManagedPrimitive;
-import io.atomix.client.partition.Partition;
+import io.atomix.client.impl.AbstractAsyncPrimitive;
+import io.atomix.client.session.Session;
 import io.atomix.client.utils.concurrent.ThreadContext;
 import io.grpc.stub.StreamObserver;
 
@@ -32,13 +32,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * Distributed resource providing the {@link AsyncLeaderElection} primitive.
  */
 public class DefaultAsyncLeaderElection
-    extends AbstractManagedPrimitive<LeaderElectionServiceGrpc.LeaderElectionServiceStub, AsyncLeaderElection<String>>
+    extends AbstractAsyncPrimitive<LeaderElectionServiceGrpc.LeaderElectionServiceStub, AsyncLeaderElection<String>>
     implements AsyncLeaderElection<String> {
     private volatile CompletableFuture<Long> listenFuture;
     private final Set<LeadershipEventListener<String>> eventListeners = new CopyOnWriteArraySet<>();
 
-    public DefaultAsyncLeaderElection(Name name, Partition partition, ThreadContext context, Duration timeout) {
-        super(name, LeaderElectionServiceGrpc.newStub(partition.getChannelFactory().getChannel()), context, timeout);
+    public DefaultAsyncLeaderElection(Name name, Session session, ThreadContext context) {
+        super(name, LeaderElectionServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override
@@ -167,23 +167,18 @@ public class DefaultAsyncLeaderElection
         return CompletableFuture.completedFuture(null);
     }
 
-
     @Override
-    protected CompletableFuture<Long> create() {
-        return null;
-    }
-
-    @Override
-    protected CompletableFuture<Boolean> keepAlive() {
-        /*return this.<KeepAliveResponse>session((header, observer) -> getService().keepAlive(KeepAliveRequest.newBuilder()
+    protected CompletableFuture<Void> create() {
+        return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
+            .setHeader(header)
             .build(), observer))
-            .thenApply(response -> true);*/
-        return null;
+            .thenApply(v -> null);
     }
 
     @Override
     protected CompletableFuture<Void> close(boolean delete) {
         return this.<CloseResponse>session((header, observer) -> getService().close(CloseRequest.newBuilder()
+            .setHeader(header)
             .setDelete(delete)
             .build(), observer))
             .thenApply(v -> null);

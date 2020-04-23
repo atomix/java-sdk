@@ -36,7 +36,7 @@ public class DelegatingAtomicIdGeneratorBuilder extends AtomicIdGeneratorBuilder
     public CompletableFuture<AtomicIdGenerator> buildAsync() {
         return new DefaultAsyncAtomicCounter(
             getName(),
-            managementService.getPartitionService().getPartition(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
+            managementService.getSessionService().getSession(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
             managementService.getThreadFactory().createContext())
             .connect()
             .thenApply(DelegatingAtomicIdGenerator::new)

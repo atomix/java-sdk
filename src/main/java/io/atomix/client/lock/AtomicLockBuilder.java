@@ -16,14 +16,14 @@
 package io.atomix.client.lock;
 
 import io.atomix.api.primitive.Name;
+import io.atomix.client.PrimitiveBuilder;
 import io.atomix.client.PrimitiveManagementService;
-import io.atomix.client.impl.ManagedPrimitiveBuilder;
 
 /**
  * Builder for AtomicIdGenerator.
  */
 public abstract class AtomicLockBuilder
-    extends ManagedPrimitiveBuilder<AtomicLockBuilder, AtomicLock> {
+    extends PrimitiveBuilder<AtomicLockBuilder, AtomicLock> {
     protected AtomicLockBuilder(Name name, PrimitiveManagementService managementService) {
         super(name, managementService);
     }

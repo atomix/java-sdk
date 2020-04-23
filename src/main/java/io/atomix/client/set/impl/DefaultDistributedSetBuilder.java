@@ -41,9 +41,9 @@ public class DefaultDistributedSetBuilder<E> extends DistributedSetBuilder<E> {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<DistributedSet<E>> buildAsync() {
-        Map<Integer, AsyncDistributedSet<String>> partitions = managementService.getPartitionService().getPartitions().stream()
-            .map(partition -> Maps.immutableEntry(partition.id(), new DefaultAsyncDistributedSet(
-                getName(), partition, managementService.getThreadFactory().createContext(), sessionTimeout)))
+        Map<Integer, AsyncDistributedSet<String>> partitions = managementService.getSessionService().getSessions().stream()
+            .map(session -> Maps.immutableEntry(session.getPartition().id(), new DefaultAsyncDistributedSet(
+                getName(), session, managementService.getThreadFactory().createContext())))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return new PartitionedAsyncDistributedSet(name, partitions, partitioner).connect()
             .thenApply(rawSet -> {

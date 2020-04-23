@@ -15,13 +15,13 @@
  */
 package io.atomix.client.counter.impl;
 
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.counter.AsyncDistributedCounter;
 import io.atomix.client.counter.DistributedCounter;
 import io.atomix.client.counter.DistributedCounterBuilder;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Default distributed counter builder.
@@ -33,13 +33,12 @@ public class DefaultDistributedCounterBuilder extends DistributedCounterBuilder 
 
     @Override
     public CompletableFuture<DistributedCounter> buildAsync() {
-        return managementService.getPartitionService().getPartitionGroup(group)
-            .thenCompose(group -> new DefaultAsyncAtomicCounter(
-                getName(),
-                group.getPartition(partitioner.partition(getName().getName(), group.getPartitionIds())),
-                managementService.getThreadFactory().createContext())
-                .connect()
-                .thenApply(DelegatingDistributedCounter::new)
-                .thenApply(AsyncDistributedCounter::sync));
+        return new DefaultAsyncAtomicCounter(
+            getName(),
+            managementService.getSessionService().getSession(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
+            managementService.getThreadFactory().createContext())
+            .connect()
+            .thenApply(DelegatingDistributedCounter::new)
+            .thenApply(AsyncDistributedCounter::sync);
     }
 }
