@@ -38,7 +38,7 @@ public class DefaultDistributedValueBuilder<V> extends DistributedValueBuilder<V
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<DistributedValue<V>> buildAsync() {
-        return managementService.getPartitionService().getPartitionGroup(group)
+        /*return managementService.getPartitionService().getPartition(group)
             .thenCompose(group -> new DefaultAsyncAtomicValue(
                 getName(),
                 group.getPartition(partitioner.partition(getName().getName(), group.getPartitionIds())),
@@ -53,6 +53,8 @@ public class DefaultDistributedValueBuilder<V> extends DistributedValueBuilder<V
                         string -> serializer.decode(BaseEncoding.base16().decode(string)));
                 })
                 .thenApply(DelegatingAsyncDistributedValue::new)
-                .thenApply(AsyncDistributedValue::sync));
+                .thenApply(AsyncDistributedValue::sync));*/
+        return null;
     }
+
 }
