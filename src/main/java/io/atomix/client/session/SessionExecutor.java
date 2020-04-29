@@ -20,6 +20,7 @@ import io.atomix.api.headers.ResponseHeader;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.PrimitiveState;
+import io.atomix.client.partition.Partition;
 import io.atomix.client.utils.concurrent.ThreadContext;
 import io.grpc.stub.StreamObserver;
 
@@ -56,6 +57,7 @@ final class SessionExecutor {
             || e instanceof PrimitiveException.UnknownSession;
 
     private final SessionState state;
+    private final Partition partition;
     private final SessionSequencer sequencer;
     private final ThreadContext threadContext;
     private final Map<Long, OperationAttempt> attempts = new LinkedHashMap<>();
@@ -63,10 +65,12 @@ final class SessionExecutor {
     SessionExecutor(
         SessionState state,
         SessionSequencer sequencer,
-        ThreadContext threadContext) {
+        ThreadContext threadContext,
+        Partition partition) {
         this.state = checkNotNull(state, "state cannot be null");
         this.sequencer = checkNotNull(sequencer, "sequencer cannot be null");
         this.threadContext = checkNotNull(threadContext, "threadContext cannot be null");
+        this.partition = partition;
     }
 
     protected <T> CompletableFuture<T> executeCommand(
@@ -116,10 +120,11 @@ final class SessionExecutor {
         Function<T, ResponseHeader> responseHeaderFunction,
         CompletableFuture<T> future) {
         RequestHeader header = RequestHeader.newBuilder()
-            .setName(name)
-            .setSessionId(state.getSessionId())
-            .setIndex(state.nextCommandRequest())
-            .build();
+                .setName(name)
+                .setPartition(partition.id())
+                .setSessionId(state.getSessionId())
+                .setIndex(state.nextCommandRequest())
+                .build();
         invoke(new CommandAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, future));
     }
 
@@ -133,10 +138,11 @@ final class SessionExecutor {
         StreamObserver<T> observer,
         CompletableFuture<Long> future) {
         RequestHeader header = RequestHeader.newBuilder()
-            .setName(name)
-            .setSessionId(state.getSessionId())
-            .setIndex(state.nextCommandRequest())
-            .build();
+                .setName(name)
+                .setPartition(partition.id())
+                .setSessionId(state.getSessionId())
+                .setIndex(state.nextCommandRequest())
+                .build();
         invoke(new CommandStreamAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, observer, future));
     }
 
@@ -149,10 +155,11 @@ final class SessionExecutor {
         Function<T, ResponseHeader> responseHeaderFunction,
         CompletableFuture<T> future) {
         RequestHeader header = RequestHeader.newBuilder()
-            .setName(name)
-            .setSessionId(state.getSessionId())
-            .setIndex(state.getCommandRequest())
-            .build();
+                .setName(name)
+                .setPartition(partition.id())
+                .setSessionId(state.getSessionId())
+                .setIndex(state.getCommandRequest())
+                .build();
         invoke(new QueryAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, future));
     }
 
@@ -166,10 +173,11 @@ final class SessionExecutor {
         StreamObserver<T> observer,
         CompletableFuture<Void> future) {
         RequestHeader header = RequestHeader.newBuilder()
-            .setName(name)
-            .setSessionId(state.getSessionId())
-            .setIndex(state.getCommandRequest())
-            .build();
+                .setName(name)
+                .setPartition(partition.id())
+                .setSessionId(state.getSessionId())
+                .setIndex(state.getCommandRequest())
+                .build();
         invoke(new QueryStreamAttempt<>(sequencer.nextRequest(), requestFunction, header, responseHeaderFunction, observer, future));
     }
 

@@ -5,12 +5,15 @@ import io.atomix.api.headers.ResponseHeader;
 import io.atomix.api.headers.StreamHeader;
 import io.atomix.api.primitive.Name;
 import io.atomix.api.session.*;
+import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.PrimitiveState;
 import io.atomix.client.partition.Partition;
 import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.concurrent.Scheduled;
 import io.atomix.client.utils.concurrent.ThreadContext;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -29,7 +32,7 @@ public class Session {
 
     private final Partition partition;
     private final SessionServiceGrpc.SessionServiceStub service;
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
     private final ThreadContext context;
     private final Duration timeout;
     private final AtomicBoolean open = new AtomicBoolean();
@@ -66,8 +69,10 @@ public class Session {
     private RequestHeader getSessionHeader(Name name) {
         if (state != null) {
             return RequestHeader.newBuilder()
-                .setName(name)
-                .setSessionId(state.getSessionId())
+                    .setName(name)
+                    .setSessionId(state.getSessionId())
+                    .setRequestId(state.getCommandResponse())
+                    .setIndex(state.getResponseIndex())
                 //.setSequenceNumber(state.getCommandResponse())
                 .addAllStreams(sequencer.streams().stream()
                     .map(stream -> StreamHeader.newBuilder()
@@ -148,12 +153,13 @@ public class Session {
             return Futures.exceptionalFuture(new IllegalStateException());
         }
         CompletableFuture<Void> future = new CompletableFuture<>();
-        service.openSession(OpenSessionRequest.newBuilder().build(), new StreamObserver<>() {
+        RequestHeader header = RequestHeader.newBuilder().setPartition(partition.id()).build();
+        service.openSession(OpenSessionRequest.newBuilder().setHeader(header).build(), new StreamObserver<>() {
             @Override
             public void onNext(OpenSessionResponse response) {
                 state = new SessionState(response.getHeader().getSessionId(), timeout.toMillis());
                 sequencer = new SessionSequencer(state);
-                executor = new SessionExecutor(state, sequencer, context);
+                executor = new SessionExecutor(state, sequencer, context, partition);
                 keepAlive(System.currentTimeMillis());
             }
 
@@ -198,7 +204,8 @@ public class Session {
 
     private CompletableFuture<Boolean> keepAlive() {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
-        service.keepAlive(KeepAliveRequest.newBuilder().build(), new StreamObserver<>() {
+        RequestHeader header = RequestHeader.newBuilder().setPartition(partition.id()).build();
+        service.keepAlive(KeepAliveRequest.newBuilder().setHeader(header).build(), new StreamObserver<>() {
             @Override
             public void onNext(KeepAliveResponse response) {
                 future.complete(true);
@@ -241,7 +248,8 @@ public class Session {
      */
     CompletableFuture<Void> close() {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        service.openSession(OpenSessionRequest.newBuilder().build(), new StreamObserver<>() {
+        RequestHeader header = RequestHeader.newBuilder().setPartition(partition.id()).build();
+        service.openSession(OpenSessionRequest.newBuilder().setHeader(header).build(), new StreamObserver<>() {
             @Override
             public void onNext(OpenSessionResponse value) {
 

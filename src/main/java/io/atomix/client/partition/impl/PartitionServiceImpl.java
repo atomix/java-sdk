@@ -15,8 +15,11 @@
  */
 package io.atomix.client.partition.impl;
 
+import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.partition.Partition;
 import io.atomix.client.partition.PartitionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,12 +34,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class PartitionServiceImpl implements PartitionService {
     private final Map<Integer, Partition> partitions = new ConcurrentHashMap<>();
     private final List<Integer> partitionIds = new CopyOnWriteArrayList<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(PartitionServiceImpl.class);
 
     public PartitionServiceImpl(io.atomix.api.controller.Database database) {
         database.getPartitionsList().forEach(partition -> {
             partitions.put(partition.getPartitionId(), new PartitionImpl(partition));
             partitionIds.add(partition.getPartitionId());
         });
+        LOGGER.info("Partition IDS" + partitionIds.toString());
         Collections.sort(partitionIds);
     }
 

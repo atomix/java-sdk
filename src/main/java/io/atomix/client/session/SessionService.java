@@ -15,9 +15,12 @@
  */
 package io.atomix.client.session;
 
+import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.partition.PartitionService;
 import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.concurrent.ThreadContextFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collection;

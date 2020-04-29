@@ -16,6 +16,8 @@
 package io.atomix.client;
 
 import com.google.common.base.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -40,7 +42,6 @@ public class AtomixClient {
     public static AtomixClientBuilder builder() {
         return new AtomixClientBuilder();
     }
-
     private static final long TIMEOUT_MILLIS = Duration.ofSeconds(30).toMillis();
 
     private final AsyncAtomixClient asyncClient;

@@ -62,6 +62,10 @@ public class AsyncAtomixClient {
     private final AtomicBoolean started = new AtomicBoolean();
 
     protected AsyncAtomixClient(String namespace, ChannelProvider channelProvider) {
+        this.threadContextFactory =  new BlockingAwareThreadPoolContextFactory(
+                "atomix-client-%d",
+                Runtime.getRuntime().availableProcessors(),
+                LOGGER);
         this.namespace = namespace;
         this.channelProvider = channelProvider;
     }
@@ -155,6 +159,7 @@ public class AsyncAtomixClient {
     }
 
     private CompletableFuture<AtomixDatabase> createDatabase(Database database) {
+        LOGGER.info("creating new database");
         PartitionService partitionService = new PartitionServiceImpl(database);
         SessionService sessionService = new SessionService(partitionService, threadContextFactory, SESSION_TIMEOUT);
         return sessionService.connect().thenApply(v -> new AtomixDatabase(
