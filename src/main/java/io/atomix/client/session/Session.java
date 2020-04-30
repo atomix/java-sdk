@@ -113,6 +113,7 @@ public class Session {
         Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction) {
+
         return executor.executeCommand(name, function, headerFunction);
     }
 
@@ -165,6 +166,7 @@ public class Session {
 
             @Override
             public void onError(Throwable t) {
+
                 future.completeExceptionally(t);
             }
 
@@ -183,6 +185,7 @@ public class Session {
         long keepAliveTime = System.currentTimeMillis();
         keepAlive().whenComplete((succeeded, error) -> {
             if (open.get()) {
+
                 long delta = System.currentTimeMillis() - keepAliveTime;
                 // If the keep-alive succeeded, ensure the session state is CONNECTED and schedule another keep-alive.
                 if (error == null) {
@@ -204,7 +207,10 @@ public class Session {
 
     private CompletableFuture<Boolean> keepAlive() {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
-        RequestHeader header = RequestHeader.newBuilder().setPartition(partition.id()).build();
+        RequestHeader header = RequestHeader.newBuilder()
+                .setPartition(partition.id())
+                .setSessionId(state.getSessionId())
+                .build();
         service.keepAlive(KeepAliveRequest.newBuilder().setHeader(header).build(), new StreamObserver<>() {
             @Override
             public void onNext(KeepAliveResponse response) {
@@ -227,10 +233,10 @@ public class Session {
      * Schedules a keep-alive request.
      */
     private synchronized void scheduleKeepAlive(long lastKeepAliveTime, long delta) {
+        //LOGGER.info("Scheudle Keep Alive is called");
         if (keepAliveTimer != null) {
             keepAliveTimer.cancel();
         }
-
         Duration delay = Duration.ofMillis(
             Math.max(Math.max((long) (timeout.toMillis() * TIMEOUT_FACTOR) - delta,
                 timeout.toMillis() - MIN_TIMEOUT_DELTA - delta), 0));
