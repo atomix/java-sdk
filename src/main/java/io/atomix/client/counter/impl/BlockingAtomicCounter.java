@@ -21,10 +21,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.google.common.base.Throwables;
+import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation for a {@code AtomicCounter} backed by a {@link AsyncAtomicCounter}.
@@ -33,6 +36,7 @@ public class BlockingAtomicCounter extends Synchronous<AsyncAtomicCounter> imple
 
     private final AsyncAtomicCounter asyncCounter;
     private final long operationTimeoutMillis;
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlockingAtomicCounter.class);
 
     public BlockingAtomicCounter(AsyncAtomicCounter asyncCounter, long operationTimeoutMillis) {
         super(asyncCounter);
@@ -72,6 +76,7 @@ public class BlockingAtomicCounter extends Synchronous<AsyncAtomicCounter> imple
 
     @Override
     public void set(long value) {
+        LOGGER.info("set function in blocking atomic counter");
         complete(asyncCounter.set(value));
     }
 
@@ -82,7 +87,9 @@ public class BlockingAtomicCounter extends Synchronous<AsyncAtomicCounter> imple
 
     @Override
     public long get() {
-        return complete(asyncCounter.get());
+        LOGGER.info("Get function in Blocking Atomic counter");
+        return complete(
+                asyncCounter.get());
     }
 
     @Override

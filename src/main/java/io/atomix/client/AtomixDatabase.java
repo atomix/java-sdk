@@ -17,6 +17,8 @@ package io.atomix.client;
 
 import io.atomix.api.primitive.Name;
 import io.atomix.client.utils.concurrent.ThreadContextFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client for a single database.
@@ -25,6 +27,7 @@ public class AtomixDatabase implements PrimitiveClient {
     private final String name;
     private final String namespace;
     private final PrimitiveManagementService managementService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AtomixDatabase.class);
 
     public AtomixDatabase(String name, String namespace, PrimitiveManagementService managementService) {
         this.name = name;

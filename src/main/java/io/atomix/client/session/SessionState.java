@@ -16,6 +16,8 @@
 package io.atomix.client.session;
 
 import io.atomix.client.PrimitiveState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -35,6 +37,7 @@ public final class SessionState {
     private volatile long commandResponse;
     private volatile long responseIndex;
     private volatile long eventIndex;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionState.class);
     private final Set<Consumer<PrimitiveState>> changeListeners = new CopyOnWriteArraySet<>();
 
     SessionState(long sessionId, long timeout) {
