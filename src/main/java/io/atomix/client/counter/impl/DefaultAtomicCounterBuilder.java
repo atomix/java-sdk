@@ -35,16 +35,13 @@ public class DefaultAtomicCounterBuilder extends AtomicCounterBuilder {
     public DefaultAtomicCounterBuilder(Name name, PrimitiveManagementService managementService) {
         super(name, managementService);
     }
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAtomicCounterBuilder.class);
+
 
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicCounter> buildAsync() {
-        LOGGER.info("Atomic Counter build");
         Session session = managementService.getSessionService().getSession(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds()));
-        LOGGER.info("Session Info" + session.toString());
         ThreadContext context = managementService.getThreadFactory().createContext();
-        LOGGER.info("Context info" + context.toString());
         return new DefaultAsyncAtomicCounter(
             getName(),
             session,

@@ -43,7 +43,6 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
     private final S service;
     private final Session session;
     private final ThreadContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAsyncPrimitive.class);
     public AbstractAsyncPrimitive(Name name, S service, Session session, ThreadContext context) {
         this.name = checkNotNull(name);
         this.service = checkNotNull(service);
@@ -90,7 +89,6 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
     protected <T> CompletableFuture<T> command(
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction) {
-        LOGGER.info("Execute command:" + name + ":" + function.toString() + ":" + headerFunction.toString());
         CompletableFuture returnValue = session.command(name, function, headerFunction);
         return returnValue;
     }

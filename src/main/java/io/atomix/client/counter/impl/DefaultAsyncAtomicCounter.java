@@ -38,11 +38,9 @@ public class DefaultAsyncAtomicCounter
     public DefaultAsyncAtomicCounter(Name name, Session session, ThreadContext context) {
         super(name, CounterServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAsyncAtomicCounter.class);
 
     @Override
     public CompletableFuture<Long> get() {
-        LOGGER.info("Get function is called in default async atomic counter");
         return query((header, observer) -> getService().get(GetRequest.newBuilder()
             .setHeader(header)
             .build(), observer), GetResponse::getHeader)
@@ -51,7 +49,6 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Void> set(long value) {
-        LOGGER.info("Set function is called");
         return command((header, observer) -> getService().set(SetRequest.newBuilder()
             .setHeader(header)
             .setValue(value)
@@ -125,13 +122,10 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     protected CompletableFuture<Void> create() {
-        LOGGER.info("Create function is called");
-        CompletableFuture returnValue = command((header, observer) -> getService().create(CreateRequest.newBuilder()
+        return command((header, observer) -> getService().create(CreateRequest.newBuilder()
                 .setHeader(header)
                 .build(), observer), CreateResponse::getHeader)
                 .thenApply(v -> null);
-        LOGGER.info("Command Return value" + returnValue.toString());
-        return returnValue;
     }
 
     @Override

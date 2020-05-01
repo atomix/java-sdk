@@ -38,7 +38,6 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
     protected boolean readOnly;
     protected Serializer serializer;
     protected final PrimitiveManagementService managementService;
-    private static final Logger LOGGER = LoggerFactory.getLogger(PrimitiveBuilder.class);
     protected PrimitiveBuilder(Name name, PrimitiveManagementService managementService) {
         this.name = checkNotNull(name, "name cannot be null");
         this.managementService = checkNotNull(managementService, "managementService cannot be null");
@@ -50,7 +49,6 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      * @return the namespaced primitive name
      */
     protected Name getName() {
-        LOGGER.info("Get Name in primitive builder is called");
         return name;
     }
 
@@ -118,11 +116,9 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      * @return a new instance of the primitive
      */
     public P build() {
-        LOGGER.info("Primitive builder build is called");
         try {
             return buildAsync().join();
         } catch (Exception e) {
-            LOGGER.info("Exception in primitive builder");
             if (e instanceof CompletionException && e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
             } else {

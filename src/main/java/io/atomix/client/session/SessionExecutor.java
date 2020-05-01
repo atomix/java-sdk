@@ -83,9 +83,7 @@ final class SessionExecutor {
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> responseHeaderFunction) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        LOGGER.info("Session Executer invoke command");
         threadContext.execute(() -> invokeCommand(name, function, responseHeaderFunction, future));
-        LOGGER.info("Print future in execute command:" + future.toString());
         return future;
     }
 
@@ -194,16 +192,12 @@ final class SessionExecutor {
      * @param attempt The attempt to submit.
      */
     private void invoke(OperationAttempt<?, ?> attempt) {
-        LOGGER.info("Invoke is called" + state.getSessionId() + ":" + state.getState());
         if (state.getState() == PrimitiveState.CLOSED) {
             attempt.fail(new PrimitiveException.ConcurrentModification("session closed"));
         } else {
             attempts.put(attempt.id, attempt);
-            LOGGER.info("List of attempts:" + attempts.values().toString());
             attempt.send();
-            LOGGER.info("After send");
             attempt.future.whenComplete((r, e) -> attempts.remove(attempt.id));
-            LOGGER.info("After when complete");
         }
     }
 
@@ -293,9 +287,7 @@ final class SessionExecutor {
          * @param observer the response observer
          */
         protected void execute(StreamObserver<T> observer) {
-            LOGGER.info("Call request function accept in session executor");
             requestFunction.accept(requestHeader, observer);
-            LOGGER.info("After call request function accept");
         }
 
         /**
@@ -304,29 +296,23 @@ final class SessionExecutor {
          * @return the result future
          */
         protected CompletableFuture<T> execute() {
-            LOGGER.info("Execute in session Executor");
             CompletableFuture<T> future = new CompletableFuture<>();
             execute(new StreamObserver<T>() {
                 @Override
                 public void onNext(T response) {
-                    LOGGER.info("Response:" + response);
-                    boolean completeValue = future.complete(response);
-                    LOGGER.info("Complete value" + String.valueOf(completeValue));
+                  future.complete(response);
 
                 }
 
                 @Override
                 public void onError(Throwable t) {
-                    LOGGER.info("Error in session executor:" + t.getMessage());
                     future.completeExceptionally(t);
                 }
 
                 @Override
                 public void onCompleted() {
-                    LOGGER.info("Execute is completed");
                 }
             });
-            LOGGER.info("Future value in session executor:" + future.toString());
             return future;
         }
 
@@ -436,7 +422,6 @@ final class SessionExecutor {
 
         @Override
         protected void send() {
-            LOGGER.info("Send function in session Executer");
             execute().whenComplete(this);
         }
 
@@ -475,13 +460,10 @@ final class SessionExecutor {
         @SuppressWarnings("unchecked")
         protected void complete(T response) {
             ResponseHeader header = getHeader(response);
-            LOGGER.info("Complete function before Sequence is called:" + header);
             sequence(header, () -> {
-                LOGGER.info("Inside complete function");
                 state.setCommandResponse(id);
                 state.setResponseIndex(header.getIndex());
                 future.complete(response);
-                LOGGER.info("After set complete response");
             });
         }
     }

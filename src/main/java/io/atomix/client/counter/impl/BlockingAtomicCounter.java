@@ -36,7 +36,6 @@ public class BlockingAtomicCounter extends Synchronous<AsyncAtomicCounter> imple
 
     private final AsyncAtomicCounter asyncCounter;
     private final long operationTimeoutMillis;
-    private static final Logger LOGGER = LoggerFactory.getLogger(BlockingAtomicCounter.class);
 
     public BlockingAtomicCounter(AsyncAtomicCounter asyncCounter, long operationTimeoutMillis) {
         super(asyncCounter);
@@ -76,7 +75,6 @@ public class BlockingAtomicCounter extends Synchronous<AsyncAtomicCounter> imple
 
     @Override
     public void set(long value) {
-        LOGGER.info("set function in blocking atomic counter");
         complete(asyncCounter.set(value));
     }
 
@@ -87,7 +85,6 @@ public class BlockingAtomicCounter extends Synchronous<AsyncAtomicCounter> imple
 
     @Override
     public long get() {
-        LOGGER.info("Get function in Blocking Atomic counter");
         return complete(
                 asyncCounter.get());
     }
