@@ -254,10 +254,18 @@ public class Session {
      */
     CompletableFuture<Void> close() {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        RequestHeader header = RequestHeader.newBuilder().setPartition(partition.id()).build();
-        service.openSession(OpenSessionRequest.newBuilder().setHeader(header).build(), new StreamObserver<>() {
+        RequestHeader header = RequestHeader.newBuilder()
+                .setPartition(partition.id())
+                .setSessionId(state.getSessionId())
+                .setIndex(state.getResponseIndex())
+                .build();
+        service.closeSession(CloseSessionRequest
+                .newBuilder()
+                .setHeader(header)
+                .build(), new StreamObserver<>() {
+
             @Override
-            public void onNext(OpenSessionResponse value) {
+            public void onNext(CloseSessionResponse closeSessionResponse) {
 
             }
 
