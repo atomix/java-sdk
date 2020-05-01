@@ -82,9 +82,6 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
         return service;
     }
 
-    protected <T> CompletableFuture<T> session(BiConsumer<RequestHeader, StreamObserver<T>> function) {
-        return session.session(name, function);
-    }
 
     protected <T> CompletableFuture<T> command(
         BiConsumer<RequestHeader, StreamObserver<T>> function,

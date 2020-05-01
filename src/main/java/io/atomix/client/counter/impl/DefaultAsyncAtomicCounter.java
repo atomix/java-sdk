@@ -22,6 +22,7 @@ import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.session.Session;
+
 import io.atomix.client.utils.concurrent.ThreadContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,11 +34,13 @@ import java.util.concurrent.CompletableFuture;
  * Atomix counter implementation.
  */
 public class DefaultAsyncAtomicCounter
+
     extends AbstractAsyncPrimitive<CounterServiceGrpc.CounterServiceStub, AsyncAtomicCounter>
     implements AsyncAtomicCounter {
     public DefaultAsyncAtomicCounter(Name name, Session session, ThreadContext context) {
         super(name, CounterServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAsyncAtomicCounter.class);
 
     @Override
     public CompletableFuture<Long> get() {
@@ -130,11 +133,12 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     protected CompletableFuture<Void> close(boolean delete) {
-        return this.<CloseResponse>session((header, observer) -> getService().close(CloseRequest.newBuilder()
-            .setHeader(header)
-            .setDelete(delete)
-            .build(), observer))
-            .thenApply(v -> null);
+        return command((header, observer) -> getService().close(CloseRequest.newBuilder()
+                .setHeader(header)
+                .build(), observer), CloseResponse::getHeader)
+                .thenApply(v -> null);
+
+
     }
 
     @Override

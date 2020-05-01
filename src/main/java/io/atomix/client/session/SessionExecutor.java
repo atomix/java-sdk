@@ -18,6 +18,7 @@ package io.atomix.client.session;
 import io.atomix.api.headers.RequestHeader;
 import io.atomix.api.headers.ResponseHeader;
 import io.atomix.api.headers.ResponseType;
+import io.atomix.api.log.LogServiceGrpc;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.PrimitiveException;
@@ -124,6 +125,7 @@ final class SessionExecutor {
         BiConsumer<RequestHeader, StreamObserver<T>> requestFunction,
         Function<T, ResponseHeader> responseHeaderFunction,
         CompletableFuture<T> future) {
+
         RequestHeader header = RequestHeader.newBuilder()
             .setName(name)
             .setPartition(partition.id())

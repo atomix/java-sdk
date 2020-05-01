@@ -89,25 +89,6 @@ public class Session {
         }
     }
 
-    public <T> CompletableFuture<T> session(Name name, BiConsumer<RequestHeader, StreamObserver<T>> function) {
-        CompletableFuture<T> future = new CompletableFuture<>();
-        function.accept(getSessionHeader(name), new StreamObserver<T>() {
-            @Override
-            public void onNext(T response) {
-                future.complete(response);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                future.completeExceptionally(t);
-            }
-
-            @Override
-            public void onCompleted() {
-            }
-        });
-        return future;
-    }
 
     public <T> CompletableFuture<T> command(
         Name name,
@@ -233,7 +214,6 @@ public class Session {
      * Schedules a keep-alive request.
      */
     private synchronized void scheduleKeepAlive(long lastKeepAliveTime, long delta) {
-        //LOGGER.info("Scheudle Keep Alive is called");
         if (keepAliveTimer != null) {
             keepAliveTimer.cancel();
         }

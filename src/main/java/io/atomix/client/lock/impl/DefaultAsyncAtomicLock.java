@@ -146,16 +146,16 @@ public class DefaultAsyncAtomicLock extends AbstractAsyncPrimitive<LockServiceGr
 
     @Override
     protected CompletableFuture<Void> create() {
-        return this.<CreateResponse>session((header, observer) -> getService().create(CreateRequest.newBuilder()
-            .build(), observer))
+        return command((header, observer) -> getService().create(CreateRequest.newBuilder()
+            .build(), observer), CreateResponse::getHeader)
             .thenApply(v -> null);
     }
 
     @Override
     protected CompletableFuture<Void> close(boolean delete) {
-        return this.<CloseResponse>session((header, observer) -> getService().close(CloseRequest.newBuilder()
+        return command((header, observer) -> getService().close(CloseRequest.newBuilder()
             .setDelete(delete)
-            .build(), observer))
+            .build(), observer), CloseResponse::getHeader)
             .thenApply(v -> null);
     }
 
