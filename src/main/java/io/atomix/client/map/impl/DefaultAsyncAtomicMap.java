@@ -400,19 +400,19 @@ public class DefaultAsyncAtomicMap extends
                                     null);
                                 break;
                             case UPDATED:
-                                /*event = new AtomicMapEvent<>(
+                                event = new AtomicMapEvent<>(
                                     AtomicMapEvent.Type.UPDATED,
                                     response.getKey(),
                                     new Versioned<>(response.getValue().toByteArray(), response.getVersion()),
-                                    new Versioned<>(response.getOldValue().toByteArray(), response.getOldVersion()));
-                                break;*/
+                                    null);
+                                break;
                             case REMOVED:
-                                /*event = new AtomicMapEvent<>(
+                                event = new AtomicMapEvent<>(
                                     AtomicMapEvent.Type.REMOVED,
                                     response.getKey(),
                                     null,
-                                    new Versioned<>(response.getOldValue().toByteArray(), response.getOldVersion()));
-                                break;*/
+                                    new Versioned<>(response.getValue().toByteArray(), response.getVersion()));
+                                break;
                         }
                         onEvent(event);
                     }

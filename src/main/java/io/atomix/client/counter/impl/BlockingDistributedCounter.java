@@ -40,6 +40,16 @@ public class BlockingDistributedCounter extends Synchronous<AsyncDistributedCoun
     }
 
     @Override
+    public boolean compareAndSet(long expectedValue, long updateValue) {
+        return complete(asyncCounter.compareAndSet(expectedValue, updateValue));
+    }
+
+    @Override
+    public void set(long value) {
+        complete(asyncCounter.set(value));
+    }
+
+    @Override
     public long incrementAndGet() {
         return complete(asyncCounter.incrementAndGet());
     }

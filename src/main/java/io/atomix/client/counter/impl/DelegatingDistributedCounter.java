@@ -32,6 +32,11 @@ public class DelegatingDistributedCounter extends DelegatingAsyncPrimitive<Async
     }
 
     @Override
+    public CompletableFuture<Void> set(long value) {
+        return delegate().set(value);
+    }
+
+    @Override
     public CompletableFuture<Long> incrementAndGet() {
         return delegate().incrementAndGet();
     }
@@ -64,6 +69,11 @@ public class DelegatingDistributedCounter extends DelegatingAsyncPrimitive<Async
     @Override
     public CompletableFuture<Long> get() {
         return delegate().get();
+    }
+
+    @Override
+    public CompletableFuture<Boolean> compareAndSet(long expectedValue, long updateValue) {
+        return delegate().compareAndSet(expectedValue, updateValue);
     }
 
     @Override
