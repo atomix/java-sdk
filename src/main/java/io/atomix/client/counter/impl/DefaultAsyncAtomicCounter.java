@@ -17,7 +17,6 @@ package io.atomix.client.counter.impl;
 
 import io.atomix.api.counter.*;
 import io.atomix.api.primitive.Name;
-import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
@@ -135,10 +134,9 @@ public class DefaultAsyncAtomicCounter
     protected CompletableFuture<Void> close(boolean delete) {
         return command((header, observer) -> getService().close(CloseRequest.newBuilder()
                 .setHeader(header)
+                .setDelete(delete)
                 .build(), observer), CloseResponse::getHeader)
                 .thenApply(v -> null);
-
-
     }
 
     @Override

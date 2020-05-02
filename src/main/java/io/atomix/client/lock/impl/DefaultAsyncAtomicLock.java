@@ -23,6 +23,8 @@ import io.atomix.client.lock.AtomicLock;
 import io.atomix.client.session.Session;
 import io.atomix.client.utils.concurrent.Scheduled;
 import io.atomix.client.utils.concurrent.ThreadContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.OptionalLong;
@@ -153,6 +155,7 @@ public class DefaultAsyncAtomicLock extends AbstractAsyncPrimitive<LockServiceGr
 
     @Override
     protected CompletableFuture<Void> close(boolean delete) {
+
         return command((header, observer) -> getService().close(CloseRequest.newBuilder()
             .setDelete(delete)
             .build(), observer), CloseResponse::getHeader)
