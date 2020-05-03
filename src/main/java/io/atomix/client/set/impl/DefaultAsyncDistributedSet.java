@@ -52,8 +52,15 @@ public class DefaultAsyncDistributedSet
     }
 
     @Override
-    public CompletableFuture<Boolean> add(String element) {
-        return addAll(Collections.singleton(element));
+    public CompletableFuture<Boolean> add(String element)
+    {
+        return command(
+            (header, observer) -> getService().add(AddRequest.newBuilder()
+                    .setHeader(header)
+                    .setValue(element)
+                    .build(), observer),
+            AddResponse::getHeader)
+            .thenApply(response -> response.getAdded());
     }
 
     @Override
@@ -78,7 +85,11 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> contains(String element) {
-        return containsAll(Collections.singleton(element));
+        return  query((header, observer) -> getService().contains(ContainsRequest.newBuilder()
+                    .setHeader(header)
+                    .setValue(element)
+                    .build(), observer), ContainsResponse::getHeader)
+                .thenApply(response -> response.getContains());
     }
 
     @Override
@@ -128,10 +139,9 @@ public class DefaultAsyncDistributedSet
     public CompletableFuture<Void> clear() {
         return command(
             (header, observer) -> getService().clear(ClearRequest.newBuilder()
-                .setHeader(header)
-                .build(), observer),
-            ClearResponse::getHeader)
-            .thenApply(response -> null);
+                    .setHeader(header)
+                    .build(), observer), ClearResponse::getHeader)
+                .thenApply(response -> null);
     }
 
     private synchronized CompletableFuture<Void> listen() {
@@ -211,16 +221,18 @@ public class DefaultAsyncDistributedSet
     @Override
     protected CompletableFuture<Void> create() {
         return command((header, observer) -> getService().create(CreateRequest.newBuilder()
-            .build(), observer), CreateResponse::getHeader)
-            .thenApply(v -> null);
+                .setHeader(header)
+                .build(), observer), CreateResponse::getHeader)
+                .thenApply(v -> null);
     }
 
     @Override
     protected CompletableFuture<Void> close(boolean delete) {
         return command((header, observer) -> getService().close(CloseRequest.newBuilder()
-            .setDelete(delete)
-            .build(), observer), CloseResponse::getHeader)
-            .thenApply(v -> null);
+                .setDelete(delete)
+                .setHeader(header)
+                .build(), observer), CloseResponse::getHeader)
+                .thenApply(v -> null);
     }
 
     @Override

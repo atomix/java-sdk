@@ -94,7 +94,6 @@ public class Session {
         Name name,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction) {
-
         return executor.executeCommand(name, function, headerFunction);
     }
 
