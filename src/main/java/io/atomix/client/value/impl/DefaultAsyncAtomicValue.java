@@ -51,9 +51,10 @@ public class DefaultAsyncAtomicValue
     public CompletableFuture<Versioned<String>> get() {
         return query(
             (header, observer) -> getService().get(GetRequest.newBuilder()
-                .build(), observer),
-            GetResponse::getHeader)
-            .thenApply(response -> response.getVersion() > 0
+                    .setHeader(header)
+                    .build(), observer),
+                GetResponse::getHeader)
+                .thenApply(response -> response.getVersion() > 0
                 ? new Versioned<>(response.getValue().toStringUtf8(), response.getVersion())
                 : null);
     }
@@ -168,16 +169,18 @@ public class DefaultAsyncAtomicValue
     @Override
     protected CompletableFuture<Void> create() {
         return command((header, observer) -> getService().create(CreateRequest.newBuilder()
-            .build(), observer), CreateResponse::getHeader)
-            .thenApply(v -> null);
+                .setHeader(header)
+                .build(), observer), CreateResponse::getHeader)
+                .thenApply(v -> null);
     }
 
     @Override
     protected CompletableFuture<Void> close(boolean delete) {
         return command((header, observer) -> getService().close(CloseRequest.newBuilder()
-            .setDelete(delete)
-            .build(), observer), CloseResponse::getHeader)
-            .thenApply(v -> null);
+                .setHeader(header)
+                .setDelete(delete)
+                .build(), observer), CloseResponse::getHeader)
+                .thenApply(v -> null);
     }
 
     @Override
