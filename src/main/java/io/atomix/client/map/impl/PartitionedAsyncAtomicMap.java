@@ -15,13 +15,6 @@
  */
 package io.atomix.client.map.impl;
 
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
-
 import com.google.common.collect.Maps;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.Versioned;
@@ -39,6 +32,13 @@ import io.atomix.client.partition.Partitioner;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.impl.UnsupportedAsyncDistributedSet;
 import io.atomix.client.utils.concurrent.Futures;
+
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 /**
  * Partitioned asynchronous atomic map.

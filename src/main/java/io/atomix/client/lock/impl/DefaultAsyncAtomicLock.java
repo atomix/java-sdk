@@ -23,8 +23,6 @@ import io.atomix.client.lock.AtomicLock;
 import io.atomix.client.session.Session;
 import io.atomix.client.utils.concurrent.Scheduled;
 import io.atomix.client.utils.concurrent.ThreadContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.OptionalLong;

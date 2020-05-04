@@ -16,15 +16,12 @@
 package io.atomix.client.counter.impl;
 
 import io.atomix.api.primitive.Name;
-import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.counter.AtomicCounterBuilder;
 import io.atomix.client.session.Session;
 import io.atomix.client.utils.concurrent.ThreadContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 

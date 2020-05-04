@@ -15,16 +15,16 @@
  */
 package io.atomix.client.idgenerator.impl;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicLong;
-
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.idgenerator.AsyncAtomicIdGenerator;
 import io.atomix.client.idgenerator.AtomicIdGenerator;
 import io.atomix.client.idgenerator.AtomicIdGeneratorType;
 import io.atomix.client.impl.DelegatingAsyncPrimitive;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * {@code AsyncAtomicIdGenerator} implementation backed by Atomix

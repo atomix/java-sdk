@@ -16,13 +16,13 @@
 
 package io.atomix.client.map.impl;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
-
 import io.atomix.client.Versioned;
 import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.utils.concurrent.Futures;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 /**
  * An unmodifiable {@link AsyncAtomicMap}.

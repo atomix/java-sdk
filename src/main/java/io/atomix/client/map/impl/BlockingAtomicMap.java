@@ -15,19 +15,6 @@
  */
 package io.atomix.client.map.impl;
 
-import java.time.Duration;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
 import com.google.common.base.Throwables;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.PrimitiveState;
@@ -40,6 +27,15 @@ import io.atomix.client.map.AtomicMap;
 import io.atomix.client.map.AtomicMapEventListener;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.set.impl.BlockingDistributedSet;
+
+import java.time.Duration;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Default implementation of {@code ConsistentMap}.

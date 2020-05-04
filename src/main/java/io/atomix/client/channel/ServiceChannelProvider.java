@@ -15,11 +15,8 @@
  */
 package io.atomix.client.channel;
 
-import io.atomix.client.AsyncAtomixClient;
 import io.grpc.internal.DnsNameResolverProvider;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Service-based channel factory.

@@ -16,10 +16,10 @@
 
 package io.atomix.client;
 
-import java.util.function.Function;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+
+import java.util.function.Function;
 
 /**
  * Versioned value.

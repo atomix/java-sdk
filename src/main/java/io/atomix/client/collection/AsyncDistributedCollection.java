@@ -15,15 +15,15 @@
  */
 package io.atomix.client.collection;
 
-import java.time.Duration;
-import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.iterator.AsyncIterable;
+
+import java.time.Duration;
+import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * Asynchronous distributed collection.

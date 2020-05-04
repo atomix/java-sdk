@@ -25,7 +25,6 @@ import io.atomix.client.session.SessionService;
 import io.atomix.client.utils.concurrent.BlockingAwareThreadPoolContextFactory;
 import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.concurrent.ThreadContextFactory;
-import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;

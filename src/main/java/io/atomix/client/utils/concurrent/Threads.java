@@ -15,10 +15,10 @@
  */
 package io.atomix.client.utils.concurrent;
 
-import java.util.concurrent.ThreadFactory;
-
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
+
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Thread utilities.

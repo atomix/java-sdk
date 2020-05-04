@@ -15,13 +15,13 @@
  */
 package io.atomix.client.lock;
 
-import java.time.Duration;
-import java.util.OptionalLong;
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.PrimitiveType;
+
+import java.time.Duration;
+import java.util.OptionalLong;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Asynchronous lock primitive.

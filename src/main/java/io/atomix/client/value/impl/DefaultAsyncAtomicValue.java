@@ -27,6 +27,8 @@ import io.atomix.client.value.AtomicValue;
 import io.atomix.client.value.AtomicValueEvent;
 import io.atomix.client.value.AtomicValueEventListener;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -42,6 +44,7 @@ public class DefaultAsyncAtomicValue
     implements AsyncAtomicValue<String> {
     private volatile CompletableFuture<Long> listenFuture;
     private final Set<AtomicValueEventListener<String>> eventListeners = new CopyOnWriteArraySet<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAsyncAtomicValue.class);
 
     public DefaultAsyncAtomicValue(Name name, Session session, ThreadContext context) {
         super(name, ValueServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
@@ -133,16 +136,19 @@ public class DefaultAsyncAtomicValue
                     }
 
                     private void onEvent(AtomicValueEvent<String> event) {
+                        LOGGER.info("On event is called");
                         eventListeners.forEach(l -> l.event(event));
                     }
 
                     @Override
                     public void onError(Throwable t) {
+                        LOGGER.info("Error on observing events");
                         onCompleted();
                     }
 
                     @Override
                     public void onCompleted() {
+                        LOGGER.info("On Complete");
                         synchronized (DefaultAsyncAtomicValue.this) {
                             listenFuture = null;
                         }

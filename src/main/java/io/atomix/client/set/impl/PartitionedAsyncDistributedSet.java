@@ -15,14 +15,6 @@
  */
 package io.atomix.client.set.impl;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-
 import io.atomix.api.primitive.Name;
 import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.impl.PartitionedAsyncPrimitive;
@@ -32,6 +24,14 @@ import io.atomix.client.partition.Partitioner;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.utils.concurrent.Futures;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * Partitioned asynchronous distributed set.

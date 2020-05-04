@@ -15,14 +15,14 @@
  */
 package io.atomix.client.value;
 
-import java.time.Duration;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.Versioned;
+
+import java.time.Duration;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Distributed version of java.util.concurrent.atomic.AtomicReference.

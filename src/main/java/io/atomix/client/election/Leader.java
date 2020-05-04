@@ -15,10 +15,10 @@
  */
 package io.atomix.client.election;
 
-import java.util.function.Function;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;

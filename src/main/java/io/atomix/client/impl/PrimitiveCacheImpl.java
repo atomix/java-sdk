@@ -15,14 +15,14 @@
  */
 package io.atomix.client.impl;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
-
 import com.google.common.collect.Maps;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.PrimitiveCache;
+
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 /**
  * Core primitive cache.

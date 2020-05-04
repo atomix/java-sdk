@@ -15,11 +15,11 @@
  */
 package io.atomix.client.counter;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.PrimitiveType;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Distributed version of java.util.concurrent.atomic.AtomicLong.

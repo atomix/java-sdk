@@ -15,13 +15,13 @@
  */
 package io.atomix.client.counter.impl;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AsyncDistributedCounter;
 import io.atomix.client.counter.DistributedCounter;
 import io.atomix.client.impl.DelegatingAsyncPrimitive;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Delegating distributed counter.

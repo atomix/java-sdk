@@ -16,6 +16,14 @@
 
 package io.atomix.client.map;
 
+import com.google.common.util.concurrent.MoreExecutors;
+import io.atomix.client.AsyncPrimitive;
+import io.atomix.client.DistributedPrimitive;
+import io.atomix.client.PrimitiveType;
+import io.atomix.client.Versioned;
+import io.atomix.client.collection.AsyncDistributedCollection;
+import io.atomix.client.set.AsyncDistributedSet;
+
 import java.time.Duration;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -24,14 +32,6 @@ import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import com.google.common.util.concurrent.MoreExecutors;
-import io.atomix.client.AsyncPrimitive;
-import io.atomix.client.DistributedPrimitive;
-import io.atomix.client.PrimitiveType;
-import io.atomix.client.Versioned;
-import io.atomix.client.collection.AsyncDistributedCollection;
-import io.atomix.client.set.AsyncDistributedSet;
 
 /**
  * A distributed, strongly consistent map whose methods are all executed asynchronously.

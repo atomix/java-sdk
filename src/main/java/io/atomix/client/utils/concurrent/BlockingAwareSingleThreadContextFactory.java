@@ -15,11 +15,11 @@
  */
 package io.atomix.client.utils.concurrent;
 
+import org.slf4j.Logger;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-
-import org.slf4j.Logger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.atomix.client.utils.concurrent.Threads.namedThreads;

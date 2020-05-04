@@ -15,13 +15,13 @@
  */
 package io.atomix.client.iterator.impl;
 
-import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.utils.concurrent.Futures;
 import io.grpc.stub.StreamObserver;
+
+import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Stream observer iterator.

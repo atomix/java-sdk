@@ -17,7 +17,6 @@ package io.atomix.client.session;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.atomix.api.headers.ResponseHeader;
-import io.atomix.api.headers.ResponseType;
 import io.atomix.api.headers.StreamHeader;
 import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.utils.logging.ContextualLoggerFactory;

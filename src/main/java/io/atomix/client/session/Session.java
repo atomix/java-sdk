@@ -5,7 +5,6 @@ import io.atomix.api.headers.ResponseHeader;
 import io.atomix.api.headers.StreamHeader;
 import io.atomix.api.primitive.Name;
 import io.atomix.api.session.*;
-import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.PrimitiveState;
 import io.atomix.client.partition.Partition;
 import io.atomix.client.utils.concurrent.Futures;
@@ -70,15 +69,14 @@ public class Session {
         if (state != null) {
             return RequestHeader.newBuilder()
                     .setName(name)
+                    .setPartition(partition.id())
                     .setSessionId(state.getSessionId())
                     .setRequestId(state.getCommandResponse())
                     .setIndex(state.getResponseIndex())
-                //.setSequenceNumber(state.getCommandResponse())
                 .addAllStreams(sequencer.streams().stream()
                     .map(stream -> StreamHeader.newBuilder()
-                        .setStreamId(stream.streamId())
-                        //.setIndex(stream.getStreamIndex())
-                        //.setLastItemNumber(stream.getStreamSequence())
+                            .setStreamId(stream.streamId())
+                            .setResponseId(stream.getCompleteSequence())
                         .build())
                     .collect(Collectors.toList()))
                 .build();
@@ -187,10 +185,7 @@ public class Session {
 
     private CompletableFuture<Boolean> keepAlive() {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
-        RequestHeader header = RequestHeader.newBuilder()
-                .setPartition(partition.id())
-                .setSessionId(state.getSessionId())
-                .build();
+        RequestHeader header = getSessionHeader(Name.newBuilder().setName("keep-alive").build());
         service.keepAlive(KeepAliveRequest.newBuilder().setHeader(header).build(), new StreamObserver<>() {
             @Override
             public void onNext(KeepAliveResponse response) {
@@ -244,9 +239,7 @@ public class Session {
                 .build(), new StreamObserver<>() {
 
             @Override
-            public void onNext(CloseSessionResponse closeSessionResponse) {
-
-            }
+            public void onNext(CloseSessionResponse closeSessionResponse) {}
 
             @Override
             public void onError(Throwable t) {

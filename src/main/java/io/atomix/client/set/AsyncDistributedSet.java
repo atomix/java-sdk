@@ -15,12 +15,12 @@
  */
 package io.atomix.client.set;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.collection.AsyncDistributedCollection;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A distributed collection designed for holding unique elements.

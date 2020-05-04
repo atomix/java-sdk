@@ -15,11 +15,11 @@
  */
 package io.atomix.client.collection.impl;
 
-import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.utils.concurrent.Futures;
+
+import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Unmodifiable distributed collection.

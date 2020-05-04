@@ -15,12 +15,12 @@
  */
 package io.atomix.client.iterator;
 
+import io.atomix.client.DistributedPrimitive;
+import io.atomix.client.iterator.impl.BlockingIterator;
+
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
-
-import io.atomix.client.DistributedPrimitive;
-import io.atomix.client.iterator.impl.BlockingIterator;
 
 /**
  * Asynchronous iterator.

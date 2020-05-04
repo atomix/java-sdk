@@ -15,15 +15,15 @@
  */
 package io.atomix.client.idgenerator.impl;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.idgenerator.AsyncAtomicIdGenerator;
 import io.atomix.client.idgenerator.AtomicIdGenerator;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Default implementation for a {@code AtomicIdGenerator} backed by a {@link AsyncAtomicIdGenerator}.

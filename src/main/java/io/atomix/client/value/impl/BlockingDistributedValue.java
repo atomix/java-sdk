@@ -15,16 +15,16 @@
  */
 package io.atomix.client.value.impl;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.value.AsyncDistributedValue;
 import io.atomix.client.value.DistributedValue;
 import io.atomix.client.value.ValueEventListener;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Default implementation for a {@code DistributedValue} backed by a {@link AsyncDistributedValue}.

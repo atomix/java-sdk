@@ -15,11 +15,8 @@
  */
 package io.atomix.client.partition.impl;
 
-import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.partition.Partition;
 import io.atomix.client.partition.PartitionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;

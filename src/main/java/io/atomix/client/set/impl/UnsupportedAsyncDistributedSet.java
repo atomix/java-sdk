@@ -15,11 +15,11 @@
  */
 package io.atomix.client.set.impl;
 
-import java.time.Duration;
-
 import io.atomix.client.collection.impl.UnsupportedAsyncDistributedCollection;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
+
+import java.time.Duration;
 
 /**
  * Distributed set implementation that returns {@link UnsupportedOperationException} for all asynchronous operations.

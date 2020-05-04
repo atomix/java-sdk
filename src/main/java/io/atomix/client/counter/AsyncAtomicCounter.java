@@ -15,12 +15,12 @@
  */
 package io.atomix.client.counter;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.PrimitiveType;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * An async atomic counter dispenses monotonically increasing values.

@@ -15,12 +15,12 @@
  */
 package io.atomix.client.lock;
 
+import io.atomix.client.PrimitiveType;
+import io.atomix.client.SyncPrimitive;
+
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-
-import io.atomix.client.PrimitiveType;
-import io.atomix.client.SyncPrimitive;
 
 /**
  * Distributed lock primitive.

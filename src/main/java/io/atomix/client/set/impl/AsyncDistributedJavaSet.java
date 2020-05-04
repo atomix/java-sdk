@@ -15,12 +15,12 @@
  */
 package io.atomix.client.set.impl;
 
-import java.time.Duration;
-import java.util.Set;
-
 import io.atomix.client.collection.impl.AsyncDistributedJavaCollection;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
+
+import java.time.Duration;
+import java.util.Set;
 
 /**
  * Asynchronous distributed Java set.

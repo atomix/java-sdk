@@ -16,12 +16,12 @@
 
 package io.atomix.client.set.impl;
 
-import java.time.Duration;
-import java.util.function.Function;
-
 import io.atomix.client.collection.impl.TranscodingAsyncDistributedCollection;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
+
+import java.time.Duration;
+import java.util.function.Function;
 
 /**
  * An {@code AsyncDistributedSet} that maps its operations to operations on a

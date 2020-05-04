@@ -15,13 +15,13 @@
  */
 package io.atomix.client.election;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 
 /**
  * State of leadership for topic.

@@ -15,9 +15,9 @@
  */
 package io.atomix.client.impl;
 
-import java.util.function.Function;
-
 import io.grpc.stub.StreamObserver;
+
+import java.util.function.Function;
 
 /**
  * Transcoding stream observer.

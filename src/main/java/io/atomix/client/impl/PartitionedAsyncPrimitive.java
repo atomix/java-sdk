@@ -15,17 +15,6 @@
  */
 package io.atomix.client.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import io.atomix.api.primitive.Name;
@@ -34,6 +23,13 @@ import io.atomix.client.ManagedAsyncPrimitive;
 import io.atomix.client.PrimitiveState;
 import io.atomix.client.partition.Partitioner;
 import io.atomix.client.utils.concurrent.Futures;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

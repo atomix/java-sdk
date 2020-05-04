@@ -15,13 +15,6 @@
  */
 package io.atomix.client.collection.impl;
 
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import com.google.common.base.Throwables;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
@@ -30,6 +23,13 @@ import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.iterator.SyncIterator;
 import io.atomix.client.iterator.impl.BlockingIterator;
+
+import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Implementation of {@link DistributedCollection} that merely delegates to a {@link AsyncDistributedCollection} and

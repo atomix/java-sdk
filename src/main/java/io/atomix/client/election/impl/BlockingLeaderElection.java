@@ -15,12 +15,6 @@
  */
 package io.atomix.client.election.impl;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
-
 import com.google.common.base.Throwables;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.PrimitiveState;
@@ -29,6 +23,12 @@ import io.atomix.client.election.AsyncLeaderElection;
 import io.atomix.client.election.LeaderElection;
 import io.atomix.client.election.Leadership;
 import io.atomix.client.election.LeadershipEventListener;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 /**
  * Default implementation for a {@code LeaderElector} backed by a {@link AsyncLeaderElection}.

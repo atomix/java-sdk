@@ -15,10 +15,10 @@
  */
 package io.atomix.client.iterator.impl;
 
+import io.atomix.client.iterator.AsyncIterator;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-
-import io.atomix.client.iterator.AsyncIterator;
 
 /**
  * Transcoding iterator.

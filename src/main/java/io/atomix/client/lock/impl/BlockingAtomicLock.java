@@ -15,18 +15,18 @@
  */
 package io.atomix.client.lock.impl;
 
+import com.google.common.base.Throwables;
+import io.atomix.client.PrimitiveException;
+import io.atomix.client.Synchronous;
+import io.atomix.client.lock.AsyncAtomicLock;
+import io.atomix.client.lock.AtomicLock;
+
 import java.time.Duration;
 import java.util.OptionalLong;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import com.google.common.base.Throwables;
-import io.atomix.client.PrimitiveException;
-import io.atomix.client.Synchronous;
-import io.atomix.client.lock.AsyncAtomicLock;
-import io.atomix.client.lock.AtomicLock;
 
 ;
 

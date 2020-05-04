@@ -15,12 +15,12 @@
  */
 package io.atomix.client.collection;
 
-import java.util.Collection;
-
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.iterator.SyncIterable;
 import io.atomix.client.iterator.SyncIterator;
+
+import java.util.Collection;
 
 /**
  * Distributed collection.

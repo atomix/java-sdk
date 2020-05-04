@@ -15,10 +15,10 @@
  */
 package io.atomix.client.election;
 
-import java.util.Objects;
-
 import com.google.common.base.MoreObjects;
 import io.atomix.client.event.AbstractEvent;
+
+import java.util.Objects;
 
 /**
  * Describes leadership election event.

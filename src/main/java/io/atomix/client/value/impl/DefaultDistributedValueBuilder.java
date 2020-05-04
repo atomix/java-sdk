@@ -15,15 +15,12 @@
  */
 package io.atomix.client.value.impl;
 
-import java.util.concurrent.CompletableFuture;
-
-import com.google.common.io.BaseEncoding;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
-import io.atomix.client.utils.serializer.Serializer;
-import io.atomix.client.value.AsyncDistributedValue;
 import io.atomix.client.value.DistributedValue;
 import io.atomix.client.value.DistributedValueBuilder;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Default implementation of DistributedValueBuilder.

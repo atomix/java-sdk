@@ -15,11 +15,11 @@
  */
 package io.atomix.client.value;
 
-import java.util.Optional;
-
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.Versioned;
+
+import java.util.Optional;
 
 /**
  * Distributed version of java.util.concurrent.atomic.AtomicReference.

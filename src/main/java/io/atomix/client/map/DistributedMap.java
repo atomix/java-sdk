@@ -15,14 +15,14 @@
  */
 package io.atomix.client.map;
 
-import java.util.Map;
-import java.util.concurrent.Executor;
-
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.set.DistributedSet;
+
+import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * Distributed map.

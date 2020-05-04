@@ -15,15 +15,6 @@
  */
 package io.atomix.client.map.impl;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -33,6 +24,15 @@ import io.atomix.client.Versioned;
 import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AtomicMapEventListener;
 import org.slf4j.Logger;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static org.slf4j.LoggerFactory.getLogger;
 

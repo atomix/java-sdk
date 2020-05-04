@@ -16,19 +16,19 @@
 
 package io.atomix.client.map;
 
-import java.time.Duration;
-import java.util.Map.Entry;
-import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.Versioned;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.set.DistributedSet;
+
+import java.time.Duration;
+import java.util.Map.Entry;
+import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * {@code ConsistentMap} provides the same functionality as {@link AsyncAtomicMap} with

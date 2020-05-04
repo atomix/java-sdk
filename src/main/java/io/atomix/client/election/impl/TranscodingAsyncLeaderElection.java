@@ -15,18 +15,14 @@
  */
 package io.atomix.client.election.impl;
 
+import com.google.common.collect.Maps;
+import io.atomix.client.election.*;
+import io.atomix.client.impl.DelegatingAsyncPrimitive;
+
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-
-import com.google.common.collect.Maps;
-import io.atomix.client.election.AsyncLeaderElection;
-import io.atomix.client.election.LeaderElection;
-import io.atomix.client.election.Leadership;
-import io.atomix.client.election.LeadershipEvent;
-import io.atomix.client.election.LeadershipEventListener;
-import io.atomix.client.impl.DelegatingAsyncPrimitive;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 

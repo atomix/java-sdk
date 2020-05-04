@@ -15,10 +15,10 @@
  */
 package io.atomix.client.utils.logging;
 
-import java.util.function.Supplier;
-
 import com.google.common.base.MoreObjects;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+
+import java.util.function.Supplier;
 
 /**
  * Logger context.

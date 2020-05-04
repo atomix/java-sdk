@@ -15,16 +15,16 @@
  */
 package io.atomix.client.collection.impl;
 
-import java.time.Duration;
-import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.impl.DelegatingAsyncPrimitive;
 import io.atomix.client.iterator.AsyncIterator;
+
+import java.time.Duration;
+import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * Delegating distributed collection.

@@ -15,9 +15,9 @@
  */
 package io.atomix.client.partition;
 
-import java.util.List;
-
 import com.google.common.hash.Hashing;
+
+import java.util.List;
 
 /**
  * Murmur 3 partitioner.

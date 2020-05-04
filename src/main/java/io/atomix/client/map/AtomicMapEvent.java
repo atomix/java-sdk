@@ -15,11 +15,11 @@
  */
 package io.atomix.client.map;
 
-import java.util.Objects;
-
 import com.google.common.base.MoreObjects;
 import io.atomix.client.Versioned;
 import io.atomix.client.event.AbstractEvent;
+
+import java.util.Objects;
 
 /**
  * Representation of a ConsistentMap update notification.

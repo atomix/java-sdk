@@ -16,14 +16,6 @@
 
 package io.atomix.client.map.impl;
 
-import java.time.Duration;
-import java.util.Map.Entry;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-
 import io.atomix.client.PrimitiveState;
 import io.atomix.client.Versioned;
 import io.atomix.client.collection.AsyncDistributedCollection;
@@ -32,6 +24,14 @@ import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AtomicMap;
 import io.atomix.client.map.AtomicMapEventListener;
 import io.atomix.client.set.AsyncDistributedSet;
+
+import java.time.Duration;
+import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * {@code AsyncConsistentMap} that merely delegates control to

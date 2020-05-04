@@ -15,12 +15,6 @@
  */
 package io.atomix.client.value.impl;
 
-import java.time.Duration;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-
 import com.google.common.collect.Maps;
 import io.atomix.client.Versioned;
 import io.atomix.client.impl.DelegatingAsyncPrimitive;
@@ -28,6 +22,12 @@ import io.atomix.client.value.AsyncAtomicValue;
 import io.atomix.client.value.AtomicValue;
 import io.atomix.client.value.AtomicValueEvent;
 import io.atomix.client.value.AtomicValueEventListener;
+
+import java.time.Duration;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 

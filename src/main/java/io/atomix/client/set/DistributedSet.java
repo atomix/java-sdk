@@ -15,10 +15,10 @@
  */
 package io.atomix.client.set;
 
-import java.util.Set;
-
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.collection.DistributedCollection;
+
+import java.util.Set;
 
 /**
  * A distributed collection designed for holding unique elements.

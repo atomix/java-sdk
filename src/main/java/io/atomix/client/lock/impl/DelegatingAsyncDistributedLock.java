@@ -15,13 +15,13 @@
  */
 package io.atomix.client.lock.impl;
 
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.client.impl.DelegatingAsyncPrimitive;
 import io.atomix.client.lock.AsyncAtomicLock;
 import io.atomix.client.lock.AsyncDistributedLock;
 import io.atomix.client.lock.DistributedLock;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Asynchronous distributed lock that delegates to an {@link AsyncAtomicLock}.

@@ -18,15 +18,12 @@ package io.atomix.client.impl;
 import io.atomix.api.headers.RequestHeader;
 import io.atomix.api.headers.ResponseHeader;
 import io.atomix.api.primitive.Name;
-import io.atomix.client.AsyncAtomixClient;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.ManagedAsyncPrimitive;
 import io.atomix.client.PrimitiveState;
 import io.atomix.client.session.Session;
 import io.atomix.client.utils.concurrent.ThreadContext;
 import io.grpc.stub.StreamObserver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
