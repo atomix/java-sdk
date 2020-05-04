@@ -15,7 +15,6 @@
  */
 package io.atomix.client.channel;
 
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +44,7 @@ public class ServerChannelProvider implements ChannelProvider {
             builder = NettyChannelBuilder.forAddress(host, port)
                 .usePlaintext();
         }
+
         return builder::build;
     }
 }

@@ -26,6 +26,7 @@ import io.atomix.client.utils.concurrent.BlockingAwareThreadPoolContextFactory;
 import io.atomix.client.utils.concurrent.Futures;
 import io.atomix.client.utils.concurrent.ThreadContextFactory;
 import io.grpc.Channel;
+import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,7 @@ public class AsyncAtomixClient {
      * @return a list of databases supported by the controller
      */
     public CompletableFuture<Collection<AtomixDatabase>> getDatabases() {
-        Channel channel = channelProvider.getFactory().getChannel();
+        ManagedChannel channel = (ManagedChannel) channelProvider.getFactory().getChannel();
         ControllerServiceGrpc.ControllerServiceStub controller = ControllerServiceGrpc.newStub(channel);
         CompletableFuture<Collection<AtomixDatabase>> future = new CompletableFuture<>();
         controller.getDatabases(GetDatabasesRequest.newBuilder()
@@ -93,6 +94,7 @@ public class AsyncAtomixClient {
                         .map(AsyncAtomixClient.this::createDatabase)
                         .collect(Collectors.toList())).whenComplete((databases, error) -> {
                         if (error != null) {
+                            channel.shutdown();
                             future.completeExceptionally(error);
                         } else {
                             future.complete(databases);
@@ -103,12 +105,12 @@ public class AsyncAtomixClient {
 
             @Override
             public void onError(Throwable t) {
+                channel.shutdown();
                 future.completeExceptionally(t);
             }
 
             @Override
             public void onCompleted() {
-
             }
         });
         return future;
@@ -121,7 +123,7 @@ public class AsyncAtomixClient {
      * @return the database
      */
     public CompletableFuture<AtomixDatabase> getDatabase(String name) {
-        Channel channel = channelProvider.getFactory().getChannel();
+        ManagedChannel channel = (ManagedChannel) channelProvider.getFactory().getChannel();
         ControllerServiceGrpc.ControllerServiceStub controller = ControllerServiceGrpc.newStub(channel);
         CompletableFuture<AtomixDatabase> future = new CompletableFuture<>();
         controller.getDatabases(GetDatabasesRequest.newBuilder()
@@ -137,6 +139,7 @@ public class AsyncAtomixClient {
                 } else {
                     createDatabase(response.getDatabases(0)).whenComplete((database, error) -> {
                         if (error != null) {
+                            channel.shutdown();
                             future.completeExceptionally(error);
                         } else {
                             future.complete(database);
@@ -147,12 +150,12 @@ public class AsyncAtomixClient {
 
             @Override
             public void onError(Throwable t) {
+                channel.shutdown();
                 future.completeExceptionally(t);
             }
 
             @Override
             public void onCompleted() {
-
             }
         });
         return future;

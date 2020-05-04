@@ -23,6 +23,7 @@ import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.set.DistributedSetBuilder;
 import io.atomix.client.utils.serializer.Serializer;
+import io.atomix.client.utils.serializer.impl.DefaultSerializer;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -47,7 +48,7 @@ public class DefaultDistributedSetBuilder<E> extends DistributedSetBuilder<E> {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return new PartitionedAsyncDistributedSet(name, partitions, partitioner).connect()
             .thenApply(rawSet -> {
-                Serializer serializer = serializer();
+                Serializer serializer = new DefaultSerializer();
                 return new TranscodingAsyncDistributedSet<E, String>(
                     rawSet,
                     element -> BaseEncoding.base16().encode(serializer.encode(element)),
