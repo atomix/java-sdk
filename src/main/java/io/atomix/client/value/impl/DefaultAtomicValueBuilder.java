@@ -19,6 +19,7 @@ import com.google.common.io.BaseEncoding;
 import io.atomix.api.primitive.Name;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.utils.serializer.Serializer;
+import io.atomix.client.utils.serializer.impl.DefaultSerializer;
 import io.atomix.client.value.AsyncAtomicValue;
 import io.atomix.client.value.AtomicValue;
 import io.atomix.client.value.AtomicValueBuilder;
@@ -44,7 +45,7 @@ public class DefaultAtomicValueBuilder<V> extends AtomicValueBuilder<V> {
             managementService.getThreadFactory().createContext())
             .connect()
             .thenApply(rawValue -> {
-                Serializer serializer = serializer();
+                Serializer serializer = new DefaultSerializer();
                 return new TranscodingAsyncAtomicValue<V, String>(
                     rawValue,
                     value -> BaseEncoding.base16().encode(serializer.encode(value)),
