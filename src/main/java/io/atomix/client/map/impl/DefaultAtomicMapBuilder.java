@@ -23,6 +23,7 @@ import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AtomicMap;
 import io.atomix.client.map.AtomicMapBuilder;
 import io.atomix.client.utils.serializer.Serializer;
+import io.atomix.client.utils.serializer.impl.DefaultSerializer;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -47,7 +48,7 @@ public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return new PartitionedAsyncAtomicMap(name, partitions, partitioner).connect()
             .thenApply(rawMap -> {
-                Serializer serializer = serializer();
+                Serializer serializer = new DefaultSerializer();
                 return new TranscodingAsyncAtomicMap<K, V, String, byte[]>(
                     rawMap,
                     key -> BaseEncoding.base16().encode(serializer.encode(key)),

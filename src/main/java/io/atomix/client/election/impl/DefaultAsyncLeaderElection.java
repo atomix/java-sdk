@@ -93,7 +93,7 @@ public class DefaultAsyncLeaderElection
                 .setHeader(header)
                 .setCandidateId(identifier)
                 .build(), observer), PromoteResponse::getHeader)
-            .thenApply(response -> response.getSucceeded());*/
+            .thenApply(response -> response.getHeader());*/
         return null;
     }
 

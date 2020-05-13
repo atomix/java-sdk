@@ -30,6 +30,7 @@ import io.atomix.client.set.impl.TranscodingAsyncDistributedSet;
 import io.atomix.client.utils.concurrent.Futures;
 
 import java.time.Duration;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
@@ -69,7 +70,7 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
         Function<V2, V1> valueDecoder) {
         super(backingMap);
         this.backingMap = backingMap;
-        this.keyEncoder = k -> k == null ? null : keyEncoder.apply(k);
+        this.keyEncoder = k -> k ==  null ? null : keyEncoder.apply(k);
         this.keyDecoder = k -> k == null ? null : keyDecoder.apply(k);
         this.valueEncoder = v -> v == null ? null : valueEncoder.apply(v);
         this.valueDecoder = v -> v == null ? null : valueDecoder.apply(v);

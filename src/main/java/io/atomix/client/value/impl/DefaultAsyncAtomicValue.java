@@ -16,6 +16,8 @@
 package io.atomix.client.value.impl;
 
 import com.google.protobuf.ByteString;
+import io.atomix.api.counter.CheckAndSetRequest;
+import io.atomix.api.counter.CheckAndSetResponse;
 import io.atomix.api.primitive.Name;
 import io.atomix.api.value.*;
 import io.atomix.client.Versioned;

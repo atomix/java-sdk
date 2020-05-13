@@ -76,8 +76,9 @@ public class DefaultAsyncAtomicMap extends
     public CompletableFuture<Boolean> containsKey(String key) {
         return query(
             (header, observer) -> getService().exists(ExistsRequest.newBuilder()
-                .setHeader(header)
-                .build(), observer),
+                    .setHeader(header)
+                    .setKey(key)
+                    .build(), observer),
             ExistsResponse::getHeader)
             .thenApply(response -> response.getContainsKey());
     }

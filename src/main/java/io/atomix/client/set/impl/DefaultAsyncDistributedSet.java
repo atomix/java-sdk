@@ -95,7 +95,6 @@ public class DefaultAsyncDistributedSet
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<Boolean> addAll(Collection<? extends String> c) {
-
         /*return command(
             (header, observer) -> getService().add(AddRequest.newBuilder()
                 .setHeader(header)
