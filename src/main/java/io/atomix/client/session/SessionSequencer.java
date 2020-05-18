@@ -95,14 +95,16 @@ final class SessionSequencer {
     public void sequenceStream(ResponseHeader context, Runnable callback) {
         switch (context.getType()) {
             case OPEN_STREAM:
-                streams.computeIfAbsent(context.getStreamId(), StreamSequencer::new);
+                streams.computeIfAbsent(context.getStreamId(), StreamSequencer::new)
+                        .sequenceEvent(context, callback);
                 break;
             case RESPONSE:
                 streams.computeIfAbsent(context.getStreamId(), StreamSequencer::new)
-                    .sequenceEvent(context, callback);
+                        .sequenceEvent(context, callback);
                 break;
             case CLOSE_STREAM:
-                streams.remove(context.getStreamId());
+                streams.remove(context.getStreamId())
+                        .sequenceEvent(context, callback);
                 break;
         }
     }

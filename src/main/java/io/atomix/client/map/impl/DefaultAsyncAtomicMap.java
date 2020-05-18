@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -84,6 +85,7 @@ public class DefaultAsyncAtomicMap extends
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public CompletableFuture<Boolean> containsValue(byte[] value) {
         return Futures.exceptionalFuture(new UnsupportedOperationException());
     }
@@ -596,7 +598,6 @@ public class DefaultAsyncAtomicMap extends
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public CompletableFuture<Boolean> containsAll(Collection<? extends String> c) {
             return Futures.exceptionalFuture(new UnsupportedOperationException());
         }

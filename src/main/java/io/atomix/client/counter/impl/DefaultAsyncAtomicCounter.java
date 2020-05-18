@@ -38,7 +38,6 @@ public class DefaultAsyncAtomicCounter
     public DefaultAsyncAtomicCounter(Name name, Session session, ThreadContext context) {
         super(name, CounterServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAsyncAtomicCounter.class);
 
     @Override
     public CompletableFuture<Long> get() {
