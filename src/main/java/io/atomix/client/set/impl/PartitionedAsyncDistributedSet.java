@@ -46,12 +46,12 @@ public class PartitionedAsyncDistributedSet extends PartitionedAsyncPrimitive<As
 
     @Override
     public CompletableFuture<Boolean> add(String element) {
-        return null;
+        return getPartition(element).add(element);
     }
 
     @Override
     public CompletableFuture<Boolean> remove(String element) {
-        return null;
+        return getPartition(element).remove(element);
     }
 
     @Override

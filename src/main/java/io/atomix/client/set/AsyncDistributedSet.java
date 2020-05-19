@@ -38,6 +38,9 @@ public interface AsyncDistributedSet<E> extends AsyncDistributedCollection<E> {
     }
 
     @Override
+    CompletableFuture<Boolean> add(E element);
+
+    @Override
     default DistributedSet<E> sync() {
         return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
     }

@@ -21,6 +21,7 @@ import io.atomix.client.set.DistributedSet;
 
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Asynchronous distributed Java set.

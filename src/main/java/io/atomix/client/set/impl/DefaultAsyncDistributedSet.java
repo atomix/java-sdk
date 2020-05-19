@@ -65,7 +65,13 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> remove(String element) {
-        return removeAll(Collections.singleton(element));
+        return command(
+                (header, observer) -> getService().remove(RemoveRequest.newBuilder()
+                        .setHeader(header)
+                        .setValue(element)
+                        .build(), observer),
+                RemoveResponse::getHeader)
+                .thenApply(response -> response.getRemoved());
     }
 
     @Override
