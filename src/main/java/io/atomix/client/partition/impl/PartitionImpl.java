@@ -32,7 +32,7 @@ public class PartitionImpl implements Partition {
 
     @Override
     public int id() {
-        return partition.getPartitionId();
+        return partition.getPartitionId().getPartition();
     }
 
     @Override

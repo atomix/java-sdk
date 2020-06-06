@@ -15,7 +15,7 @@
  */
 package io.atomix.client;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.utils.concurrent.ThreadContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +58,8 @@ public class AtomixDatabase implements PrimitiveClient {
         return managementService.getThreadFactory();
     }
 
-    private Name getPrimitiveName(String name) {
-        return Name.newBuilder()
+    private PrimitiveId getPrimitiveId(String name) {
+        return PrimitiveId.newBuilder()
             .setName(name)
             .setNamespace(namespace)
             .build();
@@ -69,6 +69,6 @@ public class AtomixDatabase implements PrimitiveClient {
     public <B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> B primitiveBuilder(
         String name,
         PrimitiveType<B, P> primitiveType) {
-        return primitiveType.newBuilder(getPrimitiveName(name), managementService);
+        return primitiveType.newBuilder(getPrimitiveId(name), managementService);
     }
 }

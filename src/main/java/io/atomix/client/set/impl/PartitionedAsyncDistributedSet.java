@@ -15,7 +15,7 @@
  */
 package io.atomix.client.set.impl;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.impl.PartitionedAsyncPrimitive;
 import io.atomix.client.iterator.AsyncIterator;
@@ -38,10 +38,10 @@ import java.util.concurrent.Executor;
  */
 public class PartitionedAsyncDistributedSet extends PartitionedAsyncPrimitive<AsyncDistributedSet<String>> implements AsyncDistributedSet<String> {
     public PartitionedAsyncDistributedSet(
-        Name name,
+        PrimitiveId primitiveId,
         Map<Integer, AsyncDistributedSet<String>> partitions,
         Partitioner<String> partitioner) {
-        super(name, partitions, partitioner);
+        super(primitiveId, partitions, partitioner);
     }
 
     @Override
@@ -132,5 +132,10 @@ public class PartitionedAsyncDistributedSet extends PartitionedAsyncPrimitive<As
     @Override
     public DistributedSet<String> sync(Duration operationTimeout) {
         return new BlockingDistributedSet<>(this, operationTimeout.toMillis());
+    }
+
+    @Override
+    public String name() {
+        return null;
     }
 }

@@ -16,14 +16,12 @@
 package io.atomix.client.counter.impl;
 
 import io.atomix.api.counter.*;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.session.Session;
 import io.atomix.client.utils.concurrent.ThreadContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -35,8 +33,8 @@ public class DefaultAsyncAtomicCounter
 
     extends AbstractAsyncPrimitive<CounterServiceGrpc.CounterServiceStub, AsyncAtomicCounter>
     implements AsyncAtomicCounter {
-    public DefaultAsyncAtomicCounter(Name name, Session session, ThreadContext context) {
-        super(name, CounterServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
+    public DefaultAsyncAtomicCounter(PrimitiveId primitiveId, Session session, ThreadContext context) {
+        super(primitiveId, CounterServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override

@@ -17,7 +17,7 @@ package io.atomix.client.map.impl;
 
 import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AtomicMap;
@@ -36,17 +36,17 @@ import java.util.stream.Collectors;
  * @param <V> type for map value
  */
 public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
-    public DefaultAtomicMapBuilder(Name name, PrimitiveManagementService managementService) {
-        super(name, managementService);
+    public DefaultAtomicMapBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        super(primitiveId, managementService);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicMap<K, V>> buildAsync() {
         Map<Integer, AsyncAtomicMap<String, byte[]>> partitions = managementService.getSessionService().getSessions().stream()
-            .map(session -> Maps.immutableEntry(session.getPartition().id(), new DefaultAsyncAtomicMap(getName(), session, managementService.getThreadFactory().createContext())))
+            .map(session -> Maps.immutableEntry(session.getPartition().id(), new DefaultAsyncAtomicMap(getPrimitiveId(), session, managementService.getThreadFactory().createContext())))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return new PartitionedAsyncAtomicMap(name, partitions, partitioner).connect()
+        return new PartitionedAsyncAtomicMap(primitiveId, partitions, partitioner).connect()
             .thenApply(rawMap -> {
                 Serializer serializer = new DefaultSerializer();
                 return new TranscodingAsyncAtomicMap<K, V, String, byte[]>(

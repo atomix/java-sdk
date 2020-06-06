@@ -15,7 +15,7 @@
  */
 package io.atomix.client.idgenerator;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.idgenerator.impl.DelegatingAtomicIdGeneratorBuilder;
@@ -38,12 +38,13 @@ public class AtomicIdGeneratorType implements PrimitiveType<AtomicIdGeneratorBui
     }
 
     @Override
-    public AtomicIdGeneratorBuilder newBuilder(Name name, PrimitiveManagementService managementService) {
-        return new DelegatingAtomicIdGeneratorBuilder(name, managementService);
+    public AtomicIdGeneratorBuilder newBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        return new DelegatingAtomicIdGeneratorBuilder(primitiveId, managementService);
     }
 
     @Override
     public String toString() {
         return toStringHelper(this).toString();
     }
+
 }

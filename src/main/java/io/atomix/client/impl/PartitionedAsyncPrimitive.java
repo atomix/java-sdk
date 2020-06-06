@@ -17,7 +17,7 @@ package io.atomix.client.impl;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.ManagedAsyncPrimitive;
 import io.atomix.client.PrimitiveState;
@@ -37,7 +37,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Partitioned primitive proxy.
  */
 public abstract class PartitionedAsyncPrimitive<P extends AsyncPrimitive> implements AsyncPrimitive, ManagedAsyncPrimitive<P> {
-    private final Name name;
+    private final PrimitiveId primitiveId;
     private final List<Integer> partitionIds = new CopyOnWriteArrayList<>();
     private final Map<Integer, P> partitions = new ConcurrentHashMap<>();
     private final Partitioner<String> partitioner;
@@ -46,8 +46,8 @@ public abstract class PartitionedAsyncPrimitive<P extends AsyncPrimitive> implem
     private volatile PrimitiveState state = PrimitiveState.CLOSED;
 
     protected PartitionedAsyncPrimitive(
-        Name name, Map<Integer, P> partitions, Partitioner<String> partitioner) {
-        this.name = checkNotNull(name, "id cannot be null");
+        PrimitiveId primitiveId, Map<Integer, P> partitions, Partitioner<String> partitioner) {
+        this.primitiveId = checkNotNull(primitiveId, "id cannot be null");
         partitions.forEach((partitionId, partition) -> {
             partitionIds.add(partitionId);
             this.partitions.put(partitionId, partition);
@@ -59,10 +59,6 @@ public abstract class PartitionedAsyncPrimitive<P extends AsyncPrimitive> implem
         });
     }
 
-    @Override
-    public String name() {
-        return name.getName();
-    }
 
     /**
      * Returns the set of partitions.

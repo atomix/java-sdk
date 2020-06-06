@@ -15,7 +15,7 @@
  */
 package io.atomix.client.lock;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.lock.impl.DefaultAtomicLockBuilder;
@@ -38,8 +38,8 @@ public class AtomicLockType implements PrimitiveType<AtomicLockBuilder, AtomicLo
     }
 
     @Override
-    public AtomicLockBuilder newBuilder(Name name, PrimitiveManagementService managementService) {
-        return new DefaultAtomicLockBuilder(name, managementService);
+    public AtomicLockBuilder newBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        return new DefaultAtomicLockBuilder(primitiveId, managementService);
     }
 
     @Override

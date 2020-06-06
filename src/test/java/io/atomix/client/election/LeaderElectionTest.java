@@ -15,17 +15,7 @@
  */
 package io.atomix.client.election;
 
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
-
 import io.atomix.client.AbstractPrimitiveTest;
-import org.junit.Assert;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for {@link AsyncLeaderElection}.

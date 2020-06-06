@@ -16,14 +16,6 @@
 package io.atomix.client.lock;
 
 import io.atomix.client.AbstractPrimitiveTest;
-import org.junit.Test;
-
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Distributed lock test.

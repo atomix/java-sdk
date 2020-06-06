@@ -15,15 +15,6 @@
  */
 package io.atomix.client.test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.google.protobuf.Empty;
-
-
 /**
  * Test protocol.
  */

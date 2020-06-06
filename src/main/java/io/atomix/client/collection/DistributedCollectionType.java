@@ -15,7 +15,7 @@
  */
 package io.atomix.client.collection;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.PrimitiveType;
 
@@ -39,7 +39,7 @@ public class DistributedCollectionType<E> implements PrimitiveType<DistributedCo
     }
 
     @Override
-    public DistributedCollectionBuilder newBuilder(Name name, PrimitiveManagementService managementService) {
+    public DistributedCollectionBuilder newBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
         throw new UnsupportedOperationException();
     }
 

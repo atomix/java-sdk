@@ -17,7 +17,7 @@ package io.atomix.client.set.impl;
 
 import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
@@ -35,8 +35,8 @@ import java.util.stream.Collectors;
  * @param <E> type for set elements
  */
 public class DefaultDistributedSetBuilder<E> extends DistributedSetBuilder<E> {
-    public DefaultDistributedSetBuilder(Name name, PrimitiveManagementService managementService) {
-        super(name, managementService);
+    public DefaultDistributedSetBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        super(primitiveId, managementService);
     }
 
     @Override
@@ -44,9 +44,9 @@ public class DefaultDistributedSetBuilder<E> extends DistributedSetBuilder<E> {
     public CompletableFuture<DistributedSet<E>> buildAsync() {
         Map<Integer, AsyncDistributedSet<String>> partitions = managementService.getSessionService().getSessions().stream()
             .map(session -> Maps.immutableEntry(session.getPartition().id(), new DefaultAsyncDistributedSet(
-                getName(), session, managementService.getThreadFactory().createContext())))
+                getPrimitiveId(), session, managementService.getThreadFactory().createContext())))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return new PartitionedAsyncDistributedSet(name, partitions, partitioner).connect()
+        return new PartitionedAsyncDistributedSet(primitiveId, partitions, partitioner).connect()
             .thenApply(rawSet -> {
                 Serializer serializer = new DefaultSerializer();
                 return new TranscodingAsyncDistributedSet<E, String>(

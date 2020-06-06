@@ -16,7 +16,7 @@
 package io.atomix.client.impl;
 
 import com.google.common.collect.Maps;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.PrimitiveCache;
 
@@ -28,11 +28,11 @@ import java.util.function.Supplier;
  * Core primitive cache.
  */
 public class PrimitiveCacheImpl implements PrimitiveCache {
-    private final Map<Name, CompletableFuture> primitives = Maps.newConcurrentMap();
+    private final Map<PrimitiveId, CompletableFuture> primitives = Maps.newConcurrentMap();
 
     @Override
     @SuppressWarnings("unchecked")
-    public <P extends DistributedPrimitive> CompletableFuture<P> getPrimitive(Name name, Supplier<CompletableFuture<P>> supplier) {
-        return primitives.computeIfAbsent(name, n -> supplier.get());
+    public <P extends DistributedPrimitive> CompletableFuture<P> getPrimitive(PrimitiveId primitiveId, Supplier<CompletableFuture<P>> supplier) {
+        return primitives.computeIfAbsent(primitiveId, n -> supplier.get());
     }
 }

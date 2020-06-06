@@ -15,7 +15,7 @@
  */
 package io.atomix.client.set;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.collection.DistributedCollectionBuilder;
 
@@ -26,7 +26,7 @@ import io.atomix.client.collection.DistributedCollectionBuilder;
  */
 public abstract class DistributedSetBuilder<E>
     extends DistributedCollectionBuilder<DistributedSetBuilder<E>, DistributedSet<E>, E> {
-    protected DistributedSetBuilder(Name name, PrimitiveManagementService managementService) {
-        super(name, managementService);
+    protected DistributedSetBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        super(primitiveId, managementService);
     }
 }

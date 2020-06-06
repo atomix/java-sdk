@@ -16,16 +16,6 @@
 package io.atomix.client.value;
 
 import io.atomix.client.AbstractPrimitiveTest;
-import io.atomix.client.Versioned;
-import org.junit.Test;
-
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Raft atomic value test.

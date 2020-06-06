@@ -15,7 +15,7 @@
  */
 package io.atomix.client.election;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.election.impl.DefaultLeaderElectionBuilder;
@@ -40,8 +40,8 @@ public class LeaderElectionType<T> implements PrimitiveType<LeaderElectionBuilde
     }
 
     @Override
-    public LeaderElectionBuilder<T> newBuilder(Name name, PrimitiveManagementService managementService) {
-        return new DefaultLeaderElectionBuilder<>(name, managementService);
+    public LeaderElectionBuilder<T> newBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        return new DefaultLeaderElectionBuilder<>(primitiveId, managementService);
     }
 
     @Override

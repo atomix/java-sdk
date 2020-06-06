@@ -15,7 +15,7 @@
  */
 package io.atomix.client.value;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.value.impl.DefaultDistributedValueBuilder;
@@ -40,8 +40,8 @@ public class DistributedValueType<V> implements PrimitiveType<DistributedValueBu
     }
 
     @Override
-    public DistributedValueBuilder<V> newBuilder(Name name, PrimitiveManagementService managementService) {
-        return new DefaultDistributedValueBuilder<>(name, managementService);
+    public DistributedValueBuilder<V> newBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        return new DefaultDistributedValueBuilder<>(primitiveId, managementService);
     }
 
     @Override

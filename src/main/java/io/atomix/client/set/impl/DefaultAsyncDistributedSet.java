@@ -15,7 +15,7 @@
  */
 package io.atomix.client.set.impl;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.api.set.*;
 import io.atomix.client.collection.CollectionEvent;
 import io.atomix.client.collection.CollectionEventListener;
@@ -32,7 +32,6 @@ import io.grpc.stub.StreamObserver;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,8 +46,8 @@ public class DefaultAsyncDistributedSet
     private volatile CompletableFuture<Long> listenFuture;
     private final Map<CollectionEventListener<String>, Executor> eventListeners = new ConcurrentHashMap<>();
 
-    public DefaultAsyncDistributedSet(Name name, Session session, ThreadContext context) {
-        super(name, SetServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
+    public DefaultAsyncDistributedSet(PrimitiveId primitiveId, Session session, ThreadContext context) {
+        super(primitiveId, SetServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override

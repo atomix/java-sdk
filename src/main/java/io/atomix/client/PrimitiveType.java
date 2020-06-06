@@ -15,7 +15,7 @@
  */
 package io.atomix.client;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 
 /**
  * Primitive type.
@@ -25,10 +25,10 @@ public interface PrimitiveType<B extends PrimitiveBuilder, P extends SyncPrimiti
     /**
      * Returns a new primitive builder.
      *
-     * @param name              the primitive ID
+     * @param primitiveId              the primitive ID
      * @param managementService the primitive management service
      * @return a new primitive builder
      */
-    B newBuilder(Name name, PrimitiveManagementService managementService);
+    B newBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService);
 
 }

@@ -18,7 +18,7 @@ package io.atomix.client.map.impl;
 import com.google.common.collect.Maps;
 import com.google.protobuf.ByteString;
 import io.atomix.api.map.*;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.Versioned;
 import io.atomix.client.collection.AsyncDistributedCollection;
@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -59,8 +58,8 @@ public class DefaultAsyncAtomicMap extends
     private volatile CompletableFuture<Long> listenFuture;
     private final Map<AtomicMapEventListener<String, byte[]>, Executor> eventListeners = new ConcurrentHashMap<>();
 
-    public DefaultAsyncAtomicMap(Name name, Session session, ThreadContext context) {
-        super(name, MapServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
+    public DefaultAsyncAtomicMap(PrimitiveId primitiveId, Session session, ThreadContext context) {
+        super(primitiveId, MapServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override

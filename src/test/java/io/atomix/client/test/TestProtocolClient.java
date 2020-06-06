@@ -15,12 +15,6 @@
  */
 package io.atomix.client.test;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Test protocol client.
  */

@@ -15,19 +15,7 @@
  */
 package io.atomix.client.set;
 
-import java.util.Arrays;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
 import io.atomix.client.AbstractPrimitiveTest;
-import io.atomix.client.collection.CollectionEvent;
-import io.atomix.client.collection.CollectionEventListener;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Distributed set test.

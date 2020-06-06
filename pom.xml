@@ -258,18 +258,6 @@
                 <version>${maven.wagon.plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>download-controller-api</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/controller/controller.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/controller</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>download-database-api</id>
                         <phase>generate-sources</phase>
                         <goals>
@@ -277,7 +265,7 @@
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/controller/database.proto</fromFile>
+                            <fromFile>proto/atomix/database/database.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/controller</toDir>
                         </configuration>
                     </execution>
@@ -363,18 +351,6 @@
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
                             <fromFile>proto/atomix/map/map.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/map</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-metadata-api</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/metadata/metadata.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/metadata</toDir>
                         </configuration>
                     </execution>
                     <execution>

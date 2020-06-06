@@ -77,12 +77,10 @@ public class AsyncAtomixClient {
      */
     public CompletableFuture<Collection<AtomixDatabase>> getDatabases() {
         ManagedChannel channel = (ManagedChannel) channelProvider.getFactory().getChannel();
-        ControllerServiceGrpc.ControllerServiceStub controller = ControllerServiceGrpc.newStub(channel);
+        DatabaseServiceGrpc.DatabaseServiceStub database = DatabaseServiceGrpc.newStub(channel);
         CompletableFuture<Collection<AtomixDatabase>> future = new CompletableFuture<>();
-        controller.getDatabases(GetDatabasesRequest.newBuilder()
-            .setId(DatabaseId.newBuilder()
+        database.getDatabases(GetDatabasesRequest.newBuilder()
                 .setNamespace(namespace)
-                .build())
             .build(), new StreamObserver<>() {
             @Override
             public void onNext(GetDatabasesResponse response) {
@@ -123,20 +121,20 @@ public class AsyncAtomixClient {
      */
     public CompletableFuture<AtomixDatabase> getDatabase(String name) {
         ManagedChannel channel = (ManagedChannel) channelProvider.getFactory().getChannel();
-        ControllerServiceGrpc.ControllerServiceStub controller = ControllerServiceGrpc.newStub(channel);
+        DatabaseServiceGrpc.DatabaseServiceStub database = DatabaseServiceGrpc.newStub(channel);
         CompletableFuture<AtomixDatabase> future = new CompletableFuture<>();
-        controller.getDatabases(GetDatabasesRequest.newBuilder()
+        database.getDatabase(GetDatabaseRequest.newBuilder()
             .setId(DatabaseId.newBuilder()
                 .setNamespace(namespace)
                 .setName(name)
                 .build())
             .build(), new StreamObserver<>() {
             @Override
-            public void onNext(GetDatabasesResponse response) {
-                if (response.getDatabasesCount() == 0) {
+            public void onNext(GetDatabaseResponse response) {
+                if (response.getDatabase() == null) {
                     future.complete(null);
                 } else {
-                    createDatabase(response.getDatabases(0)).whenComplete((database, error) -> {
+                    createDatabase(response.getDatabase()).whenComplete((database, error) -> {
                         if (error != null) {
                             channel.shutdown();
                             future.completeExceptionally(error);

@@ -16,9 +16,7 @@
 package io.atomix.client.value.impl;
 
 import com.google.protobuf.ByteString;
-import io.atomix.api.counter.CheckAndSetRequest;
-import io.atomix.api.counter.CheckAndSetResponse;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.api.value.*;
 import io.atomix.client.Versioned;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
@@ -48,8 +46,8 @@ public class DefaultAsyncAtomicValue
     private final Set<AtomicValueEventListener<String>> eventListeners = new CopyOnWriteArraySet<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAsyncAtomicValue.class);
 
-    public DefaultAsyncAtomicValue(Name name, Session session, ThreadContext context) {
-        super(name, ValueServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
+    public DefaultAsyncAtomicValue(PrimitiveId primitiveId, Session session, ThreadContext context) {
+        super(primitiveId, ValueServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override

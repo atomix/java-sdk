@@ -15,7 +15,7 @@
  */
 package io.atomix.client.cache;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveBuilder;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.SyncPrimitive;
@@ -32,8 +32,8 @@ public abstract class CachedPrimitiveBuilder<B extends CachedPrimitiveBuilder<B,
     protected boolean cacheEnabled = false;
     protected int cacheSize = DEFAULT_CACHE_SIZE;
 
-    protected CachedPrimitiveBuilder(Name name, PrimitiveManagementService managementService) {
-        super(name, managementService);
+    protected CachedPrimitiveBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        super(primitiveId, managementService);
     }
 
     /**

@@ -16,7 +16,7 @@
 package io.atomix.client.lock.impl;
 
 import io.atomix.api.lock.*;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.lock.AsyncAtomicLock;
 import io.atomix.client.lock.AtomicLock;
@@ -35,8 +35,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DefaultAsyncAtomicLock extends AbstractAsyncPrimitive<LockServiceGrpc.LockServiceStub, AsyncAtomicLock> implements AsyncAtomicLock {
     private final AtomicLong lockId = new AtomicLong();
 
-    public DefaultAsyncAtomicLock(Name name, Session session, ThreadContext context) {
-        super(name, LockServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
+    public DefaultAsyncAtomicLock(PrimitiveId primitiveId, Session session, ThreadContext context) {
+        super(primitiveId, LockServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override

@@ -16,7 +16,7 @@
 package io.atomix.client.election.impl;
 
 import com.google.common.io.BaseEncoding;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.election.AsyncLeaderElection;
 import io.atomix.client.election.LeaderElection;
@@ -29,16 +29,16 @@ import java.util.concurrent.CompletableFuture;
  * Default implementation of {@code LeaderElectorBuilder}.
  */
 public class DefaultLeaderElectionBuilder<T> extends LeaderElectionBuilder<T> {
-    public DefaultLeaderElectionBuilder(Name name, PrimitiveManagementService managementService) {
-        super(name, managementService);
+    public DefaultLeaderElectionBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        super(primitiveId, managementService);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<LeaderElection<T>> buildAsync() {
         return new DefaultAsyncLeaderElection(
-            getName(),
-            managementService.getSessionService().getSession(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
+            getPrimitiveId(),
+            managementService.getSessionService().getSession(partitioner.partition(getPrimitiveId().getName(), managementService.getPartitionService().getPartitionIds())),
             managementService.getThreadFactory().createContext())
             .connect()
             .thenApply(election -> {

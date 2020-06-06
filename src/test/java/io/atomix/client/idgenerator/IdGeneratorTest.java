@@ -16,13 +16,6 @@
 package io.atomix.client.idgenerator;
 
 import io.atomix.client.AbstractPrimitiveTest;
-import io.atomix.client.idgenerator.impl.DelegatingAtomicIdGenerator;
-import org.junit.Test;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Unit test for {@code AtomixIdGenerator}.

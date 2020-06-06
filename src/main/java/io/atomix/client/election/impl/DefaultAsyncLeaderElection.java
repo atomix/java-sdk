@@ -16,7 +16,7 @@
 package io.atomix.client.election.impl;
 
 import io.atomix.api.election.*;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.election.*;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.session.Session;
@@ -37,8 +37,8 @@ public class DefaultAsyncLeaderElection
     private volatile CompletableFuture<Long> listenFuture;
     private final Set<LeadershipEventListener<String>> eventListeners = new CopyOnWriteArraySet<>();
 
-    public DefaultAsyncLeaderElection(Name name, Session session, ThreadContext context) {
-        super(name, LeaderElectionServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
+    public DefaultAsyncLeaderElection(PrimitiveId primitiveId, Session session, ThreadContext context) {
+        super(primitiveId, LeaderElectionServiceGrpc.newStub(session.getPartition().getChannelFactory().getChannel()), session, context);
     }
 
     @Override

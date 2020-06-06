@@ -15,18 +15,6 @@
  */
 package io.atomix.client.test;
 
-import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
-import com.google.common.base.Strings;
-import io.atomix.api.controller.ControllerServiceGrpc;
-import io.atomix.api.controller.GetPartitionGroupsRequest;
-import io.atomix.api.controller.GetPartitionGroupsResponse;
-import io.atomix.api.controller.PartitionGroup;
-
-import io.grpc.stub.StreamObserver;
-
 /**
  * Test controller.
  */

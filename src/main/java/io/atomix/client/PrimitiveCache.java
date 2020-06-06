@@ -15,7 +15,7 @@
  */
 package io.atomix.client;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -28,11 +28,11 @@ public interface PrimitiveCache {
     /**
      * Gets or creates a locally cached multiton primitive instance.
      *
-     * @param name     the primitive name
+     * @param primitiveId     the primitive id
      * @param supplier the primitive factory
      * @param <P>      the primitive type
      * @return the primitive instance
      */
-    <P extends DistributedPrimitive> CompletableFuture<P> getPrimitive(Name name, Supplier<CompletableFuture<P>> supplier);
+    <P extends DistributedPrimitive> CompletableFuture<P> getPrimitive(PrimitiveId primitiveId, Supplier<CompletableFuture<P>> supplier);
 
 }

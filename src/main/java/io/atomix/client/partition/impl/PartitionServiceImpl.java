@@ -34,8 +34,9 @@ public class PartitionServiceImpl implements PartitionService {
 
     public PartitionServiceImpl(io.atomix.api.controller.Database database) {
         database.getPartitionsList().forEach(partition -> {
-            partitions.put(partition.getPartitionId(), new PartitionImpl(partition));
-            partitionIds.add(partition.getPartitionId());
+
+            partitions.put(partition.getPartitionId().getPartition(), new PartitionImpl(partition));
+            partitionIds.add(partition.getPartitionId().getPartition());
         });
         Collections.sort(partitionIds);
     }

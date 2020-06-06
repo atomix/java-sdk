@@ -17,7 +17,7 @@ package io.atomix.client.impl;
 
 import io.atomix.api.headers.RequestHeader;
 import io.atomix.api.headers.ResponseHeader;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.ManagedAsyncPrimitive;
 import io.atomix.client.PrimitiveState;
@@ -36,12 +36,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Simple asynchronous primitive.
  */
 public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implements ManagedAsyncPrimitive<P> {
-    private final Name name;
+    private final PrimitiveId primitiveId;
     private final S service;
     private final Session session;
     private final ThreadContext context;
-    public AbstractAsyncPrimitive(Name name, S service, Session session, ThreadContext context) {
-        this.name = checkNotNull(name);
+    public AbstractAsyncPrimitive(PrimitiveId primitiveId, S service, Session session, ThreadContext context) {
+        this.primitiveId = checkNotNull(primitiveId);
         this.service = checkNotNull(service);
         this.session = session;
         this.context = context;
@@ -49,17 +49,9 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
 
     @Override
     public String name() {
-        return name.getName();
+        return primitiveId.getName();
     }
 
-    /**
-     * Returns the primitive name.
-     *
-     * @return the primitive name
-     */
-    protected Name getName() {
-        return name;
-    }
 
     /**
      * Returns the primitive thread context.
@@ -83,7 +75,7 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
     protected <T> CompletableFuture<T> command(
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction) {
-        CompletableFuture returnValue = session.command(name, function, headerFunction);
+        CompletableFuture returnValue = session.command(primitiveId, function, headerFunction);
         return returnValue;
     }
 
@@ -91,20 +83,20 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction,
         StreamObserver<T> handler) {
-        return session.command(name, function, headerFunction, handler);
+        return session.command(primitiveId, function, headerFunction, handler);
     }
 
     protected <T> CompletableFuture<T> query(
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction) {
-        return session.query(name, function, headerFunction);
+        return session.query(primitiveId, function, headerFunction);
     }
 
     protected <T> CompletableFuture<Void> query(
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction,
         StreamObserver<T> handler) {
-        return session.query(name, function, headerFunction, handler);
+        return session.query(primitiveId, function, headerFunction, handler);
     }
 
     protected void state(Consumer<PrimitiveState> consumer) {

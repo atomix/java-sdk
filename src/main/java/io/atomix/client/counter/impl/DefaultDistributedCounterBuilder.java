@@ -15,7 +15,7 @@
  */
 package io.atomix.client.counter.impl;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.counter.AsyncDistributedCounter;
 import io.atomix.client.counter.DistributedCounter;
@@ -27,15 +27,15 @@ import java.util.concurrent.CompletableFuture;
  * Default distributed counter builder.
  */
 public class DefaultDistributedCounterBuilder extends DistributedCounterBuilder {
-    public DefaultDistributedCounterBuilder(Name name, PrimitiveManagementService managementService) {
-        super(name, managementService);
+    public DefaultDistributedCounterBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        super(primitiveId, managementService);
     }
 
     @Override
     public CompletableFuture<DistributedCounter> buildAsync() {
         return new DefaultAsyncAtomicCounter(
-            getName(),
-            managementService.getSessionService().getSession(partitioner.partition(getName().getName(), managementService.getPartitionService().getPartitionIds())),
+                getPrimitiveId(),
+            managementService.getSessionService().getSession(partitioner.partition(getPrimitiveId().getName(), managementService.getPartitionService().getPartitionIds())),
             managementService.getThreadFactory().createContext())
             .connect()
             .thenApply(DelegatingDistributedCounter::new)

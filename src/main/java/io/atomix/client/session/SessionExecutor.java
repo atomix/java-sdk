@@ -18,7 +18,7 @@ package io.atomix.client.session;
 import io.atomix.api.headers.RequestHeader;
 import io.atomix.api.headers.ResponseHeader;
 import io.atomix.api.headers.ResponseType;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.PrimitiveState;
 import io.atomix.client.partition.Partition;
@@ -78,40 +78,40 @@ final class SessionExecutor {
     }
 
     protected <T> CompletableFuture<T> executeCommand(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> responseHeaderFunction) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        threadContext.execute(() -> invokeCommand(name, function, responseHeaderFunction, future));
+        threadContext.execute(() -> invokeCommand(primitiveId, function, responseHeaderFunction, future));
         return future;
     }
 
     protected <T> CompletableFuture<Long> executeCommand(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> responseHeaderFunction,
         StreamObserver<T> observer) {
         CompletableFuture<Long> future = new CompletableFuture<>();
-        threadContext.execute(() -> invokeCommand(name, function, responseHeaderFunction, observer, future));
+        threadContext.execute(() -> invokeCommand(primitiveId, function, responseHeaderFunction, observer, future));
         return future;
     }
 
     protected <T> CompletableFuture<T> executeQuery(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> responseHeaderFunction) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        threadContext.execute(() -> invokeQuery(name, function, responseHeaderFunction, future));
+        threadContext.execute(() -> invokeQuery(primitiveId, function, responseHeaderFunction, future));
         return future;
     }
 
     protected <T> CompletableFuture<Void> executeQuery(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> responseHeaderFunction,
         StreamObserver<T> observer) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        threadContext.execute(() -> invokeQuery(name, function, responseHeaderFunction, observer, future));
+        threadContext.execute(() -> invokeQuery(primitiveId, function, responseHeaderFunction, observer, future));
         return future;
     }
 
@@ -119,13 +119,13 @@ final class SessionExecutor {
      * Submits a command request to the cluster.
      */
     private <T> void invokeCommand(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> requestFunction,
         Function<T, ResponseHeader> responseHeaderFunction,
         CompletableFuture<T> future) {
 
         RequestHeader header = RequestHeader.newBuilder()
-                .setName(name)
+                .setPrimitive(primitiveId)
                 .setPartition(partition.id())
                 .setSessionId(state.getSessionId())
                 .setRequestId(state.nextCommandRequest())
@@ -138,13 +138,13 @@ final class SessionExecutor {
      * Submits a command request to the cluster.
      */
     private <T> void invokeCommand(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> requestFunction,
         Function<T, ResponseHeader> responseHeaderFunction,
         StreamObserver<T> observer,
         CompletableFuture<Long> future) {
         RequestHeader header = RequestHeader.newBuilder()
-                .setName(name)
+                .setPrimitive(primitiveId)
                 .setPartition(partition.id())
                 .setSessionId(state.getSessionId())
                 .setRequestId(state.nextCommandRequest())
@@ -157,12 +157,12 @@ final class SessionExecutor {
      * Submits a query request to the cluster.
      */
     private <T> void invokeQuery(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> requestFunction,
         Function<T, ResponseHeader> responseHeaderFunction,
         CompletableFuture<T> future) {
         RequestHeader header = RequestHeader.newBuilder()
-                .setName(name)
+                .setPrimitive(primitiveId)
                 .setPartition(partition.id())
                 .setSessionId(state.getSessionId())
                 .setRequestId(state.getCommandRequest())
@@ -176,13 +176,13 @@ final class SessionExecutor {
      * Submits a query request to the cluster.
      */
     private <T> void invokeQuery(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> requestFunction,
         Function<T, ResponseHeader> responseHeaderFunction,
         StreamObserver<T> observer,
         CompletableFuture<Void> future) {
         RequestHeader header = RequestHeader.newBuilder()
-                .setName(name)
+                .setPrimitive(primitiveId)
                 .setPartition(partition.id())
                 .setSessionId(state.getSessionId())
                 .setRequestId(state.getCommandRequest())

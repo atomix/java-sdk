@@ -15,7 +15,7 @@
  */
 package io.atomix.client.collection;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.cache.CachedPrimitiveBuilder;
 
@@ -26,7 +26,7 @@ public abstract class DistributedCollectionBuilder<
     B extends DistributedCollectionBuilder<B, P, E>,
     P extends DistributedCollection<E>, E>
     extends CachedPrimitiveBuilder<B, P> {
-    protected DistributedCollectionBuilder(Name name, PrimitiveManagementService managementService) {
-        super(name, managementService);
+    protected DistributedCollectionBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        super(primitiveId, managementService);
     }
 }

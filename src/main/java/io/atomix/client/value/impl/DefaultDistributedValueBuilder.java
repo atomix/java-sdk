@@ -15,7 +15,7 @@
  */
 package io.atomix.client.value.impl;
 
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.value.DistributedValue;
 import io.atomix.client.value.DistributedValueBuilder;
@@ -28,8 +28,8 @@ import java.util.concurrent.CompletableFuture;
  * @param <V> value type
  */
 public class DefaultDistributedValueBuilder<V> extends DistributedValueBuilder<V> {
-    public DefaultDistributedValueBuilder(Name name, PrimitiveManagementService managementService) {
-        super(name, managementService);
+    public DefaultDistributedValueBuilder(PrimitiveId primitiveId, PrimitiveManagementService managementService) {
+        super(primitiveId, managementService);
     }
 
     @Override

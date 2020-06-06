@@ -3,7 +3,7 @@ package io.atomix.client.session;
 import io.atomix.api.headers.RequestHeader;
 import io.atomix.api.headers.ResponseHeader;
 import io.atomix.api.headers.StreamHeader;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.api.session.*;
 import io.atomix.client.PrimitiveState;
 import io.atomix.client.partition.Partition;
@@ -65,10 +65,10 @@ public class Session {
         return partition;
     }
 
-    private RequestHeader getSessionHeader(Name name) {
+    private RequestHeader getSessionHeader(PrimitiveId primitiveId) {
         if (state != null) {
             return RequestHeader.newBuilder()
-                    .setName(name)
+                    .setPrimitive(primitiveId)
                     .setPartition(partition.id())
                     .setSessionId(state.getSessionId())
                     .setRequestId(state.getCommandResponse())
@@ -82,40 +82,40 @@ public class Session {
                 .build();
         } else {
             return RequestHeader.newBuilder()
-                .setName(name)
+                .setPrimitive(primitiveId)
                 .build();
         }
     }
 
 
     public <T> CompletableFuture<T> command(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction) {
-        return executor.executeCommand(name, function, headerFunction);
+        return executor.executeCommand(primitiveId, function, headerFunction);
     }
 
     public <T> CompletableFuture<Long> command(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction,
         StreamObserver<T> handler) {
-        return executor.executeCommand(name, function, headerFunction, handler);
+        return executor.executeCommand(primitiveId, function, headerFunction, handler);
     }
 
     public <T> CompletableFuture<T> query(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction) {
-        return executor.executeQuery(name, function, headerFunction);
+        return executor.executeQuery(primitiveId, function, headerFunction);
     }
 
     public <T> CompletableFuture<Void> query(
-        Name name,
+        PrimitiveId primitiveId,
         BiConsumer<RequestHeader, StreamObserver<T>> function,
         Function<T, ResponseHeader> headerFunction,
         StreamObserver<T> handler) {
-        return executor.executeQuery(name, function, headerFunction, handler);
+        return executor.executeQuery(primitiveId, function, headerFunction, handler);
     }
 
     public void state(Consumer<PrimitiveState> consumer) {
@@ -185,7 +185,7 @@ public class Session {
 
     private CompletableFuture<Boolean> keepAlive() {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
-        RequestHeader header = getSessionHeader(Name.newBuilder().setName("keep-alive").build());
+        RequestHeader header = getSessionHeader(PrimitiveId.newBuilder().setName("keep-alive").build());
         service.keepAlive(KeepAliveRequest.newBuilder().setHeader(header).build(), new StreamObserver<>() {
             @Override
             public void onNext(KeepAliveResponse response) {

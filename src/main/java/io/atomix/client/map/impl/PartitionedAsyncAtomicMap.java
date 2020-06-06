@@ -16,7 +16,7 @@
 package io.atomix.client.map.impl;
 
 import com.google.common.collect.Maps;
-import io.atomix.api.primitive.Name;
+import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.Versioned;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;
@@ -47,10 +47,10 @@ public class PartitionedAsyncAtomicMap
     extends PartitionedAsyncPrimitive<AsyncAtomicMap<String, byte[]>>
     implements AsyncAtomicMap<String, byte[]> {
     public PartitionedAsyncAtomicMap(
-        Name name,
+        PrimitiveId primitiveId,
         Map<Integer, AsyncAtomicMap<String, byte[]>> partitions,
         Partitioner<String> partitioner) {
-        super(name, partitions, partitioner);
+        super(primitiveId, partitions, partitioner);
     }
 
     @Override
@@ -165,6 +165,11 @@ public class PartitionedAsyncAtomicMap
     @Override
     public AtomicMap<String, byte[]> sync(Duration operationTimeout) {
         return new BlockingAtomicMap<>(this, operationTimeout.toMillis());
+    }
+
+    @Override
+    public String name() {
+        return null;
     }
 
     private class EntrySet extends UnsupportedAsyncDistributedSet<Map.Entry<String, Versioned<byte[]>>> {

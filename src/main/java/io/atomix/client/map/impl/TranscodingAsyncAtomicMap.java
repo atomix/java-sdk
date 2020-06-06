@@ -30,7 +30,6 @@ import io.atomix.client.set.impl.TranscodingAsyncDistributedSet;
 import io.atomix.client.utils.concurrent.Futures;
 
 import java.time.Duration;
-import java.util.Base64;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
