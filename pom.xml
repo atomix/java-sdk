@@ -40,7 +40,7 @@
         <protobuf.version>3.6.1</protobuf.version>
         <grpc.version>1.19.0</grpc.version>
         <atomix.version>4.0.0-SNAPSHOT</atomix.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
 
         <!-- Maven plugins -->
         <maven.surefire.plugin.version>2.22.0</maven.surefire.plugin.version>
