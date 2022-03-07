@@ -86,6 +86,11 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -241,127 +246,235 @@
                 <version>${maven.wagon.plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>download-controller-api</id>
+                        <id>download-protocol-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/controller/controller.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/controller</toDir>
+                            <fromFile>proto/atomix/protocol/protocol.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/protocol</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-database-api</id>
+                        <id>download-driver-agent-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/controller/database.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/controller</toDir>
+                            <fromFile>proto/atomix/management/driver/agent.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/management/driver/</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-counter-api</id>
+                        <id>download-driver-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/counter/counter.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/counter</toDir>
+                            <fromFile>proto/atomix/management/driver/driver.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/management/driver/</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-election-api</id>
+                        <id>download-broker-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/election/election.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/election</toDir>
+                            <fromFile>proto/atomix/management/broker/broker.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/management/broker/</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-headers-api</id>
+                        <id>download-primitive-meta-api-1</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/headers/headers.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/headers</toDir>
+                            <fromFile>proto/atomix/primitive/meta/object.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/meta/</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-list-api</id>
+                        <id>download-primitive-meta-api-2</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/list/list.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/list</toDir>
+                            <fromFile>proto/atomix/primitive/meta/timestamp.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/meta/</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-lock-api</id>
+                        <id>download-primitive-indexedmap</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/lock/lock.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/lock</toDir>
+                            <fromFile>proto/atomix/primitive/indexedmap/indexedmap.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/indexedmap/</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-log-api</id>
+                        <id>download-primitive-lock</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/log/log.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/log</toDir>
+                            <fromFile>proto/atomix/primitive/lock/lock.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/lock/</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-map-api</id>
+                        <id>download-primitive-set</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/map/map.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/map</toDir>
+                            <fromFile>proto/atomix/primitive/set/set.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/set/</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-metadata-api</id>
+                        <id>download-primitive-map</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/metadata/metadata.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/metadata</toDir>
+                            <fromFile>proto/atomix/primitive/map/map.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/map/</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-primitive-api</id>
+                        <id>download-primitive-latch</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <fromFile>proto/atomix/primitive/leader/latch.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/leader/</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-primitive-counter</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <fromFile>proto/atomix/primitive/counter/counter.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/counter/</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-primitive-value</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <fromFile>proto/atomix/primitive/value/value.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/value/</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-primitive-list</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <fromFile>proto/atomix/primitive/list/list.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/list/</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-primitive-log</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <fromFile>proto/atomix/primitive/log/log.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/log/</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-primitive-election</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <fromFile>proto/atomix/primitive/election/election.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/election/</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-primitive-service-api</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <fromFile>proto/atomix/primitive/service.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-primitive-operation</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <fromFile>proto/atomix/primitive/operation.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-primitive-partition</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <fromFile>proto/atomix/primitive/partition.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-primitive</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
@@ -369,43 +482,7 @@
                         <configuration>
                             <url>https://raw.githubusercontent.com/atomix/api/master</url>
                             <fromFile>proto/atomix/primitive/primitive.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-session-api</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/session/session.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/session</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-set-api</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/set/set.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/set</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-value-api</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
-                            <fromFile>proto/atomix/value/value.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/value</toDir>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
                         </configuration>
                     </execution>
                 </executions>
@@ -436,61 +513,81 @@
                                 <replaceregexp match="\[\]" replace="" flags="g" byline="true">
                                     <fileset dir="${project.build.directory}/proto/atomix" includes="**/*.proto"/>
                                 </replaceregexp>
-                                <echo file="${project.build.directory}/proto/atomix/controller/controller.proto" append="true">
-                                    option java_package = "io.atomix.api.controller";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/protocol/protocol.proto" append="true">
+                                    option java_package = "io.atomix.api.protocol";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/controller/database.proto" append="true">
-                                    option java_package = "io.atomix.api.controller";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/management/driver/agent.proto" append="true">
+                                    option java_package = "io.atomix.api.management.driver";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/counter/counter.proto" append="true">
-                                    option java_package = "io.atomix.api.counter";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/management/driver/driver.proto" append="true">
+                                    option java_package = "io.atomix.api.management.driver";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/election/election.proto" append="true">
-                                    option java_package = "io.atomix.api.election";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/management/broker/broker.proto" append="true">
+                                    option java_package = "io.atomix.api.management.broker";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/headers/headers.proto" append="true">
-                                    option java_package = "io.atomix.api.headers";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/primitive/meta/object.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.meta";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/list/list.proto" append="true">
-                                    option java_package = "io.atomix.api.list";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/primitive/meta/timestamp.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.meta";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/lock/lock.proto" append="true">
-                                    option java_package = "io.atomix.api.lock";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/primitive/indexedmap/indexedmap.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.indexedmap";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/log/log.proto" append="true">
-                                    option java_package = "io.atomix.api.log";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/primitive/lock/lock.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.lock";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/map/map.proto" append="true">
-                                    option java_package = "io.atomix.api.map";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/primitive/set/set.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.set";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/metadata/metadata.proto" append="true">
-                                    option java_package = "io.atomix.api.metadata";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/primitive/map/map.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.map";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/primitive.proto" append="true">
+                                <echo file="${project.build.directory}/proto/atomix/primitive/leader/latch.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.leader";
+option java_multiple_files = true;
+                                </echo>
+                                <echo file="${project.build.directory}/proto/atomix/primitive/counter/counter.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.counter";
+option java_multiple_files = true;
+                                </echo>
+                                <echo file="${project.build.directory}/proto/atomix/primitive/value/value.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.value";
+option java_multiple_files = true;
+                                </echo>
+                                <echo file="${project.build.directory}/proto/atomix/primitive/list/list.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.list";
+option java_multiple_files = true;
+                                </echo>
+                                <echo file="${project.build.directory}/proto/atomix/primitive/log/log.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.log";
+option java_multiple_files = true;
+                                </echo>
+                                <echo file="${project.build.directory}/proto/atomix/primitive/election/election.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive.election";
+option java_multiple_files = true;
+                                </echo>
+                                <echo file="${project.build.directory}/proto/atomix/primitive/service.proto" append="true">
                                     option java_package = "io.atomix.api.primitive";
-                                    option java_multiple_files = true;
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/session/session.proto" append="true">
-                                    option java_package = "io.atomix.api.session";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/primitive/partition.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive";
+option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/set/set.proto" append="true">
-                                    option java_package = "io.atomix.api.set";
-                                    option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/value/value.proto" append="true">
-                                    option java_package = "io.atomix.api.value";
-                                    option java_multiple_files = true;
+                                <echo file="${project.build.directory}/proto/atomix/primitive/primiteve.proto" append="true">
+                                    option java_package = "io.atomix.api.primitive";
+option java_multiple_files = true;
                                 </echo>
                             </target>
                         </configuration>
