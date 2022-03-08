@@ -52,6 +52,9 @@
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
         <maven.build-helper.plugin.version>3.0.0</maven.build-helper.plugin.version>
         <maven.protobuf.plugin.version>0.5.1</maven.protobuf.plugin.version>
+
+        <atomix-api.version>v0.4.9</atomix-api.version>
+        <wagon-maven-plugin.atomix-api-url>https://raw.githubusercontent.com/atomix/atomix-api/${atomix-api.version}/</wagon-maven-plugin.atomix-api-url>
     </properties>
 
     <dependencies>
@@ -252,7 +255,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/protocol/protocol.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/protocol</toDir>
                         </configuration>
@@ -264,7 +267,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/management/driver/agent.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/management/driver/</toDir>
                         </configuration>
@@ -276,7 +279,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/management/driver/driver.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/management/driver/</toDir>
                         </configuration>
@@ -288,7 +291,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/management/broker/broker.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/management/broker/</toDir>
                         </configuration>
@@ -300,7 +303,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/meta/object.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/meta/</toDir>
                         </configuration>
@@ -312,7 +315,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/meta/timestamp.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/meta/</toDir>
                         </configuration>
@@ -324,7 +327,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/indexedmap/indexedmap.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/indexedmap/</toDir>
                         </configuration>
@@ -336,7 +339,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/lock/lock.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/lock/</toDir>
                         </configuration>
@@ -348,7 +351,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/set/set.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/set/</toDir>
                         </configuration>
@@ -360,7 +363,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/map/map.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/map/</toDir>
                         </configuration>
@@ -372,7 +375,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/leader/latch.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/leader/</toDir>
                         </configuration>
@@ -384,7 +387,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/counter/counter.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/counter/</toDir>
                         </configuration>
@@ -396,7 +399,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/value/value.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/value/</toDir>
                         </configuration>
@@ -408,7 +411,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/list/list.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/list/</toDir>
                         </configuration>
@@ -420,7 +423,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/log/log.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/log/</toDir>
                         </configuration>
@@ -432,7 +435,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/election/election.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/election/</toDir>
                         </configuration>
@@ -444,7 +447,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/service.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
                         </configuration>
@@ -456,7 +459,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/operation.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
                         </configuration>
@@ -468,7 +471,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/partition.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
                         </configuration>
@@ -480,7 +483,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://raw.githubusercontent.com/atomix/api/master</url>
+                            <url>${wagon-maven-plugin.atomix-api-url}</url>
                             <fromFile>proto/atomix/primitive/primitive.proto</fromFile>
                             <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
                         </configuration>
@@ -585,7 +588,7 @@ option java_multiple_files = true;
                                     option java_package = "io.atomix.api.primitive";
 option java_multiple_files = true;
                                 </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/primiteve.proto" append="true">
+                                <echo file="${project.build.directory}/proto/atomix/primitive/primitive.proto" append="true">
                                     option java_package = "io.atomix.api.primitive";
 option java_multiple_files = true;
                                 </echo>
