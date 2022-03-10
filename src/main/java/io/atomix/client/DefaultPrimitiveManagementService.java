@@ -22,7 +22,15 @@ public class DefaultPrimitiveManagementService implements PrimitiveManagementSer
     private final ThreadContextFactory threadContextFactory;
     private final DriverService driverService;
 
-    public DefaultPrimitiveManagementService(BrokerService bService, DriverService dService,
+    /**
+     * Creates a primitive management service.
+     *
+     * @param bService broker service connection
+     * @param dService driver service connection
+     * @param tFactory thread context factory
+     */
+    public DefaultPrimitiveManagementService(BrokerService bService,
+                                             DriverService dService,
                                              ThreadContextFactory tFactory) {
         brokerService = bService;
         threadContextFactory = tFactory;

@@ -22,12 +22,11 @@ public class DefaultDriverService implements DriverService {
     private final ChannelConfig channelConfig;
 
     /**
-     * Builds a new driver service using the given channel config.
+     * Builds a new driver service using the given channel provider.
      *
      * @param cConfig the channel config.
      */
     public DefaultDriverService(ChannelConfig cConfig) {
-        // FIXME assuming for now that the same config is used for each factory
         channelConfig = cConfig;
     }
 
@@ -36,4 +35,5 @@ public class DefaultDriverService implements DriverService {
         return drivers.computeIfAbsent(primitiveAddress, driver -> new ServerChannelProvider(
                 primitiveAddress.getHost(), primitiveAddress.getPort(), channelConfig).getFactory()).getChannel();
     }
+
 }

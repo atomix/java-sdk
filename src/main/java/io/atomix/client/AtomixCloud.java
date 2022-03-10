@@ -7,9 +7,9 @@ import io.atomix.api.primitive.PrimitiveId;
 import io.atomix.client.management.broker.impl.DefaultBroker;
 import io.atomix.client.management.driver.impl.DefaultDriverService;
 import io.atomix.client.utils.channel.ChannelConfig;
+import io.atomix.client.utils.channel.ChannelProvider;
 import io.atomix.client.utils.concurrent.BlockingAwareThreadPoolContextFactory;
 import io.atomix.client.utils.concurrent.ThreadContextFactory;
-import io.atomix.client.utils.channel.ChannelProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +35,9 @@ public class AtomixCloud implements AtomixCloudService {
     private final AtomicBoolean started = new AtomicBoolean();
     private PrimitiveManagementService managementService;
 
-    protected AtomixCloud(String namespace, ChannelProvider cProvider, ChannelConfig dConfig) {
+    protected AtomixCloud(String namespace, ChannelProvider bProvider, ChannelConfig dConfig) {
         this.namespace = namespace;
-        this.brokerProvider = cProvider;
+        this.brokerProvider = bProvider;
         this.driverConfig = dConfig;
     }
 
@@ -117,6 +117,13 @@ public class AtomixCloud implements AtomixCloudService {
         return toStringHelper(this).toString();
     }
 
-    //TODO we may want to introduce a builder for AtomixCloud
+    /**
+     * Returns a new AtomixCloud builder.
+     *
+     * @return a new AtomixCloud builder
+     */
+    public static AtomixCloudBuilder builder() {
+        return new AtomixCloudBuilder();
+    }
 
 }

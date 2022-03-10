@@ -1,7 +1,7 @@
 // Copyright 2022-present Open Networking Foundation
 // SPDX-License-Identifier: Apache-2.0
 
-package io.atomix.client;
+package io.atomix.client.management;
 
 import com.google.common.collect.Maps;
 import io.atomix.api.management.broker.BrokerGrpc;
@@ -35,6 +35,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 
+/**
+ * Tests for the broker APIs
+ */
 public class BrokerServiceTest {
 
     private final Map<PrimitiveId, PrimitiveAddress> registeredPrimitives = Maps.newConcurrentMap();

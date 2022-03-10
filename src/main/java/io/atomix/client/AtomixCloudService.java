@@ -15,4 +15,5 @@ public interface AtomixCloudService extends PrimitiveFactory {
      * @return the primitive thread context factory
      */
     ThreadContextFactory getThreadFactory();
+
 }
