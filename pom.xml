@@ -27,8 +27,8 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- Dependencies -->
         <slf4j.version>1.7.7</slf4j.version>
-        <protobuf.version>3.6.1</protobuf.version>
-        <grpc.version>1.19.0</grpc.version>
+        <protobuf.version>3.20.1</protobuf.version>
+        <grpc.version>1.46.0</grpc.version>
         <atomix.version>4.0.0-SNAPSHOT</atomix.version>
         <junit.version>4.12</junit.version>
 
@@ -43,8 +43,12 @@ SPDX-License-Identifier: Apache-2.0
         <maven.build-helper.plugin.version>3.0.0</maven.build-helper.plugin.version>
         <maven.protobuf.plugin.version>0.5.1</maven.protobuf.plugin.version>
 
-        <atomix-api.version>v0.4.9</atomix-api.version>
-        <wagon-maven-plugin.atomix-api-url>https://raw.githubusercontent.com/atomix/atomix-api/${atomix-api.version}/</wagon-maven-plugin.atomix-api-url>
+        <!-- NOTE this is just a temporary workaround -->
+        <atomix-runtime.version>runtime-api-proxy</atomix-runtime.version>
+        <wagon-maven-plugin.atomix-runtime-url>https://raw.githubusercontent.com/atomix/runtime/${atomix-runtime.version}/</wagon-maven-plugin.atomix-runtime-url>
+
+        <gogo-protobuf.version>v1.3.2</gogo-protobuf.version>
+        <wagon-maven-plugin.gogo-protobuf-url>https://raw.githubusercontent.com/gogo/protobuf/${gogo-protobuf.version}</wagon-maven-plugin.gogo-protobuf-url>
     </properties>
 
     <dependencies>
@@ -166,6 +170,10 @@ SPDX-License-Identifier: Apache-2.0
             <name>Jordan Halterman</name>
             <url>https://github.com/kuujo</url>
         </developer>
+        <developer>
+            <name>Pier Luigi Ventre</name>
+            <url>https://github.com/pierventre</url>
+        </developer>
     </developers>
 
     <scm>
@@ -238,351 +246,183 @@ SPDX-License-Identifier: Apache-2.0
                 <artifactId>wagon-maven-plugin</artifactId>
                 <version>${maven.wagon.plugin.version}</version>
                 <executions>
+                    <!-- Compile time dependencies -->
                     <execution>
-                        <id>download-protocol-api</id>
+                        <id>download-protobuf-gogoproto</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/protocol/protocol.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/protocol</toDir>
+                            <url>${wagon-maven-plugin.gogo-protobuf-url}</url>
+                            <fromFile>gogoproto/gogo.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/gogoproto</toDir>
                         </configuration>
                     </execution>
+                    <!-- Dependencies protos -->
                     <execution>
-                        <id>download-driver-agent-api</id>
+                        <id>download-runtime-atomix-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/management/driver/agent.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/management/driver/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/v1/atomix.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/v1</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-driver-api</id>
+                        <id>download-runtime-headers-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/management/driver/driver.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/management/driver/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/v1/headers.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/v1</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-broker-api</id>
+                        <id>download-runtime-descriptor-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/management/broker/broker.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/management/broker/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/primitive/v1/descriptor.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/primitive/v1</toDir>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>download-primitive-meta-api-1</id>
+                        <id>download-runtime-timestamp-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/meta/object.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/meta/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/time/v1/timestamp.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/time/v1</toDir>
                         </configuration>
                     </execution>
+                    <!-- Counter Api related protos -->
                     <execution>
-                        <id>download-primitive-meta-api-2</id>
+                        <id>download-runtime-counter-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/meta/timestamp.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/meta/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/counter/v1/counter.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/counter/v1</toDir>
                         </configuration>
                     </execution>
+                    <!-- Election Api related protos -->
                     <execution>
-                        <id>download-primitive-indexedmap</id>
+                        <id>download-runtime-election-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/indexedmap/indexedmap.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/indexedmap/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/election/v1/election.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/election/v1</toDir>
                         </configuration>
                     </execution>
+                    <!-- Indexed Map Api related protos -->
                     <execution>
-                        <id>download-primitive-lock</id>
+                        <id>download-runtime-indexed_map-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/lock/lock.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/lock/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/indexed_map/v1/indexed_map.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/indexed_map/v1</toDir>
                         </configuration>
                     </execution>
+                    <!-- List Api related protos -->
                     <execution>
-                        <id>download-primitive-set</id>
+                        <id>download-runtime-list-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/set/set.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/set/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/list/v1/list.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/list/v1</toDir>
                         </configuration>
                     </execution>
+                    <!-- Lock Api related protos -->
                     <execution>
-                        <id>download-primitive-map</id>
+                        <id>download-runtime-lock-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/map/map.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/map/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/lock/v1/lock.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/lock/v1</toDir>
                         </configuration>
                     </execution>
+                    <!-- Map Api related protos -->
                     <execution>
-                        <id>download-primitive-latch</id>
+                        <id>download-runtime-map-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/leader/latch.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/leader/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/map/v1/map.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/map/v1</toDir>
                         </configuration>
                     </execution>
+                    <!-- Set Api related protos -->
                     <execution>
-                        <id>download-primitive-counter</id>
+                        <id>download-runtime-set-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/counter/counter.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/counter/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/set/v1/set.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/set/v1</toDir>
                         </configuration>
                     </execution>
+                    <!-- Topic Api related protos -->
                     <execution>
-                        <id>download-primitive-value</id>
+                        <id>download-runtime-topic-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/value/value.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/value/</toDir>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/topic/v1/topic.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/topic/v1</toDir>
                         </configuration>
                     </execution>
+                    <!-- Value Api related protos -->
                     <execution>
-                        <id>download-primitive-list</id>
+                        <id>download-runtime-value-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/list/list.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/list/</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-primitive-log</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/log/log.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/log/</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-primitive-election</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/election/election.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/election/</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-primitive-service-api</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/service.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-primitive-operation</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/operation.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-primitive-partition</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/partition.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-primitive</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>${wagon-maven-plugin.atomix-api-url}</url>
-                            <fromFile>proto/atomix/primitive/primitive.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/</toDir>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>${maven.antrun.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>process-files</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <replaceregexp match="import &quot;gogoproto/gogo.proto&quot;;" replace="" flags="g" byline="true">
-                                    <fileset dir="${project.build.directory}/proto/atomix" includes="**/*.proto"/>
-                                </replaceregexp>
-                                <replaceregexp match=", \(gogoproto.([a-z]*)\) = ([a-zA-Z0-9&quot;]*)" replace="" flags="g" byline="true">
-                                    <fileset dir="${project.build.directory}/proto/atomix" includes="**/*.proto"/>
-                                </replaceregexp>
-                                <replaceregexp match="\(gogoproto.([a-z]*)\) = ([a-zA-Z0-9&quot;]*)" replace="" flags="g" byline="true">
-                                    <fileset dir="${project.build.directory}/proto/atomix" includes="**/*.proto"/>
-                                </replaceregexp>
-                                <replaceregexp match="\[\]" replace="" flags="g" byline="true">
-                                    <fileset dir="${project.build.directory}/proto/atomix" includes="**/*.proto"/>
-                                </replaceregexp>
-                                <echo file="${project.build.directory}/proto/atomix/protocol/protocol.proto" append="true">
-                                    option java_package = "io.atomix.api.protocol";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/management/driver/agent.proto" append="true">
-                                    option java_package = "io.atomix.api.management.driver";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/management/driver/driver.proto" append="true">
-                                    option java_package = "io.atomix.api.management.driver";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/management/broker/broker.proto" append="true">
-                                    option java_package = "io.atomix.api.management.broker";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/meta/object.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.meta";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/meta/timestamp.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.meta";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/indexedmap/indexedmap.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.indexedmap";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/lock/lock.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.lock";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/set/set.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.set";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/map/map.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.map";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/leader/latch.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.leader";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/counter/counter.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.counter";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/value/value.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.value";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/list/list.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.list";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/log/log.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.log";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/election/election.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive.election";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/service.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/partition.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive";
-option java_multiple_files = true;
-                                </echo>
-                                <echo file="${project.build.directory}/proto/atomix/primitive/primitive.proto" append="true">
-                                    option java_package = "io.atomix.api.primitive";
-option java_multiple_files = true;
-                                </echo>
-                            </target>
+                            <url>${wagon-maven-plugin.atomix-runtime-url}</url>
+                            <fromFile>api/atomix/value/v1/value.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/value/v1</toDir>
                         </configuration>
                     </execution>
                 </executions>
