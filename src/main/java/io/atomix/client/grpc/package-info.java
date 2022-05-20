@@ -3,6 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Atomix-cloud java client.
+ * Grpc related objects.
  */
-package io.atomix.client;
+package io.atomix.client.grpc;
