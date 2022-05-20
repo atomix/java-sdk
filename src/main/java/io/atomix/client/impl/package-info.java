@@ -3,6 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Atomix-cloud java client.
+ * Atomix-cloud java client implementation.
  */
-package io.atomix.client;
+package io.atomix.client.impl;
