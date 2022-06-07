@@ -7,6 +7,7 @@ package io.atomix.client.counter;
 import atomix.counter.v1.CounterGrpc;
 import io.atomix.client.AbstractPrimitiveTest;
 import io.atomix.client.counter.impl.DefaultAsyncAtomicCounter;
+import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +36,8 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
 
     @Test
     public void testBasicOperations() {
-        AsyncAtomicCounter atomicCounter = new DefaultAsyncAtomicCounter(PRIMITIVE_NAME, channel, null);
+        AsyncAtomicCounter atomicCounter = new DefaultAsyncAtomicCounter(
+                PRIMITIVE_NAME, channel, Context.current().withCancellation());
         assertEquals(Long.valueOf(0), futureGetOrElse(atomicCounter.get(), 0L));
 
         atomicCounter.set(100);

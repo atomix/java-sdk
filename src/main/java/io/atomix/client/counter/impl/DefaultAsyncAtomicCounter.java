@@ -6,17 +6,14 @@ package io.atomix.client.counter.impl;
 
 import atomix.counter.v1.CounterGrpc;
 import atomix.counter.v1.CounterOuterClass.GetRequest;
-import io.atomix.client.PrimitiveState;
-import io.atomix.client.PrimitiveType;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
-import io.atomix.client.utils.ThreadContext;
 import io.grpc.Channel;
+import io.grpc.Context;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import static atomix.counter.v1.CounterOuterClass.*;
 
@@ -27,7 +24,7 @@ public class DefaultAsyncAtomicCounter
         extends AbstractAsyncPrimitive<CounterGrpc.CounterStub, AsyncAtomicCounter>
         implements AsyncAtomicCounter {
 
-    public DefaultAsyncAtomicCounter(String primitiveName, Channel serviceChannel, ThreadContext context) {
+    public DefaultAsyncAtomicCounter(String primitiveName, Channel serviceChannel, Context context) {
         super(primitiveName, CounterGrpc.newStub(serviceChannel), context);
     }
 
@@ -49,9 +46,8 @@ public class DefaultAsyncAtomicCounter
     @Override
     public CompletableFuture<Long> get() {
         return execute((header, observer) -> service().get(GetRequest.newBuilder()
-               .setHeaders(header)
-               .build(), observer), GetResponse::getHeaders)
-               .thenApply(response -> response.getOutput().getValue());
+                .setHeaders(header).build(), observer), GetResponse::getHeaders)
+                .thenApply(response -> response.getOutput().getValue());
     }
 
     @Override

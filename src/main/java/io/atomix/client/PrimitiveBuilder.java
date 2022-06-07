@@ -5,13 +5,14 @@
 package io.atomix.client;
 
 
-import io.atomix.client.utils.ThreadContext;
 import io.grpc.Channel;
+import io.grpc.Context;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Abstract builder for distributed primitives.
@@ -23,15 +24,12 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
     protected final String primitiveName;
     protected boolean readOnly;
     protected final Channel serviceChannel;
-    protected final ThreadContext threadContext;
+    protected final Context context;
 
-    protected PrimitiveBuilder(String primitiveName, Channel serviceChannel, ThreadContext threadContext) {
-        this.primitiveName = checkNotNull(primitiveName,
-                                          "primitive name cannot be null");
-        this.serviceChannel = checkNotNull(serviceChannel,
-                                                  "primitive channel cannot be null");
-        this.threadContext = checkNotNull(threadContext,
-                                           "thread context cannot be null");
+    protected PrimitiveBuilder(String primitiveName, Channel serviceChannel, Context context) {
+        this.primitiveName = checkNotNull(primitiveName, "primitive name cannot be null");
+        this.serviceChannel = checkNotNull(serviceChannel, "primitive channel cannot be null");
+        this.context = checkNotNull(context, "context cannot be null");
     }
 
     /**
@@ -57,8 +55,8 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      *
      * @return the thread context
      */
-    protected ThreadContext getThreadContext() {
-        return threadContext;
+    protected Context getContext() {
+        return context;
     }
 
     /**

@@ -4,8 +4,8 @@
 
 package io.atomix.client;
 
-import io.atomix.client.utils.ThreadContext;
 import io.grpc.Channel;
+import io.grpc.Context;
 
 /**
  * Primitive type.
@@ -17,9 +17,9 @@ public interface PrimitiveType<B extends PrimitiveBuilder, P extends SyncPrimiti
      *
      * @param primitiveName the primitive name
      * @param serviceChannel the channel to be used for the primitive services
-     * @param threadContext the thread context
+     * @param context the context
      * @return a new primitive builder
      */
-    B newBuilder(String primitiveName, Channel serviceChannel, ThreadContext threadContext);
+    B newBuilder(String primitiveName, Channel serviceChannel, Context context);
 
 }

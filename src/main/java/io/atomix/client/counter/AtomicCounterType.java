@@ -6,8 +6,8 @@ package io.atomix.client.counter;
 
 import io.atomix.client.PrimitiveType;
 import io.atomix.client.counter.impl.DefaultAtomicCounterBuilder;
-import io.atomix.client.utils.ThreadContext;
 import io.grpc.Channel;
+import io.grpc.Context;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
@@ -28,8 +28,8 @@ public class AtomicCounterType implements PrimitiveType<AtomicCounterBuilder, At
 
     @Override
     public AtomicCounterBuilder newBuilder(String primitiveName, Channel serviceChannel,
-                                           ThreadContext threadContext) {
-        return new DefaultAtomicCounterBuilder(primitiveName, serviceChannel, threadContext);
+                                           Context context) {
+        return new DefaultAtomicCounterBuilder(primitiveName, serviceChannel, context);
     }
 
     @Override

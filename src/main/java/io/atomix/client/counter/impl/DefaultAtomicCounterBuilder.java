@@ -7,8 +7,8 @@ package io.atomix.client.counter.impl;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.counter.AtomicCounterBuilder;
-import io.atomix.client.utils.ThreadContext;
 import io.grpc.Channel;
+import io.grpc.Context;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -17,14 +17,14 @@ import java.util.concurrent.CompletableFuture;
  */
 public class DefaultAtomicCounterBuilder extends AtomicCounterBuilder {
 
-    public DefaultAtomicCounterBuilder(String primitiveName, Channel serviceChannel, ThreadContext threadContext) {
-        super(primitiveName, serviceChannel, threadContext);
+    public DefaultAtomicCounterBuilder(String primitiveName, Channel serviceChannel, Context context) {
+        super(primitiveName, serviceChannel, context);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicCounter> buildAsync() {
-        return new DefaultAsyncAtomicCounter(getPrimitiveName(), getServiceChannel(), getThreadContext())
+        return new DefaultAsyncAtomicCounter(getPrimitiveName(), getServiceChannel(), getContext())
                 .connect()
                 .thenApply(AsyncAtomicCounter::sync);
     }

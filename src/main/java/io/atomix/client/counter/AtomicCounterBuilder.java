@@ -5,8 +5,8 @@
 package io.atomix.client.counter;
 
 import io.atomix.client.PrimitiveBuilder;
-import io.atomix.client.utils.ThreadContext;
 import io.grpc.Channel;
+import io.grpc.Context;
 
 /**
  * Builder for AtomicCounter.
@@ -14,7 +14,7 @@ import io.grpc.Channel;
 public abstract class AtomicCounterBuilder
         extends PrimitiveBuilder<AtomicCounterBuilder, AtomicCounter> {
 
-    protected AtomicCounterBuilder(String primitiveName, Channel serviceChannel, ThreadContext threadContext) {
-        super(primitiveName, serviceChannel, threadContext);
+    protected AtomicCounterBuilder(String primitiveName, Channel serviceChannel, Context context) {
+        super(primitiveName, serviceChannel, context);
     }
 }

@@ -8,7 +8,8 @@ import atomix.v1.AtomixOuterClass.PrimitiveId;
 import atomix.v1.Headers.RequestHeaders;
 import atomix.v1.Headers.ResponseHeaders;
 import io.atomix.client.AsyncPrimitive;
-import io.atomix.client.utils.ThreadContext;
+import io.atomix.client.Constants;
+import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
 import java.util.concurrent.CompletableFuture;
@@ -23,12 +24,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implements AsyncPrimitive {
     private final String primitiveName;
     private final S service;
-    private final ThreadContext context;
+    private Context context;
 
-    public AbstractAsyncPrimitive(String primitiveName, S service, ThreadContext context) {
-        this.primitiveName = checkNotNull(primitiveName);
-        this.service = checkNotNull(service);
-        this.context = context;
+    public AbstractAsyncPrimitive(String primitiveName, S service, Context context) {
+        this.primitiveName = checkNotNull(primitiveName, "primitive name cannot be null");
+        this.service = checkNotNull(service, "service cannot be null");
+        this.context = checkNotNull(context, "context cannot be null");
+        this.context = this.context.withValues(Constants.APPLICATION_ID_CTX, "foo",
+                                               Constants.PRIMITIVE_ID_CTX, this.primitiveName,
+                                               Constants.SESSION_ID_CTX, "bar");
     }
 
     @Override
@@ -41,7 +45,7 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
      *
      * @return the primitive thread context
      */
-    protected ThreadContext context() {
+    public Context context() {
         return context;
     }
 
@@ -70,7 +74,7 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
                 .build();
     }
 
-    private RequestHeaders getRequestHeader() {
+    private RequestHeaders getRequestHeaders() {
         return RequestHeaders.newBuilder()
                 .setPrimitive(getPrimitiveId())
                 .build();
@@ -80,7 +84,7 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
             BiConsumer<RequestHeaders, StreamObserver<T>> callback,
             Function<T, ResponseHeaders> headerFunction) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        callback.accept(getRequestHeader(), new StreamObserver<T>() {
+        StreamObserver<T> responseObserver = new StreamObserver<T>() {
             @Override
             public void onNext(T response) {
                 future.complete(response);
@@ -93,8 +97,10 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
 
             @Override
             public void onCompleted() {
+
             }
-        });
+        };
+        runInCancellableContext(() -> callback.accept(getRequestHeaders(), responseObserver));
         return future;
     }
 
@@ -102,7 +108,7 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
             BiConsumer<RequestHeaders, StreamObserver<T>> callback,
             Function<T, ResponseHeaders> headerFunction,
             StreamObserver<T> observer) {
-        callback.accept(getRequestHeader(), new StreamObserver<T>() {
+        StreamObserver<T> responseObserver = new StreamObserver<T>() {
             @Override
             public void onNext(T response) {
                 observer.onNext(response);
@@ -117,7 +123,22 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
             public void onCompleted() {
                 observer.onCompleted();
             }
-        });
+        };
+        runInCancellableContext(() -> callback.accept(getRequestHeaders(), responseObserver));
         return CompletableFuture.completedFuture(null);
+    }
+
+    /**
+     * Executes the given task in the cancellable context of this client.
+     *
+     * @param task task
+     * @throws IllegalStateException if context has been cancelled
+     */
+    protected void runInCancellableContext(Runnable task) {
+        if (this.context.isCancelled()) {
+            throw new IllegalStateException(
+                    "Context is cancelled (client has been shut down)");
+        }
+        this.context.run(task);
     }
 }
