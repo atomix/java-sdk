@@ -18,17 +18,14 @@ import java.util.concurrent.CompletableFuture;
  */
 public class DefaultAtomicCounterBuilder extends AtomicCounterBuilder {
 
-    public DefaultAtomicCounterBuilder(String primitiveName, String applicationName, String sessionId,
-                                       Channel serviceChannel, Context context,
-                                       PrimitiveManagementService primitiveManagementService) {
-        super(primitiveName, applicationName, sessionId, serviceChannel, context, primitiveManagementService);
+    public DefaultAtomicCounterBuilder(String primitiveName, Channel channel, PrimitiveManagementService primitiveManagementService) {
+        super(primitiveName, channel, primitiveManagementService);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicCounter> buildAsync() {
-        return new DefaultAsyncAtomicCounter(getPrimitiveName(), getApplicationName(), getSessionId(),
-                                             getServiceChannel(), getContext())
+        return new DefaultAsyncAtomicCounter(getPrimitiveName(), getChannel())
                 .connect()
                 .thenApply(AsyncAtomicCounter::sync);
     }

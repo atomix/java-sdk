@@ -21,23 +21,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> {
     protected final String primitiveName;
-    protected final String applicationName;
-    protected final String sessionId;
     protected boolean readOnly;
-    protected final Channel serviceChannel;
-    protected final Context context;
+    protected final Channel channel;
     protected final PrimitiveManagementService primitiveManagementService;
 
-    protected PrimitiveBuilder(String primitiveName, String applicationName, String sessionId,
-                               Channel serviceChannel, Context context,
-                               PrimitiveManagementService primitiveManagementService) {
+    protected PrimitiveBuilder(String primitiveName, Channel channel, PrimitiveManagementService primitiveManagementService) {
         this.primitiveName = checkNotNull(primitiveName, "primitive name cannot be null");
-        this.applicationName = checkNotNull(applicationName, "application name cannot be null");
-        this.sessionId = checkNotNull(sessionId, "session id cannot be null");
-        this.serviceChannel = checkNotNull(serviceChannel, "primitive channel cannot be null");
-        this.context = checkNotNull(context, "context cannot be null");
+        this.channel = checkNotNull(channel, "primitive channel cannot be null");
         this.primitiveManagementService = checkNotNull(primitiveManagementService,
-                                                       "primitive management service cannot be null ");
+                "primitive management service cannot be null ");
     }
 
     /**
@@ -50,39 +42,12 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
     }
 
     /**
-     * Returns the application name.
-     *
-     * @return the application name
-     */
-    protected String getApplicationName() {
-        return applicationName;
-    }
-
-    /**
-     * Returns the session id.
-     *
-     * @return the session id
-     */
-    protected String getSessionId() {
-        return sessionId;
-    }
-
-    /**
      * Returns the service channel.
      *
      * @return the service channel
      */
-    protected Channel getServiceChannel() {
-        return serviceChannel;
-    }
-
-    /**
-     * Returns the gRPC context.
-     *
-     * @return the gRPC context
-     */
-    protected Context getContext() {
-        return context;
+    protected Channel getChannel() {
+        return channel;
     }
 
     /**

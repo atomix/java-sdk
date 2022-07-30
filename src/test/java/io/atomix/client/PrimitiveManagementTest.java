@@ -53,19 +53,11 @@ public class PrimitiveManagementTest {
 
     private CompletableFuture<AtomicCounter> counterSupplier() {
         return CompletableFuture.completedFuture(new BlockingAtomicCounter(new DefaultAsyncAtomicCounter(
-                "counter",
-                "onos",
-                "0",
-                mock(Channel.class),
-                mock(Context.class)), DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+                "counter", mock(Channel.class)), DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
     }
 
     private CompletableFuture<AtomicCounter> differentCounterSupplier() {
         return CompletableFuture.completedFuture(new BlockingAtomicCounter(new DefaultAsyncAtomicCounter(
-                "differentCounter",
-                "onos",
-                "0",
-                mock(Channel.class),
-                mock(Context.class)), DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+                "differentCounter", mock(Channel.class)), DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
     }
 }

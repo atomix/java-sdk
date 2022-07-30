@@ -12,12 +12,9 @@ import io.grpc.Context;
 /**
  * Builder for AtomicCounter.
  */
-public abstract class AtomicCounterBuilder
-        extends PrimitiveBuilder<AtomicCounterBuilder, AtomicCounter> {
+public abstract class AtomicCounterBuilder extends PrimitiveBuilder<AtomicCounterBuilder, AtomicCounter> {
 
-    protected AtomicCounterBuilder(String primitiveName, String applicationName, String sessionId,
-                                   Channel serviceChannel, Context context,
-                                   PrimitiveManagementService primitiveManagementService) {
-        super(primitiveName, applicationName, sessionId, serviceChannel, context, primitiveManagementService);
+    protected AtomicCounterBuilder(String primitiveName, Channel channel, PrimitiveManagementService primitiveManagementService) {
+        super(primitiveName, channel, primitiveManagementService);
     }
 }

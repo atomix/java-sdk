@@ -28,11 +28,8 @@ public class AtomicCounterType implements PrimitiveType<AtomicCounterBuilder, At
     }
 
     @Override
-    public AtomicCounterBuilder newBuilder(String primitiveName, String applicationName, String sessionId,
-                                           Channel serviceChannel, Context context,
-                                           PrimitiveManagementService primitiveManagementService) {
-        return new DefaultAtomicCounterBuilder(primitiveName, applicationName, sessionId,
-                                               serviceChannel, context, primitiveManagementService);
+    public AtomicCounterBuilder newBuilder(String primitiveName, Channel channel, PrimitiveManagementService primitiveManagementService) {
+        return new DefaultAtomicCounterBuilder(primitiveName, channel, primitiveManagementService);
     }
 
     @Override
