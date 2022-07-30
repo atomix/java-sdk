@@ -48,11 +48,6 @@ public class DefaultAsyncAtomicCounter
     }
 
     @Override
-    public CompletableFuture<Void> destroy() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public CompletableFuture<Long> get() {
         return this.<GetResponse>execute(observer -> service().get(GetRequest.newBuilder()
                         .setId(id())
@@ -75,14 +70,20 @@ public class DefaultAsyncAtomicCounter
                 .setCheck(expectedValue)
                 .setUpdate(updateValue)
                 .build();
-        return this.<CompareAndSetResponse>execute(observer -> service().compareAndSet(compareAndSetRequest, observer))
-                .thenApply(response -> true)
-                .exceptionallyCompose(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.ABORTED.getCode()) {
-                        return CompletableFuture.completedFuture(false);
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        this.<CompareAndSetResponse>execute(observer -> service().compareAndSet(compareAndSetRequest, observer))
+                .whenComplete((response, t) -> {
+                    if (t != null) {
+                        if (Status.fromThrowable(t).getCode() == Status.ABORTED.getCode()) {
+                            future.complete(false);
+                        } else {
+                            future.completeExceptionally(t);
+                        }
+                    } else {
+                        future.complete(true);
                     }
-                    return CompletableFuture.failedFuture(t);
                 });
+        return future;
     }
 
     @Override

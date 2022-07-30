@@ -4,18 +4,12 @@
 
 package io.atomix.client.counter;
 
-import io.atomix.client.PrimitiveType;
 import io.atomix.client.SyncPrimitive;
 
 /**
  * Distributed version of java.util.concurrent.atomic.AtomicLong.
  */
 public interface AtomicCounter extends SyncPrimitive {
-    @Override
-    default PrimitiveType type() {
-        return AtomicCounterType.instance();
-    }
-
     /**
      * Atomically increment by one and return the updated value.
      *

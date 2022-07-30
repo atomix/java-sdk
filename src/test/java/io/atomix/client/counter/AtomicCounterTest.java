@@ -78,14 +78,6 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
         assertEquals(0, atomicCounter.get());
     }
 
-    @Test
-    public void testDestroy() {
-        AtomicCounter atomicCounter = buildAtomicCounter();
-        assertEquals(0, atomicCounter.get());
-        exceptionRule.expect(UnsupportedOperationException.class);
-        atomicCounter.destroy();
-    }
-
     private AtomicCounter buildAtomicCounter() {
         return AtomicCounterType.instance().newBuilder(PRIMITIVE_NAME, channel).build();
     }
@@ -143,11 +135,15 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
                         responseObserver.onError(Status.NOT_FOUND.withDescription("counter not found...")
                                 .asRuntimeException());
                     } else {
-                        atomicLong.compareAndSet(request.getCheck(), request.getUpdate());
-                        responseObserver.onNext(CompareAndSetResponse.newBuilder()
-                                .setValue(atomicLong.get())
-                                .build());
-                        responseObserver.onCompleted();
+                        if (atomicLong.compareAndSet(request.getCheck(), request.getUpdate())) {
+                            responseObserver.onNext(CompareAndSetResponse.newBuilder()
+                                    .setValue(request.getUpdate())
+                                    .build());
+                            responseObserver.onCompleted();
+                        } else {
+                            responseObserver.onError(Status.ABORTED.withDescription("optimistic lock failure")
+                                    .asRuntimeException());
+                        }
                     }
                 }
 
