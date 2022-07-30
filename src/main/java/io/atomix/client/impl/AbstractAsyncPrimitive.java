@@ -4,6 +4,7 @@
 
 package io.atomix.client.impl;
 
+import atomix.runtime.v1.Primitive;
 import io.atomix.client.AsyncPrimitive;
 import io.grpc.stub.StreamObserver;
 
@@ -27,6 +28,12 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
     @Override
     public String name() {
         return primitiveName;
+    }
+
+    protected Primitive.PrimitiveId id() {
+        return Primitive.PrimitiveId.newBuilder()
+                .setName(name())
+                .build();
     }
 
     /**
