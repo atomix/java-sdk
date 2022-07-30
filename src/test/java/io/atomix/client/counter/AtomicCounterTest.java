@@ -8,8 +8,6 @@ import atomix.runtime.counter.v1.CounterGrpc;
 import io.atomix.client.AbstractPrimitiveTest;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.counter.impl.DefaultAsyncAtomicCounter;
-import io.atomix.client.impl.DefaultPrimitiveManagementService;
-import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
@@ -17,7 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -90,10 +87,7 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
     }
 
     private AtomicCounter buildAtomicCounter() {
-        return AtomicCounterType.instance().newBuilder(
-                PRIMITIVE_NAME,
-                channel,
-                new DefaultPrimitiveManagementService()).build();
+        return AtomicCounterType.instance().newBuilder(PRIMITIVE_NAME, channel).build();
     }
 
     // Mock implementation of the counter server

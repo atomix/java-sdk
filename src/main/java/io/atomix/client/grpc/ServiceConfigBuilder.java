@@ -26,6 +26,8 @@ public class ServiceConfigBuilder {
     public static final String RETRY_POLICY = "retryPolicy";
     public static final String METHOD_CONFIG = "methodConfig";
 
+    public static final Map<String, ?> DEFAULT_SERVICE_CONFIG = new ServiceConfigBuilder().build();
+
     private Double maxAttempts = 5.0;
     private String initialBackoff = "0.5s";
     private String maxBackoff = "30s";

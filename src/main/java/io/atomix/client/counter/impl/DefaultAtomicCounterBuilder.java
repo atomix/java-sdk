@@ -4,12 +4,10 @@
 
 package io.atomix.client.counter.impl;
 
-import io.atomix.client.PrimitiveManagementService;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.counter.AtomicCounterBuilder;
 import io.grpc.Channel;
-import io.grpc.Context;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -18,14 +16,14 @@ import java.util.concurrent.CompletableFuture;
  */
 public class DefaultAtomicCounterBuilder extends AtomicCounterBuilder {
 
-    public DefaultAtomicCounterBuilder(String primitiveName, Channel channel, PrimitiveManagementService primitiveManagementService) {
-        super(primitiveName, channel, primitiveManagementService);
+    public DefaultAtomicCounterBuilder(String primitiveName, Channel channel) {
+        super(primitiveName, channel);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicCounter> buildAsync() {
-        return new DefaultAsyncAtomicCounter(getPrimitiveName(), getChannel())
+        return new DefaultAsyncAtomicCounter(name(), channel())
                 .connect()
                 .thenApply(AsyncAtomicCounter::sync);
     }
