@@ -8,6 +8,7 @@ import atomix.runtime.v1.Primitive;
 import io.atomix.client.AsyncPrimitive;
 import io.grpc.stub.StreamObserver;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -17,20 +18,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Simple asynchronous primitive.
  */
 public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implements AsyncPrimitive {
-    private final String primitiveName;
+    private final String name;
     private final S service;
 
-    public AbstractAsyncPrimitive(String primitiveName, S service) {
-        this.primitiveName = checkNotNull(primitiveName, "primitive name cannot be null");
+    protected AbstractAsyncPrimitive(String name, S service) {
+        this.name = checkNotNull(name, "primitive name cannot be null");
         this.service = checkNotNull(service, "service cannot be null");
     }
 
     @Override
     public String name() {
-        return primitiveName;
+        return name;
     }
 
-    protected Primitive.PrimitiveId id() {
+    protected final Primitive.PrimitiveId id() {
         return Primitive.PrimitiveId.newBuilder()
                 .setName(name())
                 .build();
@@ -50,7 +51,7 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
      *
      * @return a future to be completed once the primitive is created and connected
      */
-    public abstract CompletableFuture<P> connect();
+    protected abstract CompletableFuture<P> create(Map<String, String> tags);
 
     protected <T> CompletableFuture<T> execute(Consumer<StreamObserver<T>> callback) {
         CompletableFuture<T> future = new CompletableFuture<>();

@@ -13,6 +13,7 @@ import io.grpc.Channel;
 import io.grpc.Context;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static atomix.runtime.counter.v1.CounterOuterClass.*;
@@ -24,14 +25,15 @@ public class DefaultAsyncAtomicCounter
         extends AbstractAsyncPrimitive<CounterGrpc.CounterStub, AsyncAtomicCounter>
         implements AsyncAtomicCounter {
 
-    public DefaultAsyncAtomicCounter(String primitiveName, Channel serviceChannel) {
-        super(primitiveName, CounterGrpc.newStub(serviceChannel));
+    public DefaultAsyncAtomicCounter(String name, Channel channel) {
+        super(name, CounterGrpc.newStub(channel));
     }
 
     @Override
-    public CompletableFuture<AsyncAtomicCounter> connect() {
+    protected CompletableFuture<AsyncAtomicCounter> create(Map<String, String> tags) {
         return this.<CreateResponse>execute(observer -> service().create(CreateRequest.newBuilder()
                         .setId(id())
+                        .putAllTags(tags)
                         .build(), observer))
                 .thenApply(response -> this);
     }
