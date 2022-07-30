@@ -10,7 +10,8 @@ import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.grpc.Channel;
-import io.grpc.Context;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 
 import java.time.Duration;
 import java.util.Map;
@@ -75,7 +76,13 @@ public class DefaultAsyncAtomicCounter
                 .setUpdate(updateValue)
                 .build();
         return this.<CompareAndSetResponse>execute(observer -> service().compareAndSet(compareAndSetRequest, observer))
-                .thenApply(response -> response.getValue() == updateValue);
+                .thenApply(response -> true)
+                .exceptionallyCompose(t -> {
+                    if (Status.fromThrowable(t).getCode() == Status.ABORTED.getCode()) {
+                        return CompletableFuture.completedFuture(false);
+                    }
+                    return CompletableFuture.failedFuture(t);
+                });
     }
 
     @Override
