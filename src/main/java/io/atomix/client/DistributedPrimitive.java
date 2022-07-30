@@ -25,13 +25,6 @@ public interface DistributedPrimitive {
     String name();
 
     /**
-     * Returns the type of primitive.
-     *
-     * @return primitive type
-     */
-    PrimitiveType type();
-
-    /**
      * Registers a listener to be called when the primitive's state changes.
      *
      * @param listener The listener to be called when the state changes.

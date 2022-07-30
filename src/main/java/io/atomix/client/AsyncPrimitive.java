@@ -20,17 +20,6 @@ public interface AsyncPrimitive extends DistributedPrimitive {
     CompletableFuture<Void> close();
 
     /**
-     * Purges state associated with this primitive.
-     * <p>
-     * Implementations can override and provide appropriate clean up logic for purging
-     * any state associated with the primitive. Whether modifications made within the
-     * destroy method have local or global visibility is left unspecified.
-     *
-     * @return {@code CompletableFuture} that is completed when the operation completes
-     */
-    CompletableFuture<Void> destroy();
-
-    /**
      * Returns a synchronous wrapper around the asynchronous primitive.
      *
      * @return the synchronous primitive

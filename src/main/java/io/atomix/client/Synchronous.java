@@ -28,21 +28,6 @@ public abstract class Synchronous<T extends AsyncPrimitive> implements SyncPrimi
     }
 
     @Override
-    public void destroy() {
-        try {
-            primitive.destroy().get(DEFAULT_OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | TimeoutException e) {
-            throw new PrimitiveException(e);
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof PrimitiveException) {
-                throw (PrimitiveException) e.getCause();
-            } else {
-                throw new PrimitiveException(e.getCause());
-            }
-        }
-    }
-
-    @Override
     public void close() {
         try {
             primitive.close().get(DEFAULT_OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
