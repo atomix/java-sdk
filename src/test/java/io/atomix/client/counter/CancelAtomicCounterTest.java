@@ -4,7 +4,7 @@
 
 package io.atomix.client.counter;
 
-import atomix.counter.v1.CounterGrpc;
+import atomix.runtime.counter.v1.CounterGrpc;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AbstractPrimitiveTest;
@@ -24,7 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static atomix.counter.v1.CounterOuterClass.*;
+import static atomix.runtime.counter.v1.CounterOuterClass.*;
 import static io.grpc.Status.UNAVAILABLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

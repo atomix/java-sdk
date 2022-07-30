@@ -4,7 +4,6 @@
 
 package io.atomix.client;
 
-import io.atomix.client.grpc.PrimitiveClientInterceptor;
 import io.atomix.client.grpc.ServiceConfigBuilder;
 import io.grpc.BindableService;
 import io.grpc.Channel;
@@ -44,16 +43,16 @@ public abstract class AbstractPrimitiveTest {
         // Create a server, add service, start, and register for automatic graceful shutdown.
         if (serverInterceptor == null) {
             grpcCleanup.register(InProcessServerBuilder.forName(serverName)
-                                         .directExecutor()
-                                         .addService(serviceImpl)
-                                         .build()
-                                         .start());
+                    .directExecutor()
+                    .addService(serviceImpl)
+                    .build()
+                    .start());
         } else {
             grpcCleanup.register(InProcessServerBuilder.forName(serverName)
-                                         .directExecutor()
-                                         .addService(ServerInterceptors.intercept(serviceImpl, serverInterceptor))
-                                         .build()
-                                         .start());
+                    .directExecutor()
+                    .addService(ServerInterceptors.intercept(serviceImpl, serverInterceptor))
+                    .build()
+                    .start());
         }
 
         serviceConfig = new ServiceConfigBuilder().build();
@@ -64,10 +63,9 @@ public abstract class AbstractPrimitiveTest {
 
         // Create a client channel and register for automatic graceful shutdown.
         channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName)
-                                               .defaultServiceConfig(serviceConfig)
-                                               .enableRetry()
-                                               .directExecutor()
-                                               .intercept(new PrimitiveClientInterceptor())
-                                               .build());
+                .defaultServiceConfig(serviceConfig)
+                .enableRetry()
+                .directExecutor()
+                .build());
     }
 }
