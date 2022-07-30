@@ -6,7 +6,6 @@ package io.atomix.client;
 
 
 import io.grpc.Channel;
-import io.grpc.Context;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -20,16 +19,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @param <P> primitive type
  */
 public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> {
-    protected final String primitiveName;
+    protected final String name;
     protected boolean readOnly;
     protected final Channel channel;
-    protected final PrimitiveManagementService primitiveManagementService;
 
-    protected PrimitiveBuilder(String primitiveName, Channel channel, PrimitiveManagementService primitiveManagementService) {
-        this.primitiveName = checkNotNull(primitiveName, "primitive name cannot be null");
+    protected PrimitiveBuilder(String name, Channel channel) {
+        this.name = checkNotNull(name, "primitive name cannot be null");
         this.channel = checkNotNull(channel, "primitive channel cannot be null");
-        this.primitiveManagementService = checkNotNull(primitiveManagementService,
-                "primitive management service cannot be null ");
     }
 
     /**
@@ -37,8 +33,8 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      *
      * @return the primitive name
      */
-    protected String getPrimitiveName() {
-        return primitiveName;
+    protected String name() {
+        return name;
     }
 
     /**
@@ -46,7 +42,7 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      *
      * @return the service channel
      */
-    protected Channel getChannel() {
+    protected Channel channel() {
         return channel;
     }
 
@@ -101,36 +97,4 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      * @return asynchronous distributed primitive
      */
     public abstract CompletableFuture<P> buildAsync();
-
-    /**
-     * Gets or builds a singleton instance of the primitive.
-     * <p>
-     * The returned primitive will be shared by all {@code get()} calls for the named primitive. If no instance has yet
-     * been constructed, the instance will be built from this builder's configuration.
-     *
-     * @return a singleton instance of the primitive
-     */
-    public P get() {
-        try {
-            return getAsync().join();
-        } catch (Exception e) {
-            if (e instanceof CompletionException && e.getCause() instanceof RuntimeException) {
-                throw (RuntimeException) e.getCause();
-            } else {
-                throw e;
-            }
-        }
-    }
-
-    /**
-     * Gets or builds a singleton instance of the primitive asynchronously.
-     * <p>
-     * The returned primitive will be shared by all {@code get()} calls for the named primitive. If no instance has yet
-     * been constructed, the instance will be built from this builder's configuration.
-     *
-     * @return a singleton instance of the primitive
-     */
-    public CompletableFuture<P> getAsync() {
-        return this.primitiveManagementService.getPrimitive(primitiveName, this::buildAsync);
-    }
 }

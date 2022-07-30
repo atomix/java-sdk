@@ -15,11 +15,10 @@ public interface PrimitiveType<B extends PrimitiveBuilder, P extends SyncPrimiti
     /**
      * Returns a new primitive builder.
      *
-     * @param primitiveName              the primitive name
-     * @param channel                    the channel to be used for the primitive services
-     * @param primitiveManagementService the primitive management service
+     * @param primitiveName the primitive name
+     * @param channel       the channel to be used for the primitive services
      * @return a new primitive builder
      */
-    B newBuilder(String primitiveName, Channel channel, PrimitiveManagementService primitiveManagementService);
+    B newBuilder(String primitiveName, Channel channel);
 
 }
