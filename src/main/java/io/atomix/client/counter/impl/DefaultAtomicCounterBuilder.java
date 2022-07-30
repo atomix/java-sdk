@@ -16,15 +16,15 @@ import java.util.concurrent.CompletableFuture;
  */
 public class DefaultAtomicCounterBuilder extends AtomicCounterBuilder {
 
-    public DefaultAtomicCounterBuilder(String primitiveName, Channel channel) {
-        super(primitiveName, channel);
+    public DefaultAtomicCounterBuilder(String name, Channel channel) {
+        super(name, channel);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicCounter> buildAsync() {
         return new DefaultAsyncAtomicCounter(name(), channel())
-                .connect()
+                .create(tags())
                 .thenApply(AsyncAtomicCounter::sync);
     }
 }

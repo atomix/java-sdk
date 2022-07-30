@@ -7,6 +7,8 @@ package io.atomix.client;
 
 import io.grpc.Channel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -20,8 +22,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> {
     protected final String name;
-    protected boolean readOnly;
     protected final Channel channel;
+    protected boolean readOnly;
+    protected Map<String, String> tags = new HashMap<>();
 
     protected PrimitiveBuilder(String name, Channel channel) {
         this.name = checkNotNull(name, "primitive name cannot be null");
@@ -44,6 +47,40 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      */
     protected Channel channel() {
         return channel;
+    }
+
+    /**
+     * Returns the primitive tags.
+     *
+     * @return the primitive tags
+     */
+    protected Map<String, String> tags() {
+        return tags;
+    }
+
+    /**
+     * Sets the primitive tags.
+     *
+     * @param tags the primitive tags
+     * @return the primitive builder
+     */
+    @SuppressWarnings("unchecked")
+    public B withTags(Map<String, String> tags) {
+        this.tags.putAll(tags);
+        return (B) this;
+    }
+
+    /**
+     * Adds a tag to the primitive.
+     *
+     * @param key the tag key
+     * @param value the tag value
+     * @return the primitive builder
+     */
+    @SuppressWarnings("unchecked")
+    public B withTag(String key, String value) {
+        tags.put(key, value);
+        return (B) this;
     }
 
     /**
