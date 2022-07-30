@@ -4,33 +4,8 @@
 
 package io.atomix.client.counter;
 
-import atomix.runtime.counter.v1.CounterGrpc;
-import io.atomix.client.AbstractPrimitiveTest;
-import io.atomix.client.Constants;
-import io.atomix.client.counter.impl.DefaultAsyncAtomicCounter;
-import io.grpc.Context;
-import io.grpc.Contexts;
-import io.grpc.Metadata;
-import io.grpc.ServerCall;
-import io.grpc.ServerCallHandler;
-import io.grpc.ServerInterceptor;
-import io.grpc.stub.StreamObserver;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static atomix.runtime.counter.v1.CounterOuterClass.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 
 /**

@@ -32,8 +32,6 @@ import static org.mockito.Mockito.mock;
 public class AtomicCounterTest extends AbstractPrimitiveTest {
 
     private static final String PRIMITIVE_NAME = "counter";
-    private static final String APPLICATION_NAME = "onos";
-    private static final String SESSION_ID = "0";
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -46,9 +44,7 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
 
     @Test
     public void testNotFound() throws ExecutionException, InterruptedException {
-        AsyncAtomicCounter atomicCounter = new DefaultAsyncAtomicCounter(
-                PRIMITIVE_NAME, APPLICATION_NAME, SESSION_ID,
-                channel, Context.current().withCancellation());
+        AsyncAtomicCounter atomicCounter = new DefaultAsyncAtomicCounter(PRIMITIVE_NAME, channel);
         exceptionRule.expect(ExecutionException.class);
         exceptionRule.expectMessage("counter not found");
         assertEquals(Long.valueOf(0), atomicCounter.get().get());
@@ -95,8 +91,8 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
 
     private AtomicCounter buildAtomicCounter() {
         return AtomicCounterType.instance().newBuilder(
-                PRIMITIVE_NAME, APPLICATION_NAME, SESSION_ID,
-                channel, Context.current().withCancellation(),
+                PRIMITIVE_NAME,
+                channel,
                 new DefaultPrimitiveManagementService()).build();
     }
 

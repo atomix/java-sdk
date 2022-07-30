@@ -24,22 +24,21 @@ public class DefaultAsyncAtomicCounter
         extends AbstractAsyncPrimitive<CounterGrpc.CounterStub, AsyncAtomicCounter>
         implements AsyncAtomicCounter {
 
-    public DefaultAsyncAtomicCounter(String primitiveName, String applicationName, String sessionId,
-                                     Channel serviceChannel, Context context) {
-        super(primitiveName, applicationName, sessionId, CounterGrpc.newStub(serviceChannel), context);
+    public DefaultAsyncAtomicCounter(String primitiveName, Channel serviceChannel) {
+        super(primitiveName, CounterGrpc.newStub(serviceChannel));
     }
 
     @Override
     public CompletableFuture<AsyncAtomicCounter> connect() {
         return this.<CreateResponse>execute(observer -> service().create(CreateRequest.newBuilder()
-                .build(), observer))
+                        .build(), observer))
                 .thenApply(response -> this);
     }
 
     @Override
     public CompletableFuture<Void> close() {
         return this.<CloseResponse>execute(observer -> service().close(CloseRequest.newBuilder()
-                .build(), observer))
+                        .build(), observer))
                 .thenApply(response -> null);
     }
 
@@ -51,14 +50,14 @@ public class DefaultAsyncAtomicCounter
     @Override
     public CompletableFuture<Long> get() {
         return this.<GetResponse>execute(observer -> service().get(GetRequest.newBuilder()
-                .build(), observer))
+                        .build(), observer))
                 .thenApply(GetResponse::getValue);
     }
 
     @Override
     public CompletableFuture<Void> set(long value) {
         return this.<SetResponse>execute(observer -> service().set(SetRequest.newBuilder()
-                .setValue(value).build(), observer))
+                        .setValue(value).build(), observer))
                 .thenApply(response -> null);
     }
 
@@ -75,7 +74,7 @@ public class DefaultAsyncAtomicCounter
     @Override
     public CompletableFuture<Long> addAndGet(long delta) {
         return this.<IncrementResponse>execute(observer -> service().increment(IncrementRequest.newBuilder()
-                .setDelta(delta).build(), observer))
+                        .setDelta(delta).build(), observer))
                 .thenApply(IncrementResponse::getValue);
     }
 
@@ -83,7 +82,7 @@ public class DefaultAsyncAtomicCounter
     public CompletableFuture<Long> getAndAdd(long delta) {
         CompletableFuture<Long> getCounter = this.get();
         this.<IncrementResponse>execute(observer -> service().increment(IncrementRequest.newBuilder()
-                .setDelta(delta).build(), observer))
+                        .setDelta(delta).build(), observer))
                 .thenApply(response -> null);
         return getCounter;
     }
@@ -91,7 +90,7 @@ public class DefaultAsyncAtomicCounter
     @Override
     public CompletableFuture<Long> incrementAndGet() {
         return this.<IncrementResponse>execute(observer -> service().increment(IncrementRequest.newBuilder()
-                .setDelta(1).build(), observer))
+                        .setDelta(1).build(), observer))
                 .thenApply(IncrementResponse::getValue);
     }
 
@@ -99,7 +98,7 @@ public class DefaultAsyncAtomicCounter
     public CompletableFuture<Long> getAndIncrement() {
         CompletableFuture<Long> getCounter = this.get();
         this.<IncrementResponse>execute(observer -> service().increment(IncrementRequest.newBuilder()
-                .setDelta(1).build(), observer))
+                        .setDelta(1).build(), observer))
                 .thenApply(response -> null);
         return getCounter;
     }
@@ -107,7 +106,7 @@ public class DefaultAsyncAtomicCounter
     @Override
     public CompletableFuture<Long> decrementAndGet() {
         return this.<DecrementResponse>execute(observer -> service().decrement(DecrementRequest.newBuilder()
-                .setDelta(1).build(), observer))
+                        .setDelta(1).build(), observer))
                 .thenApply(DecrementResponse::getValue);
     }
 
@@ -115,7 +114,7 @@ public class DefaultAsyncAtomicCounter
     public CompletableFuture<Long> getAndDecrement() {
         CompletableFuture<Long> getCounter = this.get();
         this.<DecrementResponse>execute(observer -> service().decrement(DecrementRequest.newBuilder()
-                .setDelta(1).build(), observer))
+                        .setDelta(1).build(), observer))
                 .thenApply(response -> null);
         return getCounter;
     }
