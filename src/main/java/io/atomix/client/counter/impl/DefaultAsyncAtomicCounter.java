@@ -4,8 +4,8 @@
 
 package io.atomix.client.counter.impl;
 
-import atomix.counter.v1.CounterGrpc;
-import atomix.counter.v1.CounterOuterClass.GetRequest;
+import atomix.runtime.counter.v1.CounterGrpc;
+import atomix.runtime.counter.v1.CounterOuterClass.GetRequest;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
@@ -15,7 +15,7 @@ import io.grpc.Context;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
-import static atomix.counter.v1.CounterOuterClass.*;
+import static atomix.runtime.counter.v1.CounterOuterClass.*;
 
 /**
  * Atomix counter implementation.
@@ -64,11 +64,11 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Boolean> compareAndSet(long expectedValue, long updateValue) {
-        SetRequest setRequest = SetRequest.newBuilder()
-                .addPreconditions(Precondition.newBuilder().setValue(expectedValue).build())
-                .setValue(updateValue)
+        CompareAndSetRequest compareAndSetRequest = CompareAndSetRequest.newBuilder()
+                .setCheck(expectedValue)
+                .setUpdate(updateValue)
                 .build();
-        return this.<SetResponse>execute(observer -> service().set(setRequest, observer))
+        return this.<CompareAndSetResponse>execute(observer -> service().compareAndSet(compareAndSetRequest, observer))
                 .thenApply(response -> response.getValue() == updateValue);
     }
 

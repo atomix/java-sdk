@@ -4,7 +4,7 @@
 
 package io.atomix.client.counter;
 
-import atomix.counter.v1.CounterGrpc;
+import atomix.runtime.counter.v1.CounterGrpc;
 import io.atomix.client.AbstractPrimitiveTest;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.counter.impl.DefaultAsyncAtomicCounter;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static atomix.counter.v1.CounterOuterClass.*;
+import static atomix.runtime.counter.v1.CounterOuterClass.*;
 import static org.junit.Assert.*;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
@@ -124,11 +124,11 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
                 public void get(GetRequest request, StreamObserver<GetResponse> responseObserver) {
                     if (atomicLong == null) {
                         responseObserver.onError(Status.NOT_FOUND.withDescription("counter not found...")
-                                                         .asRuntimeException());
+                                .asRuntimeException());
                     } else {
                         responseObserver.onNext(GetResponse.newBuilder()
-                                                        .setValue(atomicLong.get())
-                                                        .build());
+                                .setValue(atomicLong.get())
+                                .build());
                         responseObserver.onCompleted();
                     }
                 }
@@ -137,18 +137,26 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
                 public void set(SetRequest request, StreamObserver<SetResponse> responseObserver) {
                     if (atomicLong == null) {
                         responseObserver.onError(Status.NOT_FOUND.withDescription("counter not found...")
-                                                         .asRuntimeException());
+                                .asRuntimeException());
                     } else {
-                        List<Precondition> preconditionList = request.getPreconditionsList();
-                        long updatedValue = request.getValue();
-                        if (preconditionList.isEmpty()) {
-                            atomicLong.set(updatedValue);
-                        } else {
-                            atomicLong.compareAndSet(preconditionList.get(0).getValue(), updatedValue);
-                        }
+                        atomicLong.set(request.getValue());
                         responseObserver.onNext(SetResponse.newBuilder()
-                                                        .setValue(atomicLong.get())
-                                                        .build());
+                                .setValue(atomicLong.get())
+                                .build());
+                        responseObserver.onCompleted();
+                    }
+                }
+
+                @Override
+                public void compareAndSet(CompareAndSetRequest request, StreamObserver<CompareAndSetResponse> responseObserver) {
+                    if (atomicLong == null) {
+                        responseObserver.onError(Status.NOT_FOUND.withDescription("counter not found...")
+                                .asRuntimeException());
+                    } else {
+                        atomicLong.compareAndSet(request.getCheck(), request.getUpdate());
+                        responseObserver.onNext(CompareAndSetResponse.newBuilder()
+                                .setValue(atomicLong.get())
+                                .build());
                         responseObserver.onCompleted();
                     }
                 }
@@ -157,12 +165,12 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
                 public void increment(IncrementRequest request, StreamObserver<IncrementResponse> responseObserver) {
                     if (atomicLong == null) {
                         responseObserver.onError(Status.NOT_FOUND.withDescription("counter not found...")
-                                                         .asRuntimeException());
+                                .asRuntimeException());
                     } else {
                         long value = atomicLong.addAndGet(request.getDelta());
                         responseObserver.onNext(IncrementResponse.newBuilder()
-                                                        .setValue(value)
-                                                        .build());
+                                .setValue(value)
+                                .build());
                         responseObserver.onCompleted();
                     }
                 }
@@ -171,12 +179,12 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
                 public void decrement(DecrementRequest request, StreamObserver<DecrementResponse> responseObserver) {
                     if (atomicLong == null) {
                         responseObserver.onError(Status.NOT_FOUND.withDescription("counter not found...")
-                                                         .asRuntimeException());
+                                .asRuntimeException());
                     } else {
                         long value = atomicLong.decrementAndGet();
                         responseObserver.onNext(DecrementResponse.newBuilder()
-                                                        .setValue(value)
-                                                        .build());
+                                .setValue(value)
+                                .build());
                         responseObserver.onCompleted();
                     }
                 }

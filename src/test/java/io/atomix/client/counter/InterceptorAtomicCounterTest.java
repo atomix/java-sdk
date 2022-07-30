@@ -4,7 +4,7 @@
 
 package io.atomix.client.counter;
 
-import atomix.counter.v1.CounterGrpc;
+import atomix.runtime.counter.v1.CounterGrpc;
 import io.atomix.client.AbstractPrimitiveTest;
 import io.atomix.client.Constants;
 import io.atomix.client.counter.impl.DefaultAsyncAtomicCounter;
@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static atomix.counter.v1.CounterOuterClass.*;
+import static atomix.runtime.counter.v1.CounterOuterClass.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.AdditionalAnswers.delegatesTo;

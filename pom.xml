@@ -273,15 +273,15 @@ SPDX-License-Identifier: Apache-2.0
                     </execution>
                     <!-- Dependencies protos -->
                     <execution>
-                        <id>download-runtime-descriptor-api</id>
+                        <id>download-runtime-primitive-api</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/primitive/v1/descriptor.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/primitive/v1</toDir>
+                            <fromFile>api/atomix/runtime/v1/primitive.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/v1</toDir>
                         </configuration>
                     </execution>
                     <execution>
@@ -292,8 +292,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/time/v1/timestamp.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/time/v1</toDir>
+                            <fromFile>api/atomix/runtime/v1/timestamp.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/v1</toDir>
                         </configuration>
                     </execution>
                     <!-- Counter Api related protos -->
@@ -305,8 +305,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/counter/v1/counter.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/counter/v1</toDir>
+                            <fromFile>api/atomix/runtime/counter/v1/counter.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/counter/v1</toDir>
                         </configuration>
                     </execution>
                     <!-- Election Api related protos -->
@@ -318,8 +318,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/election/v1/election.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/election/v1</toDir>
+                            <fromFile>api/atomix/runtime/election/v1/election.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/election/v1</toDir>
                         </configuration>
                     </execution>
                     <!-- Indexed Map Api related protos -->
@@ -331,8 +331,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/indexed_map/v1/indexed_map.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/indexed_map/v1</toDir>
+                            <fromFile>api/atomix/runtime/indexedmap/v1/indexedmap.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/indexedmap/v1</toDir>
                         </configuration>
                     </execution>
                     <!-- List Api related protos -->
@@ -344,8 +344,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/list/v1/list.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/list/v1</toDir>
+                            <fromFile>api/atomix/runtime/list/v1/list.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/list/v1</toDir>
                         </configuration>
                     </execution>
                     <!-- Lock Api related protos -->
@@ -357,8 +357,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/lock/v1/lock.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/lock/v1</toDir>
+                            <fromFile>api/atomix/runtime/lock/v1/lock.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/lock/v1</toDir>
                         </configuration>
                     </execution>
                     <!-- Map Api related protos -->
@@ -370,8 +370,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/map/v1/map.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/map/v1</toDir>
+                            <fromFile>api/atomix/runtime/map/v1/map.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/map/v1</toDir>
                         </configuration>
                     </execution>
                     <!-- Set Api related protos -->
@@ -383,8 +383,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/set/v1/set.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/set/v1</toDir>
+                            <fromFile>api/atomix/runtime/set/v1/set.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/set/v1</toDir>
                         </configuration>
                     </execution>
                     <!-- Topic Api related protos -->
@@ -396,8 +396,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/topic/v1/topic.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/topic/v1</toDir>
+                            <fromFile>api/atomix/runtime/topic/v1/topic.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/topic/v1</toDir>
                         </configuration>
                     </execution>
                     <!-- Value Api related protos -->
@@ -409,8 +409,8 @@ SPDX-License-Identifier: Apache-2.0
                         </goals>
                         <configuration>
                             <url>${wagon-maven-plugin.atomix-runtime-url}</url>
-                            <fromFile>api/atomix/value/v1/value.proto</fromFile>
-                            <toDir>${project.build.directory}/proto/atomix/value/v1</toDir>
+                            <fromFile>api/atomix/runtime/value/v1/value.proto</fromFile>
+                            <toDir>${project.build.directory}/proto/atomix/runtime/value/v1</toDir>
                         </configuration>
                     </execution>
                 </executions>

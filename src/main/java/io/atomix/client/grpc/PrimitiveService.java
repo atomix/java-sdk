@@ -4,8 +4,8 @@
 
 package io.atomix.client.grpc;
 
-import atomix.counter.v1.CounterGrpc;
-import atomix.election.v1.LeaderElectionGrpc;
+import atomix.runtime.counter.v1.CounterGrpc;
+import atomix.runtime.election.v1.LeaderElectionGrpc;
 
 /**
  * Enum for the primitive services to be used in the service config builder.
