@@ -1,6 +1,7 @@
 package io.atomix.client.map;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import io.atomix.client.Cancellable;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.set.DistributedSet;
@@ -63,18 +64,6 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * this map contains no mapping for the key
      */
     Versioned<V> get(K key);
-
-    /**
-     * Returns a map of the values associated with the {@code keys} in this map. The returned map
-     * will only contain entries which already exist in the map.
-     * <p>
-     * Note that duplicate elements in {@code keys}, as determined by {@link Object#equals}, will be
-     * ignored.
-     *
-     * @param keys the keys whose associated values are to be returned
-     * @return the unmodifiable mapping of keys to values for the specified keys found in the map
-     */
-    Map<K, Versioned<V>> getAllPresent(Iterable<K> keys);
 
     /**
      * Returns the value (and version) to which the specified key is mapped, or the provided
@@ -157,7 +146,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return the previous value (and version) associated with key, or null if there was
      * no mapping for key.
      */
-    default Versioned<V> put(K key, V value) {
+    default long put(K key, V value) {
         return put(key, value, Duration.ZERO);
     }
 
@@ -172,32 +161,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return the previous value (and version) associated with key, or null if there was
      * no mapping for key.
      */
-    Versioned<V> put(K key, V value, Duration ttl);
-
-    /**
-     * Associates the specified value with the specified key in this map (optional operation).
-     * If the map previously contained a mapping for the key, the old value is replaced by the
-     * specified value.
-     *
-     * @param key   key with which the specified value is to be associated
-     * @param value value to be associated with the specified key
-     * @return new value.
-     */
-    default Versioned<V> putAndGet(K key, V value) {
-        return putAndGet(key, value, Duration.ZERO);
-    }
-
-    /**
-     * Associates the specified value with the specified key in this map (optional operation).
-     * If the map previously contained a mapping for the key, the old value is replaced by the
-     * specified value.
-     *
-     * @param key   key with which the specified value is to be associated
-     * @param value value to be associated with the specified key
-     * @param ttl   the time to live after which to remove the value
-     * @return new value.
-     */
-    Versioned<V> putAndGet(K key, V value, Duration ttl);
+    long put(K key, V value, Duration ttl);
 
     /**
      * Removes the mapping for a key from this map if it is present (optional operation).
@@ -206,7 +170,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return the value (and version) to which this map previously associated the key,
      * or null if the map contained no mapping for the key.
      */
-    Versioned<V> remove(K key);
+    boolean remove(K key);
 
     /**
      * Removes all of the mappings from this map (optional operation).
@@ -256,7 +220,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return the previous value associated with the specified key or null
      * if key does not already mapped to a value.
      */
-    default Versioned<V> putIfAbsent(K key, V value) {
+    default OptionalLong putIfAbsent(K key, V value) {
         return putIfAbsent(key, value, Duration.ZERO);
     }
 
@@ -267,10 +231,9 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @param key   key with which the specified value is to be associated
      * @param value value to be associated with the specified key
      * @param ttl   the time to live after which to remove the value
-     * @return the previous value associated with the specified key or null
-     * if key does not already mapped to a value.
+     * @return the version of the new entry
      */
-    Versioned<V> putIfAbsent(K key, V value, Duration ttl);
+    OptionalLong putIfAbsent(K key, V value, Duration ttl);
 
     /**
      * Removes the entry for the specified key only if it is currently
@@ -300,7 +263,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @param value value expected to be associated with the specified key
      * @return the previous value associated with the specified key or null
      */
-    Versioned<V> replace(K key, V value);
+    OptionalLong replace(K key, V value);
 
     /**
      * Replaces the entry for the specified key only if currently mapped
@@ -311,7 +274,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @param newValue value to be associated with the specified key
      * @return true if the value was replaced
      */
-    boolean replace(K key, V oldValue, V newValue);
+    OptionalLong replace(K key, V oldValue, V newValue);
 
     /**
      * Replaces the entry for the specified key only if it is currently mapped to the
@@ -322,7 +285,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @param newValue   value to be associated with the specified key
      * @return true if the value was replaced
      */
-    boolean replace(K key, long oldVersion, V newValue);
+    OptionalLong replace(K key, long oldVersion, V newValue);
 
     /**
      * Acquires a lock on the given key.
@@ -389,9 +352,10 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * Registers the specified listener to be notified whenever the map is updated.
      *
      * @param listener listener to notify about map events
+     * @return a cancellable to be used to cancel the listener
      */
-    default void addListener(AtomicMapEventListener<K, V> listener) {
-        addListener(listener, MoreExecutors.directExecutor());
+    default Cancellable listen(AtomicMapEventListener<K, V> listener) {
+        return listen(listener, MoreExecutors.directExecutor());
     }
 
     /**
@@ -399,16 +363,9 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      *
      * @param listener listener to notify about map events
      * @param executor executor to use for handling incoming map events
+     * @return a cancellable to be used to cancel the listener
      */
-    void addListener(AtomicMapEventListener<K, V> listener, Executor executor);
-
-    /**
-     * Unregisters the specified listener such that it will no longer
-     * receive map change notifications.
-     *
-     * @param listener listener to unregister
-     */
-    void removeListener(AtomicMapEventListener<K, V> listener);
+    Cancellable listen(AtomicMapEventListener<K, V> listener, Executor executor);
 
     @Override
     AsyncAtomicMap<K, V> async();

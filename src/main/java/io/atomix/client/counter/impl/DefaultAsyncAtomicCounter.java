@@ -4,74 +4,71 @@
 
 package io.atomix.client.counter.impl;
 
-import atomix.runtime.counter.v1.CounterGrpc;
-import atomix.runtime.counter.v1.CounterOuterClass.GetRequest;
+import io.atomix.api.runtime.atomic.counter.v1.*;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.grpc.Channel;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static atomix.runtime.counter.v1.CounterOuterClass.*;
-
 /**
  * Atomix counter implementation.
  */
 public class DefaultAsyncAtomicCounter
-        extends AbstractAsyncPrimitive<CounterGrpc.CounterStub, AsyncAtomicCounter>
+        extends AbstractAsyncPrimitive<AsyncAtomicCounter>
         implements AsyncAtomicCounter {
+    private final AtomicCounterGrpc.AtomicCounterStub stub;
 
     public DefaultAsyncAtomicCounter(String name, Channel channel) {
-        super(name, CounterGrpc.newStub(channel));
+        super(name);
+        this.stub = AtomicCounterGrpc.newStub(channel);
     }
 
     @Override
     protected CompletableFuture<AsyncAtomicCounter> create(Map<String, String> tags) {
-        return this.<CreateResponse>execute(observer -> service().create(CreateRequest.newBuilder()
-                        .setId(id())
-                        .putAllTags(tags)
-                        .build(), observer))
+        return execute(stub::create, CreateRequest.newBuilder()
+                .setId(id())
+                .putAllTags(tags)
+                .build())
                 .thenApply(response -> this);
     }
 
     @Override
     public CompletableFuture<Void> close() {
-        return this.<CloseResponse>execute(observer -> service().close(CloseRequest.newBuilder()
-                        .setId(id())
-                        .build(), observer))
+        return execute(stub::close, CloseRequest.newBuilder()
+                .setId(id())
+                .build())
                 .thenApply(response -> null);
     }
 
     @Override
     public CompletableFuture<Long> get() {
-        return this.<GetResponse>execute(observer -> service().get(GetRequest.newBuilder()
-                        .setId(id())
-                        .build(), observer))
+        return execute(stub::get, GetRequest.newBuilder()
+                .setId(id())
+                .build())
                 .thenApply(GetResponse::getValue);
     }
 
     @Override
     public CompletableFuture<Void> set(long value) {
-        return this.<SetResponse>execute(observer -> service().set(SetRequest.newBuilder()
-                        .setId(id())
-                        .setValue(value).build(), observer))
+        return execute(stub::set, SetRequest.newBuilder()
+                .setId(id())
+                .setValue(value).build())
                 .thenApply(response -> null);
     }
 
     @Override
     public CompletableFuture<Boolean> compareAndSet(long expectedValue, long updateValue) {
-        CompareAndSetRequest compareAndSetRequest = CompareAndSetRequest.newBuilder()
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        execute(stub::update, UpdateRequest.newBuilder()
                 .setId(id())
                 .setCheck(expectedValue)
                 .setUpdate(updateValue)
-                .build();
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
-        this.<CompareAndSetResponse>execute(observer -> service().compareAndSet(compareAndSetRequest, observer))
+                .build())
                 .whenComplete((response, t) -> {
                     if (t != null) {
                         if (Status.fromThrowable(t).getCode() == Status.ABORTED.getCode()) {
@@ -88,56 +85,50 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Long> addAndGet(long delta) {
-        return this.<IncrementResponse>execute(observer -> service().increment(IncrementRequest.newBuilder()
-                        .setId(id())
-                        .setDelta(delta).build(), observer))
+        return execute(stub::increment, IncrementRequest.newBuilder()
+                .setId(id())
+                .setDelta(delta).build())
                 .thenApply(IncrementResponse::getValue);
     }
 
     @Override
     public CompletableFuture<Long> getAndAdd(long delta) {
-        CompletableFuture<Long> getCounter = this.get();
-        this.<IncrementResponse>execute(observer -> service().increment(IncrementRequest.newBuilder()
-                        .setId(id())
-                        .setDelta(delta).build(), observer))
-                .thenApply(response -> null);
-        return getCounter;
+        return execute(stub::increment, IncrementRequest.newBuilder()
+                .setId(id())
+                .setDelta(delta).build())
+                .thenApply(response -> response.getValue() - delta);
     }
 
     @Override
     public CompletableFuture<Long> incrementAndGet() {
-        return this.<IncrementResponse>execute(observer -> service().increment(IncrementRequest.newBuilder()
-                        .setId(id())
-                        .setDelta(1).build(), observer))
+        return execute(stub::increment, IncrementRequest.newBuilder()
+                .setId(id())
+                .setDelta(1).build())
                 .thenApply(IncrementResponse::getValue);
     }
 
     @Override
     public CompletableFuture<Long> getAndIncrement() {
-        CompletableFuture<Long> getCounter = this.get();
-        this.<IncrementResponse>execute(observer -> service().increment(IncrementRequest.newBuilder()
-                        .setId(id())
-                        .setDelta(1).build(), observer))
-                .thenApply(response -> null);
-        return getCounter;
+        return execute(stub::increment, IncrementRequest.newBuilder()
+                .setId(id())
+                .setDelta(1).build())
+                .thenApply(response -> response.getValue() - 1);
     }
 
     @Override
     public CompletableFuture<Long> decrementAndGet() {
-        return this.<DecrementResponse>execute(observer -> service().decrement(DecrementRequest.newBuilder()
-                        .setId(id())
-                        .setDelta(1).build(), observer))
+        return execute(stub::decrement, DecrementRequest.newBuilder()
+                .setId(id())
+                .setDelta(1).build())
                 .thenApply(DecrementResponse::getValue);
     }
 
     @Override
     public CompletableFuture<Long> getAndDecrement() {
-        CompletableFuture<Long> getCounter = this.get();
-        this.<DecrementResponse>execute(observer -> service().decrement(DecrementRequest.newBuilder()
-                        .setId(id())
-                        .setDelta(1).build(), observer))
-                .thenApply(response -> null);
-        return getCounter;
+        return execute(stub::decrement, DecrementRequest.newBuilder()
+                .setId(id())
+                .setDelta(1).build())
+                .thenApply(response -> response.getValue() + 1);
     }
 
     @Override

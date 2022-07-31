@@ -1,5 +1,6 @@
 package io.atomix.client.set.impl;
 
+import io.atomix.client.Cancellable;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.collection.CollectionEventListener;
@@ -10,10 +11,7 @@ import io.atomix.client.set.DistributedSet;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * Implementation of {@link DistributedSet} that merely delegates to a {@link AsyncDistributedSet}
@@ -106,13 +104,8 @@ public class BlockingDistributedSet<E> extends Synchronous<AsyncDistributedSet<E
     }
 
     @Override
-    public void addListener(CollectionEventListener<E> listener) {
-        complete(asyncSet.addListener(listener));
-    }
-
-    @Override
-    public void removeListener(CollectionEventListener<E> listener) {
-        complete(asyncSet.removeListener(listener));
+    public Cancellable listen(CollectionEventListener<E> listener, Executor executor) {
+        return complete(asyncSet.listen(listener, executor));
     }
 
     @Override

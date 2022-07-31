@@ -1,10 +1,13 @@
 package io.atomix.client.collection;
 
+import com.google.common.util.concurrent.MoreExecutors;
+import io.atomix.client.Cancellable;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.iterator.SyncIterable;
 import io.atomix.client.iterator.SyncIterator;
 
 import java.util.Collection;
+import java.util.concurrent.Executor;
 
 /**
  * Distributed collection.
@@ -18,15 +21,20 @@ public interface DistributedCollection<E> extends SyncPrimitive, SyncIterable<E>
      * the collection is updated.
      *
      * @param listener listener to notify about collection update events
+     * @return a cancellable to be used to cancel the listener
      */
-    void addListener(CollectionEventListener<E> listener);
+    default Cancellable listen(CollectionEventListener<E> listener) {
+        return listen(listener, MoreExecutors.directExecutor());
+    }
 
     /**
-     * Unregisters the specified listener.
+     * Registers the specified listener to be notified whenever
+     * the collection is updated.
      *
-     * @param listener listener to unregister.
+     * @param listener listener to notify about collection update events
+     * @return a cancellable to be used to cancel the listener
      */
-    void removeListener(CollectionEventListener<E> listener);
+    Cancellable listen(CollectionEventListener<E> listener, Executor executor);
 
     @Override
     AsyncDistributedCollection<E> async();

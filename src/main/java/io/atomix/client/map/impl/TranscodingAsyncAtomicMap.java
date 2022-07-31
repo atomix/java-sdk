@@ -1,7 +1,7 @@
 package io.atomix.client.map.impl;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import io.atomix.client.Cancellable;
 import io.atomix.client.DelegatingAsyncPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.impl.TranscodingAsyncDistributedCollection;
@@ -14,17 +14,13 @@ import io.atomix.client.set.impl.TranscodingAsyncDistributedSet;
 import io.atomix.client.time.Versioned;
 
 import java.time.Duration;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * An {@code AsyncConsistentMap} that maps its operations to operations on a
@@ -46,8 +42,6 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     protected final Function<Versioned<V1>, Versioned<V2>> versionedValueEncoder;
     protected final Function<Entry<K2, Versioned<V2>>, Entry<K1, Versioned<V1>>> entryDecoder;
     protected final Function<Entry<K1, Versioned<V1>>, Entry<K2, Versioned<V2>>> entryEncoder;
-    private final Map<AtomicMapEventListener<K1, V1>, InternalBackingAtomicMapEventListener> listeners =
-            Maps.newIdentityHashMap();
 
     public TranscodingAsyncAtomicMap(
             AsyncAtomicMap<K2, V2> backingMap,
@@ -100,22 +94,6 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<Map<K1, Versioned<V1>>> getAllPresent(Iterable<K1> keys) {
-        try {
-            Set<K2> uniqueKeys = new HashSet<>();
-            for (K1 key : keys) {
-                uniqueKeys.add(keyEncoder.apply(key));
-            }
-            return backingMap.getAllPresent(uniqueKeys).thenApply(
-                    entries -> ImmutableMap.copyOf(entries.entrySet().stream()
-                            .collect(Collectors.toMap(o -> keyDecoder.apply(o.getKey()),
-                                    o -> versionedValueDecoder.apply(o.getValue())))));
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
-    }
-
-    @Override
     public CompletableFuture<Versioned<V1>> getOrDefault(K1 key, V1 defaultValue) {
         try {
             return backingMap.getOrDefault(keyEncoder.apply(key), valueEncoder.apply(defaultValue))
@@ -141,29 +119,18 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<Versioned<V1>> put(K1 key, V1 value, Duration ttl) {
+    public CompletableFuture<Long> put(K1 key, V1 value, Duration ttl) {
         try {
-            return backingMap.put(keyEncoder.apply(key), valueEncoder.apply(value), ttl)
-                    .thenApply(versionedValueDecoder);
+            return backingMap.put(keyEncoder.apply(key), valueEncoder.apply(value), ttl);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
     }
 
     @Override
-    public CompletableFuture<Versioned<V1>> putAndGet(K1 key, V1 value, Duration ttl) {
+    public CompletableFuture<Boolean> remove(K1 key) {
         try {
-            return backingMap.putAndGet(keyEncoder.apply(key), valueEncoder.apply(value), ttl)
-                    .thenApply(versionedValueDecoder);
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
-    }
-
-    @Override
-    public CompletableFuture<Versioned<V1>> remove(K1 key) {
-        try {
-            return backingMap.remove(keyEncoder.apply(key)).thenApply(versionedValueDecoder);
+            return backingMap.remove(keyEncoder.apply(key));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -220,10 +187,9 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<Versioned<V1>> putIfAbsent(K1 key, V1 value, Duration ttl) {
+    public CompletableFuture<OptionalLong> putIfAbsent(K1 key, V1 value, Duration ttl) {
         try {
-            return backingMap.putIfAbsent(keyEncoder.apply(key), valueEncoder.apply(value), ttl)
-                    .thenApply(versionedValueDecoder);
+            return backingMap.putIfAbsent(keyEncoder.apply(key), valueEncoder.apply(value), ttl);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -248,17 +214,16 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<Versioned<V1>> replace(K1 key, V1 value) {
+    public CompletableFuture<OptionalLong> replace(K1 key, V1 value) {
         try {
-            return backingMap.replace(keyEncoder.apply(key), valueEncoder.apply(value))
-                    .thenApply(versionedValueDecoder);
+            return backingMap.replace(keyEncoder.apply(key), valueEncoder.apply(value));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
     }
 
     @Override
-    public CompletableFuture<Boolean> replace(K1 key, V1 oldValue, V1 newValue) {
+    public CompletableFuture<OptionalLong> replace(K1 key, V1 oldValue, V1 newValue) {
         try {
             return backingMap.replace(keyEncoder.apply(key),
                     valueEncoder.apply(oldValue),
@@ -269,7 +234,7 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<Boolean> replace(K1 key, long oldVersion, V1 newValue) {
+    public CompletableFuture<OptionalLong> replace(K1 key, long oldVersion, V1 newValue) {
         try {
             return backingMap.replace(keyEncoder.apply(key), oldVersion, valueEncoder.apply(newValue));
         } catch (Exception e) {
@@ -278,46 +243,16 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<Void> addListener(AtomicMapEventListener<K1, V1> listener, Executor executor) {
-        synchronized (listeners) {
-            InternalBackingAtomicMapEventListener backingMapListener =
-                    listeners.computeIfAbsent(listener, k -> new InternalBackingAtomicMapEventListener(listener));
-            return backingMap.addListener(backingMapListener, executor);
-        }
-    }
-
-    @Override
-    public CompletableFuture<Void> removeListener(AtomicMapEventListener<K1, V1> listener) {
-        synchronized (listeners) {
-            InternalBackingAtomicMapEventListener backingMapListener = listeners.remove(listener);
-            if (backingMapListener != null) {
-                return backingMap.removeListener(backingMapListener);
-            } else {
-                return CompletableFuture.completedFuture(null);
-            }
-        }
+    public CompletableFuture<Cancellable> listen(AtomicMapEventListener<K1, V1> listener, Executor executor) {
+        return backingMap.listen(event -> listener.event(new AtomicMapEvent<K1, V1>(
+                event.type(),
+                keyDecoder.apply(event.key()),
+                event.newValue() != null ? event.newValue().map(valueDecoder) : null,
+                event.oldValue() != null ? event.oldValue().map(valueDecoder) : null)), executor);
     }
 
     @Override
     public AtomicMap<K1, V1> sync(Duration operationTimeout) {
         return new BlockingAtomicMap<>(this, operationTimeout.toMillis());
-    }
-
-    private class InternalBackingAtomicMapEventListener implements AtomicMapEventListener<K2, V2> {
-
-        private final AtomicMapEventListener<K1, V1> listener;
-
-        InternalBackingAtomicMapEventListener(AtomicMapEventListener<K1, V1> listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        public void event(AtomicMapEvent<K2, V2> event) {
-            listener.event(new AtomicMapEvent<K1, V1>(
-                    event.type(),
-                    keyDecoder.apply(event.key()),
-                    event.newValue() != null ? event.newValue().map(valueDecoder) : null,
-                    event.oldValue() != null ? event.oldValue().map(valueDecoder) : null));
-        }
     }
 }

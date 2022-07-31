@@ -1,6 +1,7 @@
 package io.atomix.client.map.impl;
 
 import com.google.common.base.Throwables;
+import io.atomix.client.Cancellable;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.PrimitiveState;
 import io.atomix.client.Synchronous;
@@ -69,11 +70,6 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     }
 
     @Override
-    public Map<K, Versioned<V>> getAllPresent(Iterable<K> keys) {
-        return complete(asyncMap.getAllPresent(keys));
-    }
-
-    @Override
     public Versioned<V> getOrDefault(K key, V defaultValue) {
         return complete(asyncMap.getOrDefault(key, defaultValue));
     }
@@ -107,17 +103,12 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     }
 
     @Override
-    public Versioned<V> put(K key, V value, Duration ttl) {
+    public long put(K key, V value, Duration ttl) {
         return complete(asyncMap.put(key, value, ttl));
     }
 
     @Override
-    public Versioned<V> putAndGet(K key, V value, Duration ttl) {
-        return complete(asyncMap.putAndGet(key, value, ttl));
-    }
-
-    @Override
-    public Versioned<V> remove(K key) {
+    public boolean remove(K key) {
         return complete(asyncMap.remove(key));
     }
 
@@ -142,7 +133,7 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     }
 
     @Override
-    public Versioned<V> putIfAbsent(K key, V value, Duration ttl) {
+    public OptionalLong putIfAbsent(K key, V value, Duration ttl) {
         return complete(asyncMap.putIfAbsent(key, value, ttl));
     }
 
@@ -157,17 +148,17 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     }
 
     @Override
-    public Versioned<V> replace(K key, V value) {
+    public OptionalLong replace(K key, V value) {
         return complete(asyncMap.replace(key, value));
     }
 
     @Override
-    public boolean replace(K key, V oldValue, V newValue) {
+    public OptionalLong replace(K key, V oldValue, V newValue) {
         return complete(asyncMap.replace(key, oldValue, newValue));
     }
 
     @Override
-    public boolean replace(K key, long oldVersion, V newValue) {
+    public OptionalLong replace(K key, long oldVersion, V newValue) {
         return complete(asyncMap.replace(key, oldVersion, newValue));
     }
 
@@ -202,13 +193,8 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     }
 
     @Override
-    public void addListener(AtomicMapEventListener<K, V> listener, Executor executor) {
-        complete(asyncMap.addListener(listener, executor));
-    }
-
-    @Override
-    public void removeListener(AtomicMapEventListener<K, V> listener) {
-        complete(asyncMap.removeListener(listener));
+    public Cancellable listen(AtomicMapEventListener<K, V> listener, Executor executor) {
+        return complete(asyncMap.listen(listener, executor));
     }
 
     @Override

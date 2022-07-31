@@ -21,7 +21,12 @@ public final class CollectionEvent<E> extends AbstractEvent<CollectionEvent.Type
         /**
          * Entry removed from the set.
          */
-        REMOVE
+        REMOVE,
+
+        /**
+         * Entry replayed from existing set.
+         */
+        REPLAY
     }
 
     /**

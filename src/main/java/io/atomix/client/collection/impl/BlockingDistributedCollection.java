@@ -1,6 +1,7 @@
 package io.atomix.client.collection.impl;
 
 import com.google.common.base.Throwables;
+import io.atomix.client.Cancellable;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.collection.AsyncDistributedCollection;
@@ -11,10 +12,7 @@ import io.atomix.client.iterator.impl.BlockingIterator;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * Implementation of {@link DistributedCollection} that merely delegates to a {@link AsyncDistributedCollection} and
@@ -95,13 +93,8 @@ public class BlockingDistributedCollection<E> extends Synchronous<AsyncDistribut
     }
 
     @Override
-    public void addListener(CollectionEventListener<E> listener) {
-        complete(asyncCollection.addListener(listener));
-    }
-
-    @Override
-    public void removeListener(CollectionEventListener<E> listener) {
-        complete(asyncCollection.removeListener(listener));
+    public Cancellable listen(CollectionEventListener<E> listener, Executor executor) {
+        return complete(asyncCollection.listen(listener, executor));
     }
 
     @Override
