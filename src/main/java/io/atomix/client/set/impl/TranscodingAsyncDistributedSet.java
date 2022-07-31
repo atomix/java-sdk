@@ -5,7 +5,6 @@ import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
 
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**

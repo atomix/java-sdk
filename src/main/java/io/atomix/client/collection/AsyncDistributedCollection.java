@@ -2,14 +2,13 @@ package io.atomix.client.collection;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
+import io.atomix.client.Cancellable;
 import io.atomix.client.iterator.AsyncIterable;
 
 import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-
-import static io.atomix.client.DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS;
 
 /**
  * Asynchronous distributed collection.
@@ -101,8 +100,8 @@ public interface AsyncDistributedCollection<E> extends AsyncPrimitive, AsyncIter
      * @param listener listener to notify about collection update events
      * @return CompletableFuture that is completed when the operation completes
      */
-    default CompletableFuture<Void> addListener(CollectionEventListener<E> listener) {
-        return addListener(listener, MoreExecutors.directExecutor());
+    default CompletableFuture<Cancellable> listen(CollectionEventListener<E> listener) {
+        return listen(listener, MoreExecutors.directExecutor());
     }
 
     /**
@@ -113,15 +112,7 @@ public interface AsyncDistributedCollection<E> extends AsyncPrimitive, AsyncIter
      * @param executor executor on which to call event listener
      * @return CompletableFuture that is completed when the operation completes
      */
-    CompletableFuture<Void> addListener(CollectionEventListener<E> listener, Executor executor);
-
-    /**
-     * Unregisters the specified listener.
-     *
-     * @param listener listener to unregister.
-     * @return CompletableFuture that is completed when the operation completes
-     */
-    CompletableFuture<Void> removeListener(CollectionEventListener<E> listener);
+    CompletableFuture<Cancellable> listen(CollectionEventListener<E> listener, Executor executor);
 
     @Override
     default DistributedCollection<E> sync() {

@@ -4,10 +4,11 @@
 
 package io.atomix.client.counter;
 
-import atomix.runtime.counter.v1.CounterGrpc;
+import io.atomix.api.runtime.atomic.counter.v1.*;
 import io.atomix.client.AbstractPrimitiveTest;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.counter.impl.DefaultAsyncAtomicCounter;
+import io.atomix.client.counter.impl.DefaultAtomicCounterBuilder;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
@@ -18,7 +19,6 @@ import org.junit.rules.ExpectedException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static atomix.runtime.counter.v1.CounterOuterClass.*;
 import static org.junit.Assert.*;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
@@ -79,12 +79,12 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
     }
 
     private AtomicCounter buildAtomicCounter() {
-        return AtomicCounterType.instance().newBuilder(PRIMITIVE_NAME, channel).build();
+        return new DefaultAtomicCounterBuilder(PRIMITIVE_NAME, channel).build();
     }
 
     // Mock implementation of the counter server
-    private final CounterGrpc.CounterImplBase counterImplBase = mock(CounterGrpc.CounterImplBase.class, delegatesTo(
-            new CounterGrpc.CounterImplBase() {
+    private final AtomicCounterGrpc.AtomicCounterImplBase counterImplBase = mock(AtomicCounterGrpc.AtomicCounterImplBase.class, delegatesTo(
+            new AtomicCounterGrpc.AtomicCounterImplBase() {
 
                 private AtomicLong atomicLong;
 
@@ -130,13 +130,13 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
                 }
 
                 @Override
-                public void compareAndSet(CompareAndSetRequest request, StreamObserver<CompareAndSetResponse> responseObserver) {
+                public void update(UpdateRequest request, StreamObserver<UpdateResponse> responseObserver) {
                     if (atomicLong == null) {
                         responseObserver.onError(Status.NOT_FOUND.withDescription("counter not found...")
                                 .asRuntimeException());
                     } else {
                         if (atomicLong.compareAndSet(request.getCheck(), request.getUpdate())) {
-                            responseObserver.onNext(CompareAndSetResponse.newBuilder()
+                            responseObserver.onNext(UpdateResponse.newBuilder()
                                     .setValue(request.getUpdate())
                                     .build());
                             responseObserver.onCompleted();

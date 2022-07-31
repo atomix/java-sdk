@@ -1,8 +1,10 @@
 package io.atomix.client;
 
 import io.atomix.client.counter.AtomicCounterBuilder;
-import io.atomix.client.counter.AtomicCounterType;
+import io.atomix.client.counter.impl.DefaultAtomicCounterBuilder;
 import io.atomix.client.grpc.ServiceConfigBuilder;
+import io.atomix.client.map.AtomicMapBuilder;
+import io.atomix.client.map.impl.DefaultAtomicMapBuilder;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 
@@ -48,13 +50,31 @@ public final class AtomixClient {
      * @return atomic counter builder
      */
     public AtomicCounterBuilder atomicCounterBuilder(String name) {
-        return primitiveBuilder(name, AtomicCounterType.instance());
+        return new DefaultAtomicCounterBuilder(name, channel);
     }
 
-    private <B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> B primitiveBuilder(
-            String name,
-            PrimitiveType<B, P> primitiveType) {
-        return primitiveType.newBuilder(name, channel);
+    /**
+     * Creates a new named {@link io.atomix.client.map.AtomicMap} builder.
+     * <p>
+     * The map name must be provided when constructing the builder. The name is used to reference a distinct instance of
+     * the primitive within the cluster. Multiple instances of the primitive with the same name will share the same state.
+     * However, the instance of the primitive constructed by the returned builder will be distinct and will not share
+     * local memory (e.g. cache) with any other instance on this node.
+     * <p>
+     * To get an asynchronous instance of the map, use the {@link SyncPrimitive#async()} method:
+     * <pre>
+     *   {@code
+     *   AsyncAtomicMap<String, String> map = atomix.<String, String>atomicMapBuilder("my-map").build().async();
+     *   }
+     * </pre>
+     *
+     * @param name the primitive name
+     * @param <K>  key type
+     * @param <V>  value type
+     * @return builder for a atomic map
+     */
+    public <K, V> AtomicMapBuilder<K, V> atomicMapBuilder(String name) {
+        return new DefaultAtomicMapBuilder<>(name, channel);
     }
 
     /**

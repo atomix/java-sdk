@@ -1,6 +1,6 @@
 package io.atomix.client.collection.impl;
 
-import com.google.common.collect.Maps;
+import io.atomix.client.Cancellable;
 import io.atomix.client.DelegatingAsyncPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;
@@ -11,7 +11,6 @@ import io.atomix.client.iterator.impl.TranscodingIterator;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -25,11 +24,9 @@ import java.util.stream.Collectors;
  * @param <E1> element type of this collection
  */
 public class TranscodingAsyncDistributedCollection<E1, E2> extends DelegatingAsyncPrimitive implements AsyncDistributedCollection<E1> {
-
     private final AsyncDistributedCollection<E2> backingCollection;
     private final Function<E1, E2> elementEncoder;
     private final Function<E2, E1> elementDecoder;
-    private final Map<CollectionEventListener<E1>, InternalCollectionEventListener> listeners = Maps.newIdentityHashMap();
 
     public TranscodingAsyncDistributedCollection(
             AsyncDistributedCollection<E2> backingCollection,
@@ -97,41 +94,12 @@ public class TranscodingAsyncDistributedCollection<E1, E2> extends DelegatingAsy
     }
 
     @Override
-    public CompletableFuture<Void> addListener(CollectionEventListener<E1> listener, Executor executor) {
-        synchronized (listeners) {
-            InternalCollectionEventListener collectionListener =
-                    listeners.computeIfAbsent(listener, k -> new InternalCollectionEventListener(listener));
-            return backingCollection.addListener(collectionListener, executor);
-        }
-    }
-
-    @Override
-    public CompletableFuture<Void> removeListener(CollectionEventListener<E1> listener) {
-        synchronized (listeners) {
-            InternalCollectionEventListener collectionListener = listeners.remove(listener);
-            if (collectionListener != null) {
-                return backingCollection.removeListener(collectionListener);
-            } else {
-                return CompletableFuture.completedFuture(null);
-            }
-        }
+    public CompletableFuture<Cancellable> listen(CollectionEventListener<E1> listener, Executor executor) {
+        return backingCollection.listen(event -> new CollectionEvent<>(event.type(), elementDecoder.apply(event.element())), executor);
     }
 
     @Override
     public DistributedCollection<E1> sync(Duration operationTimeout) {
         return new BlockingDistributedCollection<>(this, operationTimeout.toMillis());
-    }
-
-    private class InternalCollectionEventListener implements CollectionEventListener<E2> {
-        private final CollectionEventListener<E1> listener;
-
-        InternalCollectionEventListener(CollectionEventListener<E1> listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        public void event(CollectionEvent<E2> event) {
-            listener.event(new CollectionEvent<>(event.type(), elementDecoder.apply(event.element())));
-        }
     }
 }

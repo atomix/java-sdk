@@ -2,6 +2,7 @@ package io.atomix.client.map;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
+import io.atomix.client.Cancellable;
 import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.set.AsyncDistributedSet;
@@ -85,18 +86,6 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * this map contains no mapping for the key
      */
     CompletableFuture<Versioned<V>> get(K key);
-
-    /**
-     * Returns a map of the values associated with the {@code keys} in this map. The returned map
-     * will only contain entries which already exist in the map.
-     * <p>
-     * Note that duplicate elements in {@code keys}, as determined by {@link Object#equals}, will be
-     * ignored.
-     *
-     * @param keys the keys whose associated values are to be returned
-     * @return the unmodifiable mapping of keys to values for the specified keys found in the map
-     */
-    CompletableFuture<Map<K, Versioned<V>>> getAllPresent(Iterable<K> keys);
 
     /**
      * Returns the value (and version) to which the specified key is mapped, or the provided
@@ -183,7 +172,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the previous value (and version) associated with key, or null if there was
      * no mapping for key.
      */
-    default CompletableFuture<Versioned<V>> put(K key, V value) {
+    default CompletableFuture<Long> put(K key, V value) {
         return put(key, value, Duration.ZERO);
     }
 
@@ -198,32 +187,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the previous value (and version) associated with key, or null if there was
      * no mapping for key.
      */
-    CompletableFuture<Versioned<V>> put(K key, V value, Duration ttl);
-
-    /**
-     * Associates the specified value with the specified key in this map (optional operation).
-     * If the map previously contained a mapping for the key, the old value is replaced by the
-     * specified value.
-     *
-     * @param key   key with which the specified value is to be associated
-     * @param value value to be associated with the specified key
-     * @return new value.
-     */
-    default CompletableFuture<Versioned<V>> putAndGet(K key, V value) {
-        return putAndGet(key, value, Duration.ZERO);
-    }
-
-    /**
-     * Associates the specified value with the specified key in this map (optional operation).
-     * If the map previously contained a mapping for the key, the old value is replaced by the
-     * specified value.
-     *
-     * @param key   key with which the specified value is to be associated
-     * @param value value to be associated with the specified key
-     * @param ttl   the time to live after which to remove the value
-     * @return new value.
-     */
-    CompletableFuture<Versioned<V>> putAndGet(K key, V value, Duration ttl);
+    CompletableFuture<Long> put(K key, V value, Duration ttl);
 
     /**
      * Removes the mapping for a key from this map if it is present (optional operation).
@@ -232,7 +196,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the value (and version) to which this map previously associated the key,
      * or null if the map contained no mapping for the key.
      */
-    CompletableFuture<Versioned<V>> remove(K key);
+    CompletableFuture<Boolean> remove(K key);
 
     /**
      * Removes all of the mappings from this map (optional operation).
@@ -285,7 +249,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the previous value associated with the specified key or null
      * if key does not already mapped to a value.
      */
-    default CompletableFuture<Versioned<V>> putIfAbsent(K key, V value) {
+    default CompletableFuture<OptionalLong> putIfAbsent(K key, V value) {
         return putIfAbsent(key, value, Duration.ZERO);
     }
 
@@ -300,7 +264,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the previous value associated with the specified key or null
      * if key does not already mapped to a value.
      */
-    CompletableFuture<Versioned<V>> putIfAbsent(K key, V value, Duration ttl);
+    CompletableFuture<OptionalLong> putIfAbsent(K key, V value, Duration ttl);
 
     /**
      * Removes the entry for the specified key only if it is currently
@@ -330,7 +294,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @param value value expected to be associated with the specified key
      * @return the previous value associated with the specified key or null
      */
-    CompletableFuture<Versioned<V>> replace(K key, V value);
+    CompletableFuture<OptionalLong> replace(K key, V value);
 
     /**
      * Replaces the entry for the specified key only if currently mapped
@@ -341,7 +305,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @param newValue value to be associated with the specified key
      * @return true if the value was replaced
      */
-    CompletableFuture<Boolean> replace(K key, V oldValue, V newValue);
+    CompletableFuture<OptionalLong> replace(K key, V oldValue, V newValue);
 
     /**
      * Replaces the entry for the specified key only if it is currently mapped to the
@@ -352,7 +316,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @param newValue   value to be associated with the specified key
      * @return true if the value was replaced
      */
-    CompletableFuture<Boolean> replace(K key, long oldVersion, V newValue);
+    CompletableFuture<OptionalLong> replace(K key, long oldVersion, V newValue);
 
     /**
      * Acquires a lock on the given key.
@@ -373,9 +337,9 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key the key for which to acquire the lock
+     * @param key     the key for which to acquire the lock
      * @param timeout the lock timeout
-     * @param unit the lock unit
+     * @param unit    the lock unit
      * @return an optional long containing the version of the key at the time it was locked
      */
     default CompletableFuture<OptionalLong> tryLock(K key, long timeout, TimeUnit unit) {
@@ -385,7 +349,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key the key for which to acquire the lock
+     * @param key     the key for which to acquire the lock
      * @param timeout the lock timeout
      * @return an optional long containing the version of the key at the time it was locked
      */
@@ -402,7 +366,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
     /**
      * Returns a boolean indicating whether a lock is currently held on the given key with the given version.
      *
-     * @param key the key for which to determine whether a lock exists
+     * @param key     the key for which to determine whether a lock exists
      * @param version the version that must match the lock
      * @return indicates whether a lock exists on the given key
      */
@@ -421,8 +385,8 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @param listener listener to notify about map events
      * @return future that will be completed when the operation finishes
      */
-    default CompletableFuture<Void> addListener(AtomicMapEventListener<K, V> listener) {
-        return addListener(listener, MoreExecutors.directExecutor());
+    default CompletableFuture<Cancellable> listen(AtomicMapEventListener<K, V> listener) {
+        return listen(listener, MoreExecutors.directExecutor());
     }
 
     /**
@@ -432,16 +396,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @param executor executor to use for handling incoming map events
      * @return future that will be completed when the operation finishes
      */
-    CompletableFuture<Void> addListener(AtomicMapEventListener<K, V> listener, Executor executor);
-
-    /**
-     * Unregisters the specified listener such that it will no longer
-     * receive map change notifications.
-     *
-     * @param listener listener to unregister
-     * @return future that will be completed when the operation finishes
-     */
-    CompletableFuture<Void> removeListener(AtomicMapEventListener<K, V> listener);
+    CompletableFuture<Cancellable> listen(AtomicMapEventListener<K, V> listener, Executor executor);
 
     @Override
     default AtomicMap<K, V> sync() {
