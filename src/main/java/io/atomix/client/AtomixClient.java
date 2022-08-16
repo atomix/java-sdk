@@ -9,7 +9,9 @@ import io.atomix.client.counter.AtomicCounterBuilder;
 import io.atomix.client.counter.impl.DefaultAtomicCounterBuilder;
 import io.atomix.client.grpc.ServiceConfigBuilder;
 import io.atomix.client.map.AtomicMapBuilder;
+import io.atomix.client.map.DistributedMapBuilder;
 import io.atomix.client.map.impl.DefaultAtomicMapBuilder;
+import io.atomix.client.map.impl.DefaultDistributedMapBuilder;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 
@@ -59,6 +61,30 @@ public final class AtomixClient {
     }
 
     /**
+     * Creates a new named {@link io.atomix.client.map.DistributedMap} builder.
+     * <p>
+     * The map name must be provided when constructing the builder. The name is used to reference a distinct instance of
+     * the primitive within the cluster. Multiple instances of the primitive with the same name will share the same state.
+     * However, the instance of the primitive constructed by the returned builder will be distinct and will not share
+     * local memory (e.g. cache) with any other instance on this node.
+     * <p>
+     * To get an asynchronous instance of the map, use the {@link SyncPrimitive#async()} method:
+     * <pre>
+     *   {@code
+     *   AsyncDistributedMap<String, String> map = atomix.<String, String>mapBuilder("my-map").build().async();
+     *   }
+     * </pre>
+     *
+     * @param name the primitive name
+     * @param <K>  key type
+     * @param <V>  value type
+     * @return builder for a distributed map
+     */
+    public <K, V> DistributedMapBuilder<K, V> mapBuilder(String name) {
+        return new DefaultDistributedMapBuilder<>(name, channel);
+    }
+
+    /**
      * Creates a new named {@link io.atomix.client.map.AtomicMap} builder.
      * <p>
      * The map name must be provided when constructing the builder. The name is used to reference a distinct instance of
@@ -76,7 +102,7 @@ public final class AtomixClient {
      * @param name the primitive name
      * @param <K>  key type
      * @param <V>  value type
-     * @return builder for a atomic map
+     * @return builder for an atomic map
      */
     public <K, V> AtomicMapBuilder<K, V> atomicMapBuilder(String name) {
         return new DefaultAtomicMapBuilder<>(name, channel);
