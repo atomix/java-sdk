@@ -103,12 +103,17 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     }
 
     @Override
-    public long put(K key, V value, Duration ttl) {
+    public Versioned<V> put(K key, V value, Duration ttl) {
         return complete(asyncMap.put(key, value, ttl));
     }
 
     @Override
-    public boolean remove(K key) {
+    public Versioned<V> putAndGet(K key, V value, Duration ttl) {
+        return complete(asyncMap.putAndGet(key, value, ttl));
+    }
+
+    @Override
+    public Versioned<V> remove(K key) {
         return complete(asyncMap.remove(key));
     }
 
@@ -133,7 +138,7 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     }
 
     @Override
-    public OptionalLong putIfAbsent(K key, V value, Duration ttl) {
+    public Versioned<V> putIfAbsent(K key, V value, Duration ttl) {
         return complete(asyncMap.putIfAbsent(key, value, ttl));
     }
 
@@ -148,43 +153,38 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     }
 
     @Override
-    public OptionalLong replace(K key, V value) {
+    public Versioned<V> replace(K key, V value) {
         return complete(asyncMap.replace(key, value));
     }
 
     @Override
-    public OptionalLong replace(K key, V oldValue, V newValue) {
+    public boolean replace(K key, V oldValue, V newValue) {
         return complete(asyncMap.replace(key, oldValue, newValue));
     }
 
     @Override
-    public OptionalLong replace(K key, long oldVersion, V newValue) {
+    public boolean replace(K key, long oldVersion, V newValue) {
         return complete(asyncMap.replace(key, oldVersion, newValue));
     }
 
     @Override
-    public long lock(K key) {
-        return complete(asyncMap.lock(key));
+    public void lock(K key) {
+        complete(asyncMap.lock(key));
     }
 
     @Override
-    public OptionalLong tryLock(K key) {
+    public boolean tryLock(K key) {
         return complete(asyncMap.tryLock(key));
     }
 
     @Override
-    public OptionalLong tryLock(K key, Duration timeout) {
+    public boolean tryLock(K key, Duration timeout) {
         return complete(asyncMap.tryLock(key, timeout));
     }
 
     @Override
     public boolean isLocked(K key) {
         return complete(asyncMap.isLocked(key));
-    }
-
-    @Override
-    public boolean isLocked(K key, long version) {
-        return complete(asyncMap.isLocked(key, version));
     }
 
     @Override

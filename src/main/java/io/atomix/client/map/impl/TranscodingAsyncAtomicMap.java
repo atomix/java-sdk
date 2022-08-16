@@ -119,18 +119,30 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<Long> put(K1 key, V1 value, Duration ttl) {
+    public CompletableFuture<Versioned<V1>> put(K1 key, V1 value, Duration ttl) {
         try {
-            return backingMap.put(keyEncoder.apply(key), valueEncoder.apply(value), ttl);
+            return backingMap.put(keyEncoder.apply(key), valueEncoder.apply(value), ttl)
+                    .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
     }
 
     @Override
-    public CompletableFuture<Boolean> remove(K1 key) {
+    public CompletableFuture<Versioned<V1>> putAndGet(K1 key, V1 value, Duration ttl) {
         try {
-            return backingMap.remove(keyEncoder.apply(key));
+            return backingMap.putAndGet(keyEncoder.apply(key), valueEncoder.apply(value), ttl)
+                    .thenApply(versionedValueDecoder);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Versioned<V1>> remove(K1 key) {
+        try {
+            return backingMap.remove(keyEncoder.apply(key))
+                    .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -142,28 +154,23 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<Long> lock(K1 key) {
+    public CompletableFuture<Void> lock(K1 key) {
         return backingMap.lock(keyEncoder.apply(key));
     }
 
     @Override
-    public CompletableFuture<OptionalLong> tryLock(K1 key) {
+    public CompletableFuture<Boolean> tryLock(K1 key) {
         return backingMap.tryLock(keyEncoder.apply(key));
     }
 
     @Override
-    public CompletableFuture<OptionalLong> tryLock(K1 key, Duration timeout) {
+    public CompletableFuture<Boolean> tryLock(K1 key, Duration timeout) {
         return backingMap.tryLock(keyEncoder.apply(key), timeout);
     }
 
     @Override
     public CompletableFuture<Boolean> isLocked(K1 key) {
         return backingMap.isLocked(keyEncoder.apply(key));
-    }
-
-    @Override
-    public CompletableFuture<Boolean> isLocked(K1 key, long version) {
-        return backingMap.isLocked(keyEncoder.apply(key), version);
     }
 
     @Override
@@ -187,9 +194,10 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<OptionalLong> putIfAbsent(K1 key, V1 value, Duration ttl) {
+    public CompletableFuture<Versioned<V1>> putIfAbsent(K1 key, V1 value, Duration ttl) {
         try {
-            return backingMap.putIfAbsent(keyEncoder.apply(key), valueEncoder.apply(value), ttl);
+            return backingMap.putIfAbsent(keyEncoder.apply(key), valueEncoder.apply(value), ttl)
+                    .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -214,16 +222,17 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<OptionalLong> replace(K1 key, V1 value) {
+    public CompletableFuture<Versioned<V1>> replace(K1 key, V1 value) {
         try {
-            return backingMap.replace(keyEncoder.apply(key), valueEncoder.apply(value));
+            return backingMap.replace(keyEncoder.apply(key), valueEncoder.apply(value))
+                    .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
     }
 
     @Override
-    public CompletableFuture<OptionalLong> replace(K1 key, V1 oldValue, V1 newValue) {
+    public CompletableFuture<Boolean> replace(K1 key, V1 oldValue, V1 newValue) {
         try {
             return backingMap.replace(keyEncoder.apply(key),
                     valueEncoder.apply(oldValue),
@@ -234,7 +243,7 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
-    public CompletableFuture<OptionalLong> replace(K1 key, long oldVersion, V1 newValue) {
+    public CompletableFuture<Boolean> replace(K1 key, long oldVersion, V1 newValue) {
         try {
             return backingMap.replace(keyEncoder.apply(key), oldVersion, valueEncoder.apply(newValue));
         } catch (Exception e) {
