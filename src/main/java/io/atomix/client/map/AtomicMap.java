@@ -146,7 +146,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return the previous value (and version) associated with key, or null if there was
      * no mapping for key.
      */
-    default long put(K key, V value) {
+    default Versioned<V> put(K key, V value) {
         return put(key, value, Duration.ZERO);
     }
 
@@ -161,7 +161,32 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return the previous value (and version) associated with key, or null if there was
      * no mapping for key.
      */
-    long put(K key, V value, Duration ttl);
+    Versioned<V> put(K key, V value, Duration ttl);
+
+    /**
+     * Associates the specified value with the specified key in this map (optional operation).
+     * If the map previously contained a mapping for the key, the old value is replaced by the
+     * specified value.
+     *
+     * @param key   key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @return new value.
+     */
+    default Versioned<V> putAndGet(K key, V value) {
+        return putAndGet(key, value, Duration.ZERO);
+    }
+
+    /**
+     * Associates the specified value with the specified key in this map (optional operation).
+     * If the map previously contained a mapping for the key, the old value is replaced by the
+     * specified value.
+     *
+     * @param key   key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @param ttl   the time to live after which to remove the value
+     * @return new value.
+     */
+    Versioned<V> putAndGet(K key, V value, Duration ttl);
 
     /**
      * Removes the mapping for a key from this map if it is present (optional operation).
@@ -170,7 +195,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return the value (and version) to which this map previously associated the key,
      * or null if the map contained no mapping for the key.
      */
-    boolean remove(K key);
+    Versioned<V> remove(K key);
 
     /**
      * Removes all of the mappings from this map (optional operation).
@@ -220,7 +245,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return the previous value associated with the specified key or null
      * if key does not already mapped to a value.
      */
-    default OptionalLong putIfAbsent(K key, V value) {
+    default Versioned<V> putIfAbsent(K key, V value) {
         return putIfAbsent(key, value, Duration.ZERO);
     }
 
@@ -231,9 +256,10 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @param key   key with which the specified value is to be associated
      * @param value value to be associated with the specified key
      * @param ttl   the time to live after which to remove the value
-     * @return the version of the new entry
+     * @return the previous value associated with the specified key or null
+     * if key does not already mapped to a value.
      */
-    OptionalLong putIfAbsent(K key, V value, Duration ttl);
+    Versioned<V> putIfAbsent(K key, V value, Duration ttl);
 
     /**
      * Removes the entry for the specified key only if it is currently
@@ -263,7 +289,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @param value value expected to be associated with the specified key
      * @return the previous value associated with the specified key or null
      */
-    OptionalLong replace(K key, V value);
+    Versioned<V> replace(K key, V value);
 
     /**
      * Replaces the entry for the specified key only if currently mapped
@@ -274,7 +300,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @param newValue value to be associated with the specified key
      * @return true if the value was replaced
      */
-    OptionalLong replace(K key, V oldValue, V newValue);
+    boolean replace(K key, V oldValue, V newValue);
 
     /**
      * Replaces the entry for the specified key only if it is currently mapped to the
@@ -285,44 +311,43 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @param newValue   value to be associated with the specified key
      * @return true if the value was replaced
      */
-    OptionalLong replace(K key, long oldVersion, V newValue);
+    boolean replace(K key, long oldVersion, V newValue);
 
     /**
      * Acquires a lock on the given key.
      *
      * @param key the key for which to acquire the lock
-     * @return the lock version
      */
-    long lock(K key);
+    void lock(K key);
 
     /**
      * Attempts to acquire a lock on the given key.
      *
      * @param key the key for which to acquire the lock
-     * @return an optional long containing the version of the key at the time it was locked
+     * @return whether the lock was successful
      */
-    OptionalLong tryLock(K key);
+    boolean tryLock(K key);
 
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key     the key for which to acquire the lock
+     * @param key the key for which to acquire the lock
      * @param timeout the lock timeout
-     * @param unit    the lock unit
+     * @param unit the lock unit
      * @return an optional long containing the version of the key at the time it was locked
      */
-    default OptionalLong tryLock(K key, long timeout, TimeUnit unit) {
+    default boolean tryLock(K key, long timeout, TimeUnit unit) {
         return tryLock(key, Duration.ofMillis(unit.toMillis(timeout)));
     }
 
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key     the key for which to acquire the lock
+     * @param key the key for which to acquire the lock
      * @param timeout the lock timeout
      * @return an optional long containing the version of the key at the time it was locked
      */
-    OptionalLong tryLock(K key, Duration timeout);
+    boolean tryLock(K key, Duration timeout);
 
     /**
      * Returns a boolean indicating whether a lock is currently held on the given key.
@@ -331,15 +356,6 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return indicates whether a lock exists on the given key
      */
     boolean isLocked(K key);
-
-    /**
-     * Returns a boolean indicating whether a lock is currently held on the given key with the given version.
-     *
-     * @param key     the key for which to determine whether a lock exists
-     * @param version the version that must match the lock
-     * @return indicates whether a lock exists on the given key
-     */
-    boolean isLocked(K key, long version);
 
     /**
      * Releases a lock on the given key.
