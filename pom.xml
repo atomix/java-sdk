@@ -120,9 +120,6 @@ SPDX-License-Identifier: Apache-2.0
         </profile>
         <profile>
             <id>sonatype-oss-release</id>
-            <properties>
-                <dockerfile.version>${project.version}</dockerfile.version>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -284,6 +281,30 @@ SPDX-License-Identifier: Apache-2.0
             </plugin>
 
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>git submodule update</id>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <executable>git</executable>
+                            <arguments>
+                                <argument>submodule</argument>
+                                <argument>update</argument>
+                                <argument>--init</argument>
+                                <argument>--recursive</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>${maven.protobuf.plugin.version}</version>
@@ -299,27 +320,6 @@ SPDX-License-Identifier: Apache-2.0
                             <goal>compile</goal>
                             <goal>compile-custom</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <id>add-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.build.directory}/generated-sources/protobuf/java</source>
-                                <source>${project.build.directory}/generated-sources/protobuf/grpc-java</source>
-                            </sources>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
