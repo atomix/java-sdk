@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
         <version>7</version>
     </parent>
 
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
     <groupId>io.atomix</groupId>
     <artifactId>atomix-client</artifactId>
     <version>4.0.0-SNAPSHOT</version>
@@ -43,6 +43,7 @@ SPDX-License-Identifier: Apache-2.0
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
         <maven.build-helper.plugin.version>3.0.0</maven.build-helper.plugin.version>
         <maven.protobuf.plugin.version>0.5.1</maven.protobuf.plugin.version>
+        <maven.bundle.plugin.version>5.1.8</maven.bundle.plugin.version>
 
         <!-- NOTE this is just a temporary workaround -->
         <atomix-runtime.version>master</atomix-runtime.version>
@@ -252,6 +253,13 @@ SPDX-License-Identifier: Apache-2.0
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${maven.bundle.plugin.version}</version>
+                <extensions>true</extensions>
             </plugin>
 
             <plugin>
