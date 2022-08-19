@@ -9,10 +9,13 @@ import io.atomix.api.runtime.v1.PrimitiveId;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
 import io.atomix.client.iterator.AsyncIterator;
+import io.atomix.client.utils.concurrent.Retries;
+import io.grpc.Status;
 import io.grpc.stub.ClientCallStreamObserver;
 import io.grpc.stub.ClientResponseObserver;
 import io.grpc.stub.StreamObserver;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
@@ -29,6 +32,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Simple asynchronous primitive.
  */
 public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implements AsyncPrimitive {
+    private static final Duration MAX_DELAY_BETWEEN_RETRIES = Duration.ofSeconds(5);
+    protected static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(1);
     private final String name;
 
     protected AbstractAsyncPrimitive(String name) {
@@ -42,8 +47,8 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
 
     protected final PrimitiveId id() {
         return PrimitiveId.newBuilder()
-                .setName(name())
-                .build();
+            .setName(name())
+            .build();
     }
 
     /**
@@ -54,6 +59,21 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
     protected abstract CompletableFuture<P> create(Map<String, String> tags);
 
     protected <T, U> CompletableFuture<U> execute(BiConsumer<T, StreamObserver<U>> callback, T request) {
+        return Retries.retryAsync(
+            () -> tryExecute(callback, request),
+            t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
+            MAX_DELAY_BETWEEN_RETRIES);
+    }
+
+    protected <T, U> CompletableFuture<U> execute(BiConsumer<T, StreamObserver<U>> callback, T request, Duration timeout) {
+        return Retries.retryAsync(
+            () -> tryExecute(callback, request),
+            t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
+            MAX_DELAY_BETWEEN_RETRIES,
+            timeout);
+    }
+
+    private <T, U> CompletableFuture<U> tryExecute(BiConsumer<T, StreamObserver<U>> callback, T request) {
         CompletableFuture<U> future = new CompletableFuture<>();
         StreamObserver<U> responseObserver = new StreamObserver<U>() {
             @Override
@@ -161,7 +181,7 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         public CompletableFuture<Boolean> hasNext() {
             if (openFuture == null) {
                 openFuture = execute(callback, request, this, MoreExecutors.directExecutor())
-                        .thenAccept(cancellable -> this.cancel = cancellable);
+                    .thenAccept(cancellable -> this.cancel = cancellable);
             }
             if (nextFuture == null) {
                 nextFuture = new CompletableFuture<>();

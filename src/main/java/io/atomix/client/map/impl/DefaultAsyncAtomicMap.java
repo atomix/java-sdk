@@ -39,8 +39,8 @@ import java.util.function.Predicate;
  * Atomix counter implementation.
  */
 public class DefaultAsyncAtomicMap
-        extends AbstractAsyncPrimitive<AsyncAtomicMap<String, byte[]>>
-        implements AsyncAtomicMap<String, byte[]> {
+    extends AbstractAsyncPrimitive<AsyncAtomicMap<String, byte[]>>
+    implements AsyncAtomicMap<String, byte[]> {
     private final AtomicMapGrpc.AtomicMapStub stub;
 
     public DefaultAsyncAtomicMap(String name, Channel channel) {
@@ -51,42 +51,42 @@ public class DefaultAsyncAtomicMap
     @Override
     protected CompletableFuture<AsyncAtomicMap<String, byte[]>> create(Map<String, String> tags) {
         return execute(stub::create, CreateRequest.newBuilder()
-                .setId(id())
-                .putAllTags(tags)
-                .build())
-                .thenApply(response -> this);
+            .setId(id())
+            .putAllTags(tags)
+            .build())
+            .thenApply(response -> this);
     }
 
     @Override
     public CompletableFuture<Void> close() {
         return execute(stub::close, CloseRequest.newBuilder()
-                .setId(id())
-                .build())
-                .thenApply(response -> null);
+            .setId(id())
+            .build())
+            .thenApply(response -> null);
     }
 
     @Override
     public CompletableFuture<Integer> size() {
         return execute(stub::size, SizeRequest.newBuilder()
-                .setId(id())
-                .build())
-                .thenApply(SizeResponse::getSize);
+            .setId(id())
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(SizeResponse::getSize);
     }
 
     @Override
     public CompletableFuture<Boolean> containsKey(String key) {
         return execute(stub::get, GetRequest.newBuilder()
-                .setId(id())
-                .setKey(key)
-                .build())
-                .thenApply(response -> true)
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
-                        return false;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+            .setId(id())
+            .setKey(key)
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> true)
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
+                    return false;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
@@ -97,17 +97,17 @@ public class DefaultAsyncAtomicMap
     @Override
     public CompletableFuture<Versioned<byte[]>> get(String key) {
         return execute(stub::get, GetRequest.newBuilder()
-                .setId(id())
-                .setKey(key)
-                .build())
-                .thenApply(response -> toVersioned(response.getValue()))
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
-                        return null;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+            .setId(id())
+            .setKey(key)
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> toVersioned(response.getValue()))
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
+                    return null;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
@@ -146,19 +146,19 @@ public class DefaultAsyncAtomicMap
                 return putIfAbsent(key, computedValue);
             } else if (computedValue == null) {
                 return execute(stub::remove, RemoveRequest.newBuilder()
-                        .setId(id())
-                        .setKey(key)
-                        .setPrevVersion(r1.version())
-                        .build())
-                        .thenApply(response -> new Versioned<>(existingValue, r1.version()));
+                    .setId(id())
+                    .setKey(key)
+                    .setPrevVersion(r1.version())
+                    .build(), DEFAULT_TIMEOUT)
+                    .thenApply(response -> new Versioned<>(existingValue, r1.version()));
             } else {
                 return execute(stub::update, UpdateRequest.newBuilder()
-                        .setId(id())
-                        .setKey(key)
-                        .setValue(ByteString.copyFrom(computedValue))
-                        .setPrevVersion(r1.version())
-                        .build())
-                        .thenApply(response -> new Versioned<>(computedValue, response.getVersion()));
+                    .setId(id())
+                    .setKey(key)
+                    .setValue(ByteString.copyFrom(computedValue))
+                    .setPrevVersion(r1.version())
+                    .build(), DEFAULT_TIMEOUT)
+                    .thenApply(response -> new Versioned<>(computedValue, response.getVersion()));
             }
         });
     }
@@ -166,53 +166,53 @@ public class DefaultAsyncAtomicMap
     @Override
     public CompletableFuture<Versioned<byte[]>> put(String key, byte[] value, Duration ttl) {
         return execute(stub::put, PutRequest.newBuilder()
-                .setId(id())
-                .setKey(key)
-                .setValue(ByteString.copyFrom(value))
-                .setTtl(com.google.protobuf.Duration.newBuilder()
-                        .setSeconds(ttl.getSeconds())
-                        .setNanos(ttl.getNano())
-                        .build())
+            .setId(id())
+            .setKey(key)
+            .setValue(ByteString.copyFrom(value))
+            .setTtl(com.google.protobuf.Duration.newBuilder()
+                .setSeconds(ttl.getSeconds())
+                .setNanos(ttl.getNano())
                 .build())
-                .thenApply(response -> toVersioned(response.getPrevValue()));
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> toVersioned(response.getPrevValue()));
     }
 
     @Override
     public CompletableFuture<Versioned<byte[]>> putAndGet(String key, byte[] value, Duration ttl) {
         return execute(stub::put, PutRequest.newBuilder()
-                .setId(id())
-                .setKey(key)
-                .setValue(ByteString.copyFrom(value))
-                .setTtl(com.google.protobuf.Duration.newBuilder()
-                        .setSeconds(ttl.getSeconds())
-                        .setNanos(ttl.getNano())
-                        .build())
+            .setId(id())
+            .setKey(key)
+            .setValue(ByteString.copyFrom(value))
+            .setTtl(com.google.protobuf.Duration.newBuilder()
+                .setSeconds(ttl.getSeconds())
+                .setNanos(ttl.getNano())
                 .build())
-                .thenApply(response -> new Versioned<>(value, response.getVersion()));
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> new Versioned<>(value, response.getVersion()));
     }
 
     @Override
     public CompletableFuture<Versioned<byte[]>> remove(String key) {
         return execute(stub::remove, RemoveRequest.newBuilder()
-                .setId(id())
-                .setKey(key)
-                .build())
-                .thenApply(response -> toVersioned(response.getValue()))
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
-                        return null;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+            .setId(id())
+            .setKey(key)
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> toVersioned(response.getValue()))
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
+                    return null;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
     public CompletableFuture<Void> clear() {
         return execute(stub::clear, ClearRequest.newBuilder()
-                .setId(id())
-                .build())
-                .thenApply(response -> null);
+            .setId(id())
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> null);
     }
 
     @Override
@@ -233,22 +233,22 @@ public class DefaultAsyncAtomicMap
     @Override
     public CompletableFuture<Versioned<byte[]>> putIfAbsent(String key, byte[] value, Duration ttl) {
         return execute(stub::insert, InsertRequest.newBuilder()
-                .setId(id())
-                .setKey(key)
-                .setValue(ByteString.copyFrom(value))
-                .setTtl(com.google.protobuf.Duration.newBuilder()
-                        .setSeconds(ttl.getSeconds())
-                        .setNanos(ttl.getNano())
-                        .build())
+            .setId(id())
+            .setKey(key)
+            .setValue(ByteString.copyFrom(value))
+            .setTtl(com.google.protobuf.Duration.newBuilder()
+                .setSeconds(ttl.getSeconds())
+                .setNanos(ttl.getNano())
                 .build())
-                .thenApply(response -> new Versioned<>(value, response.getVersion()))
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.Code.ALREADY_EXISTS) {
-                        return null;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> new Versioned<>(value, response.getVersion()))
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.ALREADY_EXISTS) {
+                    return null;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
@@ -264,37 +264,37 @@ public class DefaultAsyncAtomicMap
     @Override
     public CompletableFuture<Boolean> remove(String key, long version) {
         return execute(stub::remove, RemoveRequest.newBuilder()
-                .setId(id())
-                .setKey(key)
-                .setPrevVersion(version)
-                .build())
-                .thenApply(response -> true)
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
-                        return false;
-                    } else if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
-                        return false;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+            .setId(id())
+            .setKey(key)
+            .setPrevVersion(version)
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> true)
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
+                    return false;
+                } else if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
+                    return false;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
     public CompletableFuture<Versioned<byte[]>> replace(String key, byte[] value) {
         return execute(stub::update, UpdateRequest.newBuilder()
-                .setId(id())
-                .setKey(key)
-                .setValue(ByteString.copyFrom(value))
-                .build())
-                .thenApply(response -> toVersioned(response.getPrevValue()))
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
-                        return null;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+            .setId(id())
+            .setKey(key)
+            .setValue(ByteString.copyFrom(value))
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> toVersioned(response.getPrevValue()))
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
+                    return null;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
@@ -310,64 +310,64 @@ public class DefaultAsyncAtomicMap
     @Override
     public CompletableFuture<Boolean> replace(String key, long oldVersion, byte[] newValue) {
         return execute(stub::update, UpdateRequest.newBuilder()
-                .setId(id())
-                .setKey(key)
-                .setValue(ByteString.copyFrom(newValue))
-                .setPrevVersion(oldVersion)
-                .build())
-                .thenApply(response -> true)
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
-                        return false;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+            .setId(id())
+            .setKey(key)
+            .setValue(ByteString.copyFrom(newValue))
+            .setPrevVersion(oldVersion)
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> true)
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
+                    return false;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
     public CompletableFuture<Void> lock(String key) {
         return execute(stub::lock, LockRequest.newBuilder()
-                .setId(id())
-                .addKeys(key)
-                .build())
-                .thenApply(response -> null);
+            .setId(id())
+            .addKeys(key)
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> null);
     }
 
     @Override
     public CompletableFuture<Boolean> tryLock(String key) {
         return execute(stub::lock, LockRequest.newBuilder()
-                .setId(id())
-                .addKeys(key)
-                .build())
-                .thenApply(response -> true)
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
-                        return false;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+            .setId(id())
+            .addKeys(key)
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> true)
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
+                    return false;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
     public CompletableFuture<Boolean> tryLock(String key, Duration timeout) {
         return execute(stub::lock, LockRequest.newBuilder()
-                .setId(id())
-                .addKeys(key)
-                .setTimeout(com.google.protobuf.Duration.newBuilder()
-                        .setSeconds(timeout.getSeconds())
-                        .setNanos(timeout.getNano())
-                        .build())
+            .setId(id())
+            .addKeys(key)
+            .setTimeout(com.google.protobuf.Duration.newBuilder()
+                .setSeconds(timeout.getSeconds())
+                .setNanos(timeout.getNano())
                 .build())
-                .thenApply(response -> true)
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
-                        return false;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> true)
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
+                    return false;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
@@ -378,38 +378,38 @@ public class DefaultAsyncAtomicMap
     @Override
     public CompletableFuture<Void> unlock(String key) {
         return execute(stub::unlock, UnlockRequest.newBuilder()
-                .setId(id())
-                .addKeys(key)
-                .build())
-                .thenApply(response -> null);
+            .setId(id())
+            .addKeys(key)
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> null);
     }
 
     @Override
     public CompletableFuture<Cancellable> listen(AtomicMapEventListener<String, byte[]> listener, Executor executor) {
         return execute(stub::events, EventsRequest.newBuilder()
-                .setId(id())
-                .build(), response -> {
+            .setId(id())
+            .build(), response -> {
             switch (response.getEvent().getEventCase()) {
                 case INSERTED:
                     listener.event(new AtomicMapEvent<>(
-                            AtomicMapEvent.Type.INSERT,
-                            response.getEvent().getKey(),
-                            toVersioned(response.getEvent().getInserted().getValue()),
-                            null));
+                        AtomicMapEvent.Type.INSERT,
+                        response.getEvent().getKey(),
+                        toVersioned(response.getEvent().getInserted().getValue()),
+                        null));
                     break;
                 case UPDATED:
                     listener.event(new AtomicMapEvent<>(
-                            AtomicMapEvent.Type.UPDATE,
-                            response.getEvent().getKey(),
-                            toVersioned(response.getEvent().getUpdated().getValue()),
-                            toVersioned(response.getEvent().getUpdated().getPrevValue())));
+                        AtomicMapEvent.Type.UPDATE,
+                        response.getEvent().getKey(),
+                        toVersioned(response.getEvent().getUpdated().getValue()),
+                        toVersioned(response.getEvent().getUpdated().getPrevValue())));
                     break;
                 case REMOVED:
                     listener.event(new AtomicMapEvent<>(
-                            AtomicMapEvent.Type.REMOVE,
-                            response.getEvent().getKey(),
-                            null,
-                            toVersioned(response.getEvent().getRemoved().getValue())));
+                        AtomicMapEvent.Type.REMOVE,
+                        response.getEvent().getKey(),
+                        null,
+                        toVersioned(response.getEvent().getRemoved().getValue())));
                     break;
             }
         }, executor);
@@ -422,8 +422,8 @@ public class DefaultAsyncAtomicMap
 
     private static Versioned<byte[]> toVersioned(Value value) {
         return new Versioned<>(
-                value.getValue().toByteArray(),
-                value.getVersion());
+            value.getValue().toByteArray(),
+            value.getVersion());
     }
 
     private class KeySet implements AsyncDistributedSet<String> {
@@ -445,7 +445,7 @@ public class DefaultAsyncAtomicMap
         @Override
         public CompletableFuture<Boolean> remove(String element) {
             return DefaultAsyncAtomicMap.this.remove(element)
-                    .thenApply(versioned -> versioned != null);
+                .thenApply(versioned -> versioned != null);
         }
 
         @Override
@@ -509,8 +509,8 @@ public class DefaultAsyncAtomicMap
         @Override
         public AsyncIterator<String> iterator() {
             return iterate(stub::entries, EntriesRequest.newBuilder()
-                    .setId(id())
-                    .build(), response -> response.getEntry().getKey());
+                .setId(id())
+                .build(), response -> response.getEntry().getKey());
         }
 
         @Override
@@ -601,8 +601,8 @@ public class DefaultAsyncAtomicMap
         @Override
         public AsyncIterator<Versioned<byte[]>> iterator() {
             return iterate(stub::entries, EntriesRequest.newBuilder()
-                    .setId(id())
-                    .build(), response -> toVersioned(response.getEntry().getValue()));
+                .setId(id())
+                .build(), response -> toVersioned(response.getEntry().getValue()));
         }
 
         @Override
@@ -711,10 +711,10 @@ public class DefaultAsyncAtomicMap
         @Override
         public AsyncIterator<Map.Entry<String, Versioned<byte[]>>> iterator() {
             return iterate(stub::entries, EntriesRequest.newBuilder()
-                    .setId(id())
-                    .build(), response -> Maps.immutableEntry(
-                    response.getEntry().getKey(),
-                    toVersioned(response.getEntry().getValue())));
+                .setId(id())
+                .build(), response -> Maps.immutableEntry(
+                response.getEntry().getKey(),
+                toVersioned(response.getEntry().getValue())));
         }
 
         @Override

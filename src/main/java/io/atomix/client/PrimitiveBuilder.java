@@ -6,6 +6,7 @@
 package io.atomix.client;
 
 
+import io.atomix.client.utils.serializer.Serializer;
 import io.grpc.Channel;
 
 import java.util.HashMap;
@@ -24,8 +25,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> {
     protected final String name;
     protected final Channel channel;
-    protected boolean readOnly;
     protected Map<String, String> tags = new HashMap<>();
+    protected Serializer serializer;
 
     protected PrimitiveBuilder(String name, Channel channel) {
         this.name = checkNotNull(name, "primitive name cannot be null");
@@ -85,24 +86,14 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
     }
 
     /**
-     * Sets the primitive to read-only.
+     * Sets the serializer for the primitive.
      *
+     * @param serializer the primitive serializer
      * @return the primitive builder
      */
     @SuppressWarnings("unchecked")
-    public B withReadOnly() {
-        return withReadOnly(true);
-    }
-
-    /**
-     * Sets whether the primitive is read-only.
-     *
-     * @param readOnly whether the primitive is read-only
-     * @return the primitive builder
-     */
-    @SuppressWarnings("unchecked")
-    public B withReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
+    public B withSerializer(Serializer serializer) {
+        this.serializer = serializer;
         return (B) this;
     }
 

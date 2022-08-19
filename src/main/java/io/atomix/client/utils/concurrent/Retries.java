@@ -5,25 +5,116 @@
 
 package io.atomix.client.utils.concurrent;
 
-import java.util.concurrent.ThreadLocalRandom;
+import io.atomix.client.PrimitiveException;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.util.concurrent.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
  * Retry utilities.
  */
 public final class Retries {
+    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+    private static final Duration BASE_DELAY = Duration.ofMillis(10);
+
+    public static <T> CompletableFuture<T> retryAsync(
+        Supplier<CompletableFuture<T>> callback,
+        Predicate<Throwable> exceptionPredicate,
+        Duration maxDelayBetweenRetries) {
+        return retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, null);
+    }
+
+    public static <T> CompletableFuture<T> retryAsync(
+        Supplier<CompletableFuture<T>> callback,
+        Predicate<Throwable> exceptionPredicate,
+        Duration maxDelayBetweenRetries,
+        @Nullable Duration timeout) {
+        CompletableFuture<T> future = new CompletableFuture<>();
+        retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, timeout, System.currentTimeMillis(), 1, future);
+        return future;
+    }
+
+    private static <T> CompletableFuture<T> retryAsync(
+        Supplier<CompletableFuture<T>> callback,
+        Predicate<Throwable> exceptionPredicate,
+        Duration maxDelayBetweenRetries,
+        Duration timeout,
+        long startTime,
+        int attempt,
+        CompletableFuture<T> future) {
+        callback.get().whenComplete((r1, e1) -> {
+            if (e1 != null) {
+                if (!exceptionPredicate.test(e1)) {
+                    future.completeExceptionally(e1);
+                    return;
+                }
+
+                long currentTime = System.currentTimeMillis();
+                if (timeout != null && currentTime - startTime > timeout.toMillis()) {
+                    future.completeExceptionally(new PrimitiveException.Timeout(String.format("timed out after %d milliseconds", currentTime - startTime)));
+                } else {
+                    EXECUTOR.schedule(() ->
+                            retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, timeout, startTime, attempt + 1, future),
+                        (int) Math.min(Math.pow(2, attempt) * BASE_DELAY.toMillis(), maxDelayBetweenRetries.toMillis()), TimeUnit.MILLISECONDS);
+                }
+            } else {
+                future.complete(r1);
+            }
+        });
+        return future;
+    }
+
+    public static <T> CompletableFuture<T> retryAsync(
+        Supplier<CompletableFuture<T>> callback,
+        Predicate<Throwable> exceptionPredicate,
+        int maxRetries,
+        Duration maxDelayBetweenRetries) {
+        CompletableFuture<T> future = new CompletableFuture<>();
+        retryAsync(callback, exceptionPredicate, maxRetries, maxDelayBetweenRetries, System.currentTimeMillis(), 1, future);
+        return future;
+    }
+
+    private static <T> CompletableFuture<T> retryAsync(
+        Supplier<CompletableFuture<T>> callback,
+        Predicate<Throwable> exceptionPredicate,
+        int maxRetries,
+        Duration maxDelayBetweenRetries,
+        long startTime,
+        int attempt,
+        CompletableFuture<T> future) {
+        callback.get().whenComplete((r1, e1) -> {
+            if (e1 != null) {
+                if (!exceptionPredicate.test(e1)) {
+                    future.completeExceptionally(e1);
+                } else if (attempt == maxRetries) {
+                    future.completeExceptionally(new PrimitiveException.Timeout(String.format("timed out after %d milliseconds", System.currentTimeMillis() - startTime)));
+                } else {
+                    EXECUTOR.schedule(() ->
+                            retryAsync(callback, exceptionPredicate, maxRetries, maxDelayBetweenRetries, startTime, attempt + 1, future),
+                        (int) Math.min(Math.pow(2, attempt) * BASE_DELAY.toMillis(), maxDelayBetweenRetries.toMillis()), TimeUnit.MILLISECONDS);
+                }
+            } else {
+                future.complete(r1);
+            }
+        });
+        return future;
+    }
 
     /**
      * Returns a function that retries execution on failure.
-     * @param base base function
-     * @param exceptionClass type of exception for which to retry
-     * @param maxRetries max number of retries before giving up
+     *
+     * @param base                   base function
+     * @param exceptionClass         type of exception for which to retry
+     * @param maxRetries             max number of retries before giving up
      * @param maxDelayBetweenRetries max delay between successive retries. The actual delay is randomly picked from
-     * the interval (0, maxDelayBetweenRetries]
+     *                               the interval (0, maxDelayBetweenRetries]
+     * @param <U>                    type of function input
+     * @param <V>                    type of function output
      * @return function
-     * @param <U> type of function input
-     * @param <V> type of function output
      */
     public static <U, V> Function<U, V> retryable(Function<U, V> base,
                                                   Class<? extends Throwable> exceptionClass,
@@ -34,22 +125,23 @@ public final class Retries {
 
     /**
      * Returns a Supplier that retries execution on failure.
-     * @param base base supplier
-     * @param exceptionClass type of exception for which to retry
-     * @param maxRetries max number of retries before giving up
+     *
+     * @param base                   base supplier
+     * @param exceptionClass         type of exception for which to retry
+     * @param maxRetries             max number of retries before giving up
      * @param maxDelayBetweenRetries max delay between successive retries. The actual delay is randomly picked from
-     * the interval (0, maxDelayBetweenRetries]
+     *                               the interval (0, maxDelayBetweenRetries]
+     * @param <V>                    type of supplied result
      * @return supplier
-     * @param <V> type of supplied result
      */
     public static <V> Supplier<V> retryable(Supplier<V> base,
                                             Class<? extends Throwable> exceptionClass,
                                             int maxRetries,
                                             int maxDelayBetweenRetries) {
         return () -> new RetryingFunction<>(v -> base.get(),
-                exceptionClass,
-                maxRetries,
-                maxDelayBetweenRetries).apply(null);
+            exceptionClass,
+            maxRetries,
+            maxDelayBetweenRetries).apply(null);
     }
 
     /**

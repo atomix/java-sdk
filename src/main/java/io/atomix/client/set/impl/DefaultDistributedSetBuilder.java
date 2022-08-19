@@ -27,8 +27,8 @@ public class DefaultDistributedSetBuilder<E> extends DistributedSetBuilder<E> {
         return new DefaultAsyncDistributedSet(name(), channel())
                 .create(tags())
                 .thenApply(set -> new TranscodingAsyncDistributedSet<E, String>(set,
-                        key -> BaseEncoding.base64().encode(serializer.serialize(key)),
-                        key -> serializer.deserialize(BaseEncoding.base64().decode(key))))
+                        key -> BaseEncoding.base64().encode(serializer.encode(key)),
+                        key -> serializer.decode(BaseEncoding.base64().decode(key))))
                 .thenApply(AsyncDistributedSet::sync);
     }
 }

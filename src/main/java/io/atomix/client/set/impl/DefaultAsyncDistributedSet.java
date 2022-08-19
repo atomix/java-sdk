@@ -63,7 +63,7 @@ public class DefaultAsyncDistributedSet
     public CompletableFuture<Integer> size() {
         return execute(stub::size, SizeRequest.newBuilder()
                 .setId(id())
-                .build())
+                .build(), DEFAULT_TIMEOUT)
                 .thenApply(SizeResponse::getSize);
     }
 
@@ -79,7 +79,7 @@ public class DefaultAsyncDistributedSet
                 .setElement(Element.newBuilder()
                         .setValue(value)
                         .build())
-                .build())
+                .build(), DEFAULT_TIMEOUT)
                 .thenApply(ContainsResponse::getContains);
     }
 
@@ -99,7 +99,7 @@ public class DefaultAsyncDistributedSet
                 .setElement(Element.newBuilder()
                         .setValue(value)
                         .build())
-                .build())
+                .build(), DEFAULT_TIMEOUT)
                 .thenApply(response -> true)
                 .exceptionally(t -> {
                     if (Status.fromThrowable(t).getCode() == Status.ALREADY_EXISTS.getCode()) {
@@ -121,7 +121,7 @@ public class DefaultAsyncDistributedSet
                         .setSeconds(ttl.getSeconds())
                         .setNanos(ttl.getNano())
                         .build())
-                .build())
+                .build(), DEFAULT_TIMEOUT)
                 .thenApply(response -> true)
                 .exceptionally(t -> {
                     if (Status.fromThrowable(t).getCode() == Status.ALREADY_EXISTS.getCode()) {
@@ -148,7 +148,7 @@ public class DefaultAsyncDistributedSet
                 .setElement(Element.newBuilder()
                         .setValue(value)
                         .build())
-                .build())
+                .build(), DEFAULT_TIMEOUT)
                 .thenApply(response -> true)
                 .exceptionally(t -> {
                     if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
@@ -172,7 +172,7 @@ public class DefaultAsyncDistributedSet
     public CompletableFuture<Void> clear() {
         return execute(stub::clear, ClearRequest.newBuilder()
                 .setId(id())
-                .build())
+                .build(), DEFAULT_TIMEOUT)
                 .thenApply(response -> null);
     }
 

@@ -53,7 +53,7 @@ public class DefaultAsyncAtomicValue
     public CompletableFuture<Versioned<String>> get() {
         return execute(stub::get, GetRequest.newBuilder()
             .setId(id())
-            .build())
+            .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(
                 response.getValue().getValue().toStringUtf8(),
                 response.getValue().getVersion()));
@@ -63,7 +63,7 @@ public class DefaultAsyncAtomicValue
     public CompletableFuture<Versioned<String>> set(String value) {
         return execute(stub::set, SetRequest.newBuilder()
             .setId(id())
-            .build())
+            .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(value, response.getVersion()));
     }
 
@@ -71,7 +71,7 @@ public class DefaultAsyncAtomicValue
     public CompletableFuture<Versioned<String>> set(String value, long version) {
         return execute(stub::update, UpdateRequest.newBuilder()
             .setId(id())
-            .build())
+            .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(
                 response.getPrevValue().getValue().toStringUtf8(),
                 response.getPrevValue().getVersion()));

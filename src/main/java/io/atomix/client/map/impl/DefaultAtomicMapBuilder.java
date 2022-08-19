@@ -27,10 +27,10 @@ public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
         return new DefaultAsyncAtomicMap(name(), channel())
                 .create(tags())
                 .thenApply(map -> new TranscodingAsyncAtomicMap<K, V, String, byte[]>(map,
-                        key -> BaseEncoding.base64().encode(keySerializer.serialize(key)),
-                        key -> keySerializer.deserialize(BaseEncoding.base64().decode(key)),
-                        valueSerializer::serialize,
-                        valueSerializer::deserialize))
+                        key -> BaseEncoding.base64().encode(serializer.encode(key)),
+                        key -> serializer.decode(BaseEncoding.base64().decode(key)),
+                        serializer::encode,
+                        serializer::decode))
                 .thenApply(AsyncAtomicMap::sync);
     }
 }

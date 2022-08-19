@@ -32,8 +32,8 @@ public class DefaultAtomicValueBuilder<E> extends AtomicValueBuilder<E> {
         return new DefaultAsyncAtomicValue(name(), channel())
                 .create(tags())
                 .thenApply(set -> new TranscodingAsyncAtomicValue<E, String>(set,
-                        key -> BaseEncoding.base64().encode(serializer.serialize(key)),
-                        key -> serializer.deserialize(BaseEncoding.base64().decode(key))))
+                        key -> BaseEncoding.base64().encode(serializer.encode(key)),
+                        key -> serializer.decode(BaseEncoding.base64().decode(key))))
                 .thenApply(AsyncAtomicValue::sync);
     }
 }

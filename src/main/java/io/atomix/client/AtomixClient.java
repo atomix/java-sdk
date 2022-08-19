@@ -50,6 +50,7 @@ public final class AtomixClient {
 
     private static ManagedChannel buildChannel(String host, int port) {
         return NettyChannelBuilder.forAddress(host, port)
+            .usePlaintext()
             .enableRetry()
             .nameResolverFactory(new DnsNameResolverProvider())
             .defaultServiceConfig(ServiceConfigBuilder.DEFAULT_SERVICE_CONFIG)
