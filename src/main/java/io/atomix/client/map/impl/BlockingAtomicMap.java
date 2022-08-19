@@ -8,7 +8,6 @@ package io.atomix.client.map.impl;
 import com.google.common.base.Throwables;
 import io.atomix.client.Cancellable;
 import io.atomix.client.PrimitiveException;
-import io.atomix.client.PrimitiveState;
 import io.atomix.client.Synchronous;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.collection.impl.BlockingDistributedCollection;
@@ -24,10 +23,8 @@ import java.time.Duration;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
 import java.util.Objects;
-import java.util.OptionalLong;
 import java.util.concurrent.*;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -200,16 +197,6 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     @Override
     public Cancellable listen(AtomicMapEventListener<K, V> listener, Executor executor) {
         return complete(asyncMap.listen(listener, executor));
-    }
-
-    @Override
-    public void addStateChangeListener(Consumer<PrimitiveState> listener) {
-        asyncMap.addStateChangeListener(listener);
-    }
-
-    @Override
-    public void removeStateChangeListener(Consumer<PrimitiveState> listener) {
-        asyncMap.removeStateChangeListener(listener);
     }
 
     @Override

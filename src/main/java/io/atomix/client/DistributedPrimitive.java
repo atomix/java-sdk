@@ -5,9 +5,6 @@
 
 package io.atomix.client;
 
-
-import java.util.function.Consumer;
-
 /**
  * Interface for all distributed primitives.
  */
@@ -24,21 +21,4 @@ public interface DistributedPrimitive {
      * @return name
      */
     String name();
-
-    /**
-     * Registers a listener to be called when the primitive's state changes.
-     *
-     * @param listener The listener to be called when the state changes.
-     */
-    default void addStateChangeListener(Consumer<PrimitiveState> listener) {
-    }
-
-    /**
-     * Unregisters a previously registered listener to be called when the primitive's state changes.
-     *
-     * @param listener The listener to unregister
-     */
-    default void removeStateChangeListener(Consumer<PrimitiveState> listener) {
-    }
-
 }

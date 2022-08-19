@@ -9,7 +9,6 @@ import com.google.common.base.MoreObjects;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -35,16 +34,6 @@ public abstract class DelegatingAsyncPrimitive<T extends AsyncPrimitive> impleme
     @Override
     public String name() {
         return primitive.name();
-    }
-
-    @Override
-    public void addStateChangeListener(Consumer<PrimitiveState> listener) {
-        primitive.addStateChangeListener(listener);
-    }
-
-    @Override
-    public void removeStateChangeListener(Consumer<PrimitiveState> listener) {
-        primitive.removeStateChangeListener(listener);
     }
 
     @Override
