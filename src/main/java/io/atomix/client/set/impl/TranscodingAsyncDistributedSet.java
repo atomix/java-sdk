@@ -10,6 +10,7 @@ import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -32,6 +33,11 @@ public class TranscodingAsyncDistributedSet<E1, E2> extends TranscodingAsyncDist
         this.backingSet = backingSet;
         this.entryEncoder = e -> e == null ? null : entryEncoder.apply(e);
         this.entryDecoder = e -> e == null ? null : entryDecoder.apply(e);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> add(E1 element, Duration ttl) {
+        return backingSet.add(entryEncoder.apply(element), ttl);
     }
 
     @Override

@@ -14,6 +14,7 @@ import io.atomix.client.iterator.impl.BlockingIterator;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.concurrent.*;
@@ -55,6 +56,11 @@ public class BlockingDistributedSet<E> extends Synchronous<AsyncDistributedSet<E
     @Override
     public boolean add(E e) {
         return complete(asyncSet.add(e));
+    }
+
+    @Override
+    public boolean add(E e, Duration ttl) {
+        return complete(asyncSet.add(e, ttl));
     }
 
     @SuppressWarnings("unchecked")
