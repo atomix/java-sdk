@@ -262,6 +262,16 @@ SPDX-License-Identifier: Apache-2.0
                 <artifactId>maven-bundle-plugin</artifactId>
                 <version>${maven.bundle.plugin.version}</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            io.atomix.client.*
+                        </Export-Package>
+                        <Import-Package>
+                            !sun.nio.ch,!sun.misc,*
+                        </Import-Package>
+                    </instructions>
+                </configuration>
             </plugin>
 
             <plugin>
