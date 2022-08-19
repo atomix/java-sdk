@@ -265,6 +265,7 @@ SPDX-License-Identifier: Apache-2.0
                 <configuration>
                     <instructions>
                         <Export-Package>
+                            io.atomix.api.*,
                             io.atomix.client.*
                         </Export-Package>
                         <Import-Package>
@@ -272,28 +273,6 @@ SPDX-License-Identifier: Apache-2.0
                         </Import-Package>
                     </instructions>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>wagon-maven-plugin</artifactId>
-                <version>${maven.wagon.plugin.version}</version>
-                <executions>
-                    <!-- Compile time dependencies -->
-                    <execution>
-                        <id>download-protobuf-gogoproto</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>${wagon-maven-plugin.gogo-protobuf-url}</url>
-                            <fromFile>gogoproto/gogo.proto</fromFile>
-                            <toDir>runtime/api/gogoproto</toDir>
-                            <skipIfExists>true</skipIfExists>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
@@ -311,6 +290,21 @@ SPDX-License-Identifier: Apache-2.0
                                 <argument>update</argument>
                                 <argument>--init</argument>
                                 <argument>--recursive</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>copoy gogo proto</id>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <executable>cp</executable>
+                            <arguments>
+                                <argument>-r</argument>
+                                <argument>src/main/resources/gogoproto</argument>
+                                <argument>runtime/api/</argument>
                             </arguments>
                         </configuration>
                         <goals>
