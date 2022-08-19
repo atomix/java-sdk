@@ -22,6 +22,7 @@ import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -153,23 +154,30 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         return new Iterator<>(callback, request, converter);
     }
 
-    private class Iterator<T, U, V> implements AsyncIterator<V>, Consumer<U> {
+    private class Iterator<T, U, V> implements AsyncIterator<V>, ClientResponseObserver<T, U> {
         private final BiConsumer<T, StreamObserver<U>> callback;
         private final T request;
         private final Function<U, V> converter;
-        private volatile CompletableFuture<Void> openFuture;
         private volatile CompletableFuture<V> nextFuture;
-        private volatile Cancellable cancel;
         private final Queue<V> entries = new LinkedBlockingQueue<>();
+        private volatile ClientCallStreamObserver<T> clientCallStreamObserver;
+        private volatile boolean closed;
+        private volatile Throwable error;
 
         private Iterator(BiConsumer<T, StreamObserver<U>> callback, T request, Function<U, V> converter) {
             this.callback = callback;
             this.request = request;
             this.converter = converter;
+            callback.accept(request, this);
         }
 
         @Override
-        public void accept(U response) {
+        public void beforeStart(ClientCallStreamObserver<T> clientCallStreamObserver) {
+            this.clientCallStreamObserver = clientCallStreamObserver;
+        }
+
+        @Override
+        public void onNext(U response) {
             if (nextFuture != null) {
                 nextFuture.complete(converter.apply(response));
             } else {
@@ -178,30 +186,69 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         }
 
         @Override
-        public CompletableFuture<Boolean> hasNext() {
-            if (openFuture == null) {
-                openFuture = execute(callback, request, this, MoreExecutors.directExecutor())
-                    .thenAccept(cancellable -> this.cancel = cancellable);
-            }
-            if (nextFuture == null) {
-                nextFuture = new CompletableFuture<>();
-                V nextValue = entries.poll();
-                if (nextValue != null) {
-                    nextFuture.complete(nextValue);
+        public void onError(Throwable throwable) {
+            error = throwable;
+            closed = true;
+            if (nextFuture != null) {
+                synchronized (this) {
+                    if (nextFuture != null) {
+                        nextFuture.completeExceptionally(throwable);
+                    }
                 }
             }
-            return openFuture.thenCompose(v -> nextFuture).thenApply(Objects::nonNull);
+        }
+
+        @Override
+        public void onCompleted() {
+            closed = true;
+            if (nextFuture != null) {
+                synchronized (this) {
+                    if (nextFuture != null) {
+                        nextFuture.complete(null);
+                    }
+                }
+            }
+        }
+
+        private CompletableFuture<V> init() {
+            if (nextFuture == null) {
+                synchronized (this) {
+                    if (nextFuture == null) {
+                        if (closed) {
+                            if (error != null) {
+                                nextFuture = CompletableFuture.failedFuture(error);
+                            } else {
+                                nextFuture = CompletableFuture.completedFuture(null);
+                            }
+                        } else {
+                            nextFuture = new CompletableFuture<>();
+                            V nextValue = entries.poll();
+                            if (nextValue != null) {
+                                nextFuture.complete(nextValue);
+                            }
+                        }
+                    }
+                }
+            }
+            return nextFuture;
+        }
+
+        @Override
+        public CompletableFuture<Boolean> hasNext() {
+            return init().thenApply(Objects::nonNull);
         }
 
         @Override
         public CompletableFuture<V> next() {
-            return nextFuture.whenComplete((entry, e) -> nextFuture = null);
+            CompletableFuture<V> future = init();
+            nextFuture = null;
+            return future;
         }
 
         @Override
         public CompletableFuture<Void> close() {
-            if (cancel != null) {
-                cancel.cancel();
+            if (clientCallStreamObserver != null) {
+                clientCallStreamObserver.cancel("closed", null);
             }
             return CompletableFuture.completedFuture(null);
         }
