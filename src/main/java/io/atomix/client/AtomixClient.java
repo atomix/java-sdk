@@ -7,7 +7,6 @@ package io.atomix.client;
 
 import io.atomix.client.counter.AtomicCounterBuilder;
 import io.atomix.client.counter.impl.DefaultAtomicCounterBuilder;
-import io.atomix.client.grpc.ServiceConfigBuilder;
 import io.atomix.client.map.AtomicMapBuilder;
 import io.atomix.client.map.impl.DefaultAtomicMapBuilder;
 import io.atomix.client.set.DistributedSetBuilder;
@@ -17,6 +16,7 @@ import io.atomix.client.value.impl.DefaultAtomicValueBuilder;
 import io.grpc.ManagedChannel;
 import io.grpc.NameResolverRegistry;
 import io.grpc.internal.DnsNameResolverProvider;
+import io.grpc.internal.PickFirstLoadBalancerProvider;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 
 import java.util.concurrent.CompletableFuture;
@@ -53,7 +53,7 @@ public final class AtomixClient {
             .usePlaintext()
             .enableRetry()
             .nameResolverFactory(new DnsNameResolverProvider())
-            .defaultServiceConfig(ServiceConfigBuilder.DEFAULT_SERVICE_CONFIG)
+            .defaultLoadBalancingPolicy(new PickFirstLoadBalancerProvider().getPolicyName())
             .build();
     }
 

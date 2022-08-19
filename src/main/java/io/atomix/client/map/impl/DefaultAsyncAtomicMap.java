@@ -6,7 +6,7 @@ package io.atomix.client.map.impl;
 
 import com.google.common.collect.Maps;
 import com.google.protobuf.ByteString;
-import io.atomix.api.runtime.atomic.map.v1.*;
+import io.atomix.api.runtime.map.v1.*;
 import io.atomix.client.Cancellable;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;
@@ -41,11 +41,11 @@ import java.util.function.Predicate;
 public class DefaultAsyncAtomicMap
     extends AbstractAsyncPrimitive<AsyncAtomicMap<String, byte[]>>
     implements AsyncAtomicMap<String, byte[]> {
-    private final AtomicMapGrpc.AtomicMapStub stub;
+    private final MapGrpc.MapStub stub;
 
     public DefaultAsyncAtomicMap(String name, Channel channel) {
         super(name);
-        this.stub = AtomicMapGrpc.newStub(channel);
+        this.stub = MapGrpc.newStub(channel);
     }
 
     @Override
@@ -420,7 +420,7 @@ public class DefaultAsyncAtomicMap
         return new BlockingAtomicMap<>(this, operationTimeout.toMillis());
     }
 
-    private static Versioned<byte[]> toVersioned(Value value) {
+    private static Versioned<byte[]> toVersioned(VersionedValue value) {
         return new Versioned<>(
             value.getValue().toByteArray(),
             value.getVersion());

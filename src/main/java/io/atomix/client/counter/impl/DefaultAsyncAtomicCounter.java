@@ -5,7 +5,7 @@
 
 package io.atomix.client.counter.impl;
 
-import io.atomix.api.runtime.atomic.counter.v1.*;
+import io.atomix.api.runtime.counter.v1.*;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
@@ -22,11 +22,11 @@ import java.util.concurrent.CompletableFuture;
 public class DefaultAsyncAtomicCounter
         extends AbstractAsyncPrimitive<AsyncAtomicCounter>
         implements AsyncAtomicCounter {
-    private final AtomicCounterGrpc.AtomicCounterStub stub;
+    private final CounterGrpc.CounterStub stub;
 
     public DefaultAsyncAtomicCounter(String name, Channel channel) {
         super(name);
-        this.stub = AtomicCounterGrpc.newStub(channel);
+        this.stub = CounterGrpc.newStub(channel);
     }
 
     @Override

@@ -4,7 +4,7 @@
 
 package io.atomix.client.value.impl;
 
-import io.atomix.api.runtime.atomic.value.v1.*;
+import io.atomix.api.runtime.value.v1.*;
 import io.atomix.client.Cancellable;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.time.Versioned;
@@ -25,11 +25,11 @@ import java.util.concurrent.Executor;
 public class DefaultAsyncAtomicValue
     extends AbstractAsyncPrimitive<AsyncAtomicValue<String>>
     implements AsyncAtomicValue<String> {
-    private final AtomicValueGrpc.AtomicValueStub stub;
+    private final ValueGrpc.ValueStub stub;
 
     public DefaultAsyncAtomicValue(String name, Channel channel) {
         super(name);
-        this.stub = AtomicValueGrpc.newStub(channel);
+        this.stub = ValueGrpc.newStub(channel);
     }
 
     @Override
