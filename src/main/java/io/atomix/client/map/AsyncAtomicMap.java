@@ -177,9 +177,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the previous value (and version) associated with key, or null if there was
      * no mapping for key.
      */
-    default CompletableFuture<Versioned<V>> put(K key, V value) {
-        return put(key, value, Duration.ZERO);
-    }
+    CompletableFuture<Versioned<V>> put(K key, V value);
 
     /**
      * Associates the specified value with the specified key in this map (optional operation).
@@ -203,9 +201,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @param value value to be associated with the specified key
      * @return new value.
      */
-    default CompletableFuture<Versioned<V>> putAndGet(K key, V value) {
-        return putAndGet(key, value, Duration.ZERO);
-    }
+    CompletableFuture<Versioned<V>> putAndGet(K key, V value);
 
     /**
      * Associates the specified value with the specified key in this map (optional operation).
@@ -279,9 +275,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the previous value associated with the specified key or null
      * if key does not already mapped to a value.
      */
-    default CompletableFuture<Versioned<V>> putIfAbsent(K key, V value) {
-        return putIfAbsent(key, value, Duration.ZERO);
-    }
+    CompletableFuture<Versioned<V>> putIfAbsent(K key, V value);
 
     /**
      * If the specified key is not already associated with a value associates

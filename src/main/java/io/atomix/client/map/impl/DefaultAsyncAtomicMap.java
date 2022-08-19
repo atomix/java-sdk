@@ -164,6 +164,16 @@ public class DefaultAsyncAtomicMap
     }
 
     @Override
+    public CompletableFuture<Versioned<byte[]>> put(String key, byte[] value) {
+        return execute(stub::put, PutRequest.newBuilder()
+            .setId(id())
+            .setKey(key)
+            .setValue(ByteString.copyFrom(value))
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> toVersioned(response.getPrevValue()));
+    }
+
+    @Override
     public CompletableFuture<Versioned<byte[]>> put(String key, byte[] value, Duration ttl) {
         return execute(stub::put, PutRequest.newBuilder()
             .setId(id())
@@ -175,6 +185,16 @@ public class DefaultAsyncAtomicMap
                 .build())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> toVersioned(response.getPrevValue()));
+    }
+
+    @Override
+    public CompletableFuture<Versioned<byte[]>> putAndGet(String key, byte[] value) {
+        return execute(stub::put, PutRequest.newBuilder()
+            .setId(id())
+            .setKey(key)
+            .setValue(ByteString.copyFrom(value))
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> new Versioned<>(value, response.getVersion()));
     }
 
     @Override
@@ -228,6 +248,23 @@ public class DefaultAsyncAtomicMap
     @Override
     public AsyncDistributedSet<Map.Entry<String, Versioned<byte[]>>> entrySet() {
         return new EntrySet();
+    }
+
+    @Override
+    public CompletableFuture<Versioned<byte[]>> putIfAbsent(String key, byte[] value) {
+        return execute(stub::insert, InsertRequest.newBuilder()
+            .setId(id())
+            .setKey(key)
+            .setValue(ByteString.copyFrom(value))
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> new Versioned<>(value, response.getVersion()))
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.ALREADY_EXISTS) {
+                    return null;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
@@ -498,8 +535,6 @@ public class DefaultAsyncAtomicMap
                     case REMOVE:
                         listener.event(new CollectionEvent<>(CollectionEvent.Type.REMOVE, event.key()));
                         break;
-                    case REPLAY:
-                        listener.event(new CollectionEvent<>(CollectionEvent.Type.REPLAY, event.key()));
                     default:
                         break;
                 }
@@ -590,8 +625,6 @@ public class DefaultAsyncAtomicMap
                     case REMOVE:
                         listener.event(new CollectionEvent<>(CollectionEvent.Type.REMOVE, event.oldValue()));
                         break;
-                    case REPLAY:
-                        listener.event(new CollectionEvent<>(CollectionEvent.Type.REPLAY, event.newValue()));
                     default:
                         break;
                 }
@@ -700,8 +733,6 @@ public class DefaultAsyncAtomicMap
                     case REMOVE:
                         listener.event(new CollectionEvent<>(CollectionEvent.Type.REMOVE, Maps.immutableEntry(event.key(), event.oldValue())));
                         break;
-                    case REPLAY:
-                        listener.event(new CollectionEvent<>(CollectionEvent.Type.REPLAY, Maps.immutableEntry(event.key(), event.newValue())));
                     default:
                         break;
                 }

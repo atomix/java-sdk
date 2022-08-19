@@ -4,7 +4,7 @@
 
 package io.atomix.client.counter;
 
-import io.atomix.api.runtime.atomic.counter.v1.*;
+import io.atomix.api.runtime.counter.v1.*;
 import io.atomix.client.AbstractPrimitiveTest;
 import io.atomix.client.PrimitiveException;
 import io.atomix.client.counter.impl.DefaultAsyncAtomicCounter;
@@ -83,8 +83,8 @@ public class AtomicCounterTest extends AbstractPrimitiveTest {
     }
 
     // Mock implementation of the counter server
-    private final AtomicCounterGrpc.AtomicCounterImplBase counterImplBase = mock(AtomicCounterGrpc.AtomicCounterImplBase.class, delegatesTo(
-            new AtomicCounterGrpc.AtomicCounterImplBase() {
+    private final CounterGrpc.CounterImplBase counterImplBase = mock(CounterGrpc.CounterImplBase.class, delegatesTo(
+            new CounterGrpc.CounterImplBase() {
 
                 private AtomicLong atomicLong;
 

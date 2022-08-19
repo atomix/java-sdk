@@ -37,11 +37,6 @@ public class AtomicMapEvent<K, V> extends AbstractEvent<AtomicMapEvent.Type, K> 
          * Entry removed from map.
          */
         REMOVE,
-
-        /**
-         * Entry already existed in the map.
-         */
-        REPLAY
     }
 
     private final Versioned<V> newValue;

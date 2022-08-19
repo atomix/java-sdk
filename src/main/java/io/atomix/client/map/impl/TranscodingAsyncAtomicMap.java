@@ -124,10 +124,30 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
+    public CompletableFuture<Versioned<V1>> put(K1 key, V1 value) {
+        try {
+            return backingMap.put(keyEncoder.apply(key), valueEncoder.apply(value))
+                .thenApply(versionedValueDecoder);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    @Override
     public CompletableFuture<Versioned<V1>> put(K1 key, V1 value, Duration ttl) {
         try {
             return backingMap.put(keyEncoder.apply(key), valueEncoder.apply(value), ttl)
-                    .thenApply(versionedValueDecoder);
+                .thenApply(versionedValueDecoder);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Versioned<V1>> putAndGet(K1 key, V1 value) {
+        try {
+            return backingMap.putAndGet(keyEncoder.apply(key), valueEncoder.apply(value))
+                .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -137,7 +157,7 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     public CompletableFuture<Versioned<V1>> putAndGet(K1 key, V1 value, Duration ttl) {
         try {
             return backingMap.putAndGet(keyEncoder.apply(key), valueEncoder.apply(value), ttl)
-                    .thenApply(versionedValueDecoder);
+                .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -199,10 +219,20 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     }
 
     @Override
+    public CompletableFuture<Versioned<V1>> putIfAbsent(K1 key, V1 value) {
+        try {
+            return backingMap.putIfAbsent(keyEncoder.apply(key), valueEncoder.apply(value))
+                .thenApply(versionedValueDecoder);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    @Override
     public CompletableFuture<Versioned<V1>> putIfAbsent(K1 key, V1 value, Duration ttl) {
         try {
             return backingMap.putIfAbsent(keyEncoder.apply(key), valueEncoder.apply(value), ttl)
-                    .thenApply(versionedValueDecoder);
+                .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
