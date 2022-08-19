@@ -15,6 +15,8 @@ import io.atomix.client.set.impl.DefaultDistributedSetBuilder;
 import io.atomix.client.value.AtomicValueBuilder;
 import io.atomix.client.value.impl.DefaultAtomicValueBuilder;
 import io.grpc.ManagedChannel;
+import io.grpc.NameResolverRegistry;
+import io.grpc.internal.DnsNameResolverProvider;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 
 import java.util.concurrent.CompletableFuture;
@@ -25,6 +27,11 @@ public final class AtomixClient {
 
     private final ManagedChannel channel;
 
+    static {
+        NameResolverRegistry.getDefaultRegistry()
+            .register(new DnsNameResolverProvider());
+    }
+
     public AtomixClient() {
         this(DEFAULT_HOST, DEFAULT_PORT);
     }
@@ -34,8 +41,17 @@ public final class AtomixClient {
     }
 
     public AtomixClient(String host, int port) {
-        channel = NettyChannelBuilder.forAddress(host, port)
+        this(buildChannel(host, port));
+    }
+
+    public AtomixClient(ManagedChannel channel) {
+        this.channel = channel;
+    }
+
+    private static ManagedChannel buildChannel(String host, int port) {
+        return NettyChannelBuilder.forAddress(host, port)
             .enableRetry()
+            .nameResolverFactory(new DnsNameResolverProvider())
             .defaultServiceConfig(ServiceConfigBuilder.DEFAULT_SERVICE_CONFIG)
             .build();
     }
