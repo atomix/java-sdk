@@ -12,6 +12,8 @@ import io.atomix.client.map.AtomicMapBuilder;
 import io.atomix.client.map.impl.DefaultAtomicMapBuilder;
 import io.atomix.client.set.DistributedSetBuilder;
 import io.atomix.client.set.impl.DefaultDistributedSetBuilder;
+import io.atomix.client.value.AtomicValueBuilder;
+import io.atomix.client.value.impl.DefaultAtomicValueBuilder;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 
@@ -33,9 +35,9 @@ public final class AtomixClient {
 
     public AtomixClient(String host, int port) {
         channel = NettyChannelBuilder.forAddress(host, port)
-                .enableRetry()
-                .defaultServiceConfig(ServiceConfigBuilder.DEFAULT_SERVICE_CONFIG)
-                .build();
+            .enableRetry()
+            .defaultServiceConfig(ServiceConfigBuilder.DEFAULT_SERVICE_CONFIG)
+            .build();
     }
 
     /**
@@ -82,6 +84,29 @@ public final class AtomixClient {
      */
     public <K, V> AtomicMapBuilder<K, V> atomicMapBuilder(String name) {
         return new DefaultAtomicMapBuilder<>(name, channel);
+    }
+
+    /**
+     * Creates a new named {@link io.atomix.client.value.AtomicValue} builder.
+     * <p>
+     * The value name must be provided when constructing the builder. The name is used to reference a distinct instance of
+     * the primitive within the cluster. Multiple instances of the primitive with the same name will share the same state.
+     * However, the instance of the primitive constructed by the returned builder will be distinct and will not share
+     * local memory (e.g. cache) with any other instance on this node.
+     * <p>
+     * To get an asynchronous instance of the value, use the {@link SyncPrimitive#async()} method:
+     * <pre>
+     *   {@code
+     *   AsyncAtomicValue<String> value = atomix.<String>atomicValueBuilder("my-value").build().async();
+     *   }
+     * </pre>
+     *
+     * @param name the primitive name
+     * @param <V>  atomic value type
+     * @return atomic value builder
+     */
+    public <V> AtomicValueBuilder<V> atomicValueBuilder(String name) {
+        return new DefaultAtomicValueBuilder<>(name, channel);
     }
 
     /**
