@@ -2,6 +2,7 @@ package io.atomix.client.map;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
+import io.atomix.client.Cancellable;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.set.AsyncDistributedSet;
 
@@ -41,14 +42,12 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * at most one such mapping.)
      *
      * @param key key whose presence in this map is to be tested
-     *
      * @return <code>true</code> if this map contains a mapping for the specified
-     *     key
-     *
-     * @throws ClassCastException if the key is of an inappropriate type for this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * key
+     * @throws ClassCastException   if the key is of an inappropriate type for this map (<a
+     *                              href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @throws NullPointerException if the specified key is null and this map does not permit null keys (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     *                              href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<Boolean> containsKey(K key);
 
@@ -59,14 +58,12 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * will probably require time linear in the map size for most implementations of the <code>Map</code> interface.
      *
      * @param value value whose presence in this map is to be tested
-     *
      * @return <code>true</code> if this map maps one or more keys to the
-     *     specified value
-     *
-     * @throws ClassCastException if the value is of an inappropriate type for this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * specified value
+     * @throws ClassCastException   if the value is of an inappropriate type for this map (<a
+     *                              href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @throws NullPointerException if the specified value is null and this map does not permit null values (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     *                              href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<Boolean> containsValue(V value);
 
@@ -84,13 +81,11 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * to distinguish these two cases.
      *
      * @param key the key whose associated value is to be returned
-     *
      * @return the value to which the specified key is mapped, or {@code null} if this map contains no mapping for the key
-     *
-     * @throws ClassCastException if the key is of an inappropriate type for this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException   if the key is of an inappropriate type for this map (<a
+     *                              href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @throws NullPointerException if the specified key is null and this map does not permit null keys (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     *                              href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<V> get(K key);
 
@@ -101,21 +96,19 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * if {@link #containsKey(Object) m.containsKey(k)} would return
      * <code>true</code>.)
      *
-     * @param key key with which the specified value is to be associated
+     * @param key   key with which the specified value is to be associated
      * @param value value to be associated with the specified key
-     *
      * @return the previous value associated with <code>key</code>, or
-     *     <code>null</code> if there was no mapping for <code>key</code>.
-     *     (A <code>null</code> return can also indicate that the map previously associated <code>null</code> with <code>key</code>,
-     *     if the implementation supports <code>null</code> values.)
-     *
+     * <code>null</code> if there was no mapping for <code>key</code>.
+     * (A <code>null</code> return can also indicate that the map previously associated <code>null</code> with <code>key</code>,
+     * if the implementation supports <code>null</code> values.)
      * @throws UnsupportedOperationException if the <code>put</code> operation is not supported by this map
-     * @throws ClassCastException if the class of the specified key or value prevents it from being stored in this
-     *     map
-     * @throws NullPointerException if the specified key or value is null and this map does not permit null keys or
-     *     values
-     * @throws IllegalArgumentException if some property of the specified key or value prevents it from being stored
-     *     in this map
+     * @throws ClassCastException            if the class of the specified key or value prevents it from being stored in this
+     *                                       map
+     * @throws NullPointerException          if the specified key or value is null and this map does not permit null keys or
+     *                                       values
+     * @throws IllegalArgumentException      if some property of the specified key or value prevents it from being stored
+     *                                       in this map
      */
     CompletableFuture<V> put(K key, V value);
 
@@ -136,15 +129,13 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * call returns.
      *
      * @param key key whose mapping is to be removed from the map
-     *
      * @return the previous value associated with <code>key</code>, or
-     *     <code>null</code> if there was no mapping for <code>key</code>.
-     *
+     * <code>null</code> if there was no mapping for <code>key</code>.
      * @throws UnsupportedOperationException if the <code>remove</code> operation is not supported by this map
-     * @throws ClassCastException if the key is of an inappropriate type for this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key is null and this map does not permit null keys (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException            if the key is of an inappropriate type for this map (<a
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException          if the specified key is null and this map does not permit null keys (<a
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<V> remove(K key);
 
@@ -155,14 +146,13 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * map is modified while the operation is in progress.
      *
      * @param m mappings to be stored in this map
-     *
      * @throws UnsupportedOperationException if the <code>putAll</code> operation is not supported by this map
-     * @throws ClassCastException if the class of a key or value in the specified map prevents it from being stored in
-     *     this map
-     * @throws NullPointerException if the specified map is null, or if this map does not permit null keys or values,
-     *     and the specified map contains null keys or values
-     * @throws IllegalArgumentException if some property of a key or value in the specified map prevents it from being
-     *     stored in this map
+     * @throws ClassCastException            if the class of a key or value in the specified map prevents it from being stored in
+     *                                       this map
+     * @throws NullPointerException          if the specified map is null, or if this map does not permit null keys or values,
+     *                                       and the specified map contains null keys or values
+     * @throws IllegalArgumentException      if some property of a key or value in the specified map prevents it from being
+     *                                       stored in this map
      */
     CompletableFuture<Void> putAll(Map<? extends K, ? extends V> m);
 
@@ -219,16 +209,14 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * Returns the value to which the specified key is mapped, or {@code defaultValue} if this map contains no mapping for
      * the key.
      *
-     * @param key the key whose associated value is to be returned
+     * @param key          the key whose associated value is to be returned
      * @param defaultValue the default mapping of the key
-     *
      * @return the value to which the specified key is mapped, or {@code defaultValue} if this map contains no mapping for
-     *     the key
-     *
-     * @throws ClassCastException if the key is of an inappropriate type for this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * the key
+     * @throws ClassCastException   if the key is of an inappropriate type for this map (<a
+     *                              href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @throws NullPointerException if the specified key is null and this map does not permit null keys (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     *                              href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<V> getOrDefault(K key, V defaultValue);
 
@@ -236,80 +224,72 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * If the specified key is not already associated with a value (or is mapped to {@code null}) associates it with the
      * given value and returns {@code null}, else returns the current value.
      *
-     * @param key key with which the specified value is to be associated
+     * @param key   key with which the specified value is to be associated
      * @param value value to be associated with the specified key
-     *
      * @return the previous value associated with the specified key, or {@code null} if there was no mapping for the key.
-     *     (A {@code null} return can also indicate that the map previously associated {@code null} with the key, if the
-     *     implementation supports null values.)
-     *
+     * (A {@code null} return can also indicate that the map previously associated {@code null} with the key, if the
+     * implementation supports null values.)
      * @throws UnsupportedOperationException if the {@code put} operation is not supported by this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws ClassCastException if the key or value is of an inappropriate type for this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key or value is null, and this map does not permit null keys or
-     *     values (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws IllegalArgumentException if some property of the specified key or value prevents it from being stored
-     *     in this map (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException            if the key or value is of an inappropriate type for this map (<a
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException          if the specified key or value is null, and this map does not permit null keys or
+     *                                       values (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws IllegalArgumentException      if some property of the specified key or value prevents it from being stored
+     *                                       in this map (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<V> putIfAbsent(K key, V value);
 
     /**
      * Removes the entry for the specified key only if it is currently mapped to the specified value.
      *
-     * @param key key with which the specified value is associated
+     * @param key   key with which the specified value is associated
      * @param value value expected to be associated with the specified key
-     *
      * @return {@code true} if the value was removed
-     *
      * @throws UnsupportedOperationException if the {@code remove} operation is not supported by this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws ClassCastException if the key or value is of an inappropriate type for this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key or value is null, and this map does not permit null keys or
-     *     values (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException            if the key or value is of an inappropriate type for this map (<a
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException          if the specified key or value is null, and this map does not permit null keys or
+     *                                       values (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<Boolean> remove(K key, V value);
 
     /**
      * Replaces the entry for the specified key only if currently mapped to the specified value.
      *
-     * @param key key with which the specified value is associated
+     * @param key      key with which the specified value is associated
      * @param oldValue value expected to be associated with the specified key
      * @param newValue value to be associated with the specified key
-     *
      * @return {@code true} if the value was replaced
-     *
      * @throws UnsupportedOperationException if the {@code put} operation is not supported by this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws ClassCastException if the class of a specified key or value prevents it from being stored in this map
-     * @throws NullPointerException if a specified key or newValue is null, and this map does not permit null keys or
-     *     values
-     * @throws NullPointerException if oldValue is null and this map does not permit null values (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws IllegalArgumentException if some property of a specified key or value prevents it from being stored in
-     *     this map
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException            if the class of a specified key or value prevents it from being stored in this map
+     * @throws NullPointerException          if a specified key or newValue is null, and this map does not permit null keys or
+     *                                       values
+     * @throws NullPointerException          if oldValue is null and this map does not permit null values (<a
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws IllegalArgumentException      if some property of a specified key or value prevents it from being stored in
+     *                                       this map
      */
     CompletableFuture<Boolean> replace(K key, V oldValue, V newValue);
 
     /**
      * Replaces the entry for the specified key only if it is currently mapped to some value.
      *
-     * @param key key with which the specified value is associated
+     * @param key   key with which the specified value is associated
      * @param value value to be associated with the specified key
-     *
      * @return the previous value associated with the specified key, or {@code null} if there was no mapping for the key.
-     *     (A {@code null} return can also indicate that the map previously associated {@code null} with the key, if the
-     *     implementation supports null values.)
-     *
+     * (A {@code null} return can also indicate that the map previously associated {@code null} with the key, if the
+     * implementation supports null values.)
      * @throws UnsupportedOperationException if the {@code put} operation is not supported by this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws ClassCastException if the class of the specified key or value prevents it from being stored in this map
-     *     (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key or value is null, and this map does not permit null keys or
-     *     values
-     * @throws IllegalArgumentException if some property of the specified key or value prevents it from being stored
-     *     in this map
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException            if the class of the specified key or value prevents it from being stored in this map
+     *                                       (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException          if the specified key or value is null, and this map does not permit null keys or
+     *                                       values
+     * @throws IllegalArgumentException      if some property of the specified key or value prevents it from being stored
+     *                                       in this map
      */
     CompletableFuture<V> replace(K key, V value);
 
@@ -332,18 +312,16 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * map.computeIfAbsent(key, k -> new HashSet<V>()).add(v);
      * }</pre>
      *
-     * @param key key with which the specified value is to be associated
+     * @param key             key with which the specified value is to be associated
      * @param mappingFunction the function to compute a value
-     *
      * @return the current (existing or computed) value associated with the specified key, or null if the computed value
-     *     is null
-     *
-     * @throws NullPointerException if the specified key is null and this map does not support null keys, or the
-     *     mappingFunction is null
+     * is null
+     * @throws NullPointerException          if the specified key is null and this map does not support null keys, or the
+     *                                       mappingFunction is null
      * @throws UnsupportedOperationException if the {@code put} operation is not supported by this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws ClassCastException if the class of the specified key or value prevents it from being stored in this map
-     *     (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException            if the class of the specified key or value prevents it from being stored in this map
+     *                                       (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<V> computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction);
 
@@ -355,17 +333,15 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * function itself throws an (unchecked) exception, the exception is rethrown, and the current mapping is left
      * unchanged.
      *
-     * @param key key with which the specified value is to be associated
+     * @param key               key with which the specified value is to be associated
      * @param remappingFunction the function to compute a value
-     *
      * @return the new value associated with the specified key, or null if none
-     *
-     * @throws NullPointerException if the specified key is null and this map does not support null keys, or the
-     *     remappingFunction is null
+     * @throws NullPointerException          if the specified key is null and this map does not support null keys, or the
+     *                                       remappingFunction is null
      * @throws UnsupportedOperationException if the {@code put} operation is not supported by this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws ClassCastException if the class of the specified key or value prevents it from being stored in this map
-     *     (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException            if the class of the specified key or value prevents it from being stored in this map
+     *                                       (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<V> computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
 
@@ -377,17 +353,15 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * remains absent if initially absent).  If the function itself throws an (unchecked) exception, the exception is
      * rethrown, and the current mapping is left unchanged.
      *
-     * @param key key with which the specified value is to be associated
+     * @param key               key with which the specified value is to be associated
      * @param remappingFunction the function to compute a value
-     *
      * @return the new value associated with the specified key, or null if none
-     *
-     * @throws NullPointerException if the specified key is null and this map does not support null keys, or the
-     *     remappingFunction is null
+     * @throws NullPointerException          if the specified key is null and this map does not support null keys, or the
+     *                                       remappingFunction is null
      * @throws UnsupportedOperationException if the {@code put} operation is not supported by this map (<a
-     *     href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws ClassCastException if the class of the specified key or value prevents it from being stored in this map
-     *     (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     *                                       href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException            if the class of the specified key or value prevents it from being stored in this map
+     *                                       (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     CompletableFuture<V> compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
 
@@ -410,9 +384,9 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key the key for which to acquire the lock
+     * @param key     the key for which to acquire the lock
      * @param timeout the lock timeout
-     * @param unit the lock unit
+     * @param unit    the lock unit
      * @return future to be completed with a boolean indicating whether the lock was acquired
      */
     default CompletableFuture<Boolean> tryLock(K key, long timeout, TimeUnit unit) {
@@ -422,7 +396,7 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key the key for which to acquire the lock
+     * @param key     the key for which to acquire the lock
      * @param timeout the lock timeout
      * @return future to be completed with a boolean indicating whether the lock was acquired
      */
@@ -448,11 +422,10 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      * Registers the specified listener to be notified whenever the map is updated.
      *
      * @param listener listener to notify about map events
-     *
      * @return future that will be completed when the operation finishes
      */
-    default CompletableFuture<Void> addListener(MapEventListener<K, V> listener) {
-        return addListener(listener, MoreExecutors.directExecutor());
+    default CompletableFuture<Cancellable> listen(MapEventListener<K, V> listener) {
+        return listen(listener, MoreExecutors.directExecutor());
     }
 
     /**
@@ -460,19 +433,9 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
      *
      * @param listener listener to notify about map events
      * @param executor executor to use for handling incoming map events
-     *
      * @return future that will be completed when the operation finishes
      */
-    CompletableFuture<Void> addListener(MapEventListener<K, V> listener, Executor executor);
-
-    /**
-     * Unregisters the specified listener such that it will no longer receive map change notifications.
-     *
-     * @param listener listener to unregister
-     *
-     * @return future that will be completed when the operation finishes
-     */
-    CompletableFuture<Void> removeListener(MapEventListener<K, V> listener);
+    CompletableFuture<Cancellable> listen(MapEventListener<K, V> listener, Executor executor);
 
     @Override
     default DistributedMap<K, V> sync() {
