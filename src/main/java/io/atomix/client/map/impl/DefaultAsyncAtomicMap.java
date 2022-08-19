@@ -30,7 +30,6 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
@@ -439,6 +438,11 @@ public class DefaultAsyncAtomicMap
         }
 
         @Override
+        public CompletableFuture<Boolean> add(String element, Duration ttl) {
+            return CompletableFuture.failedFuture(new UnsupportedOperationException());
+        }
+
+        @Override
         public CompletableFuture<Boolean> remove(String element) {
             return DefaultAsyncAtomicMap.this.remove(element)
                     .thenApply(versioned -> versioned != null);
@@ -620,6 +624,11 @@ public class DefaultAsyncAtomicMap
 
         @Override
         public CompletableFuture<Boolean> add(Map.Entry<String, Versioned<byte[]>> element) {
+            return CompletableFuture.failedFuture(new UnsupportedOperationException());
+        }
+
+        @Override
+        public CompletableFuture<Boolean> add(Map.Entry<String, Versioned<byte[]>> element, Duration ttl) {
             return CompletableFuture.failedFuture(new UnsupportedOperationException());
         }
 

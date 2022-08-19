@@ -9,6 +9,7 @@ import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A distributed collection designed for holding unique elements.
@@ -20,6 +21,14 @@ import java.time.Duration;
  * @param <E> set entry type
  */
 public interface AsyncDistributedSet<E> extends AsyncDistributedCollection<E> {
+    /**
+     * Adds the specified element to this collection if it is not already present (optional operation).
+     *
+     * @param element element to add
+     * @return {@code true} if this collection did not already contain the specified element.
+     */
+    CompletableFuture<Boolean> add(E element, Duration ttl);
+
     @Override
     default DistributedSet<E> sync() {
         return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));

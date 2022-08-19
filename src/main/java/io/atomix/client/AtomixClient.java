@@ -10,6 +10,8 @@ import io.atomix.client.counter.impl.DefaultAtomicCounterBuilder;
 import io.atomix.client.grpc.ServiceConfigBuilder;
 import io.atomix.client.map.AtomicMapBuilder;
 import io.atomix.client.map.impl.DefaultAtomicMapBuilder;
+import io.atomix.client.set.DistributedSetBuilder;
+import io.atomix.client.set.impl.DefaultDistributedSetBuilder;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 
@@ -80,6 +82,29 @@ public final class AtomixClient {
      */
     public <K, V> AtomicMapBuilder<K, V> atomicMapBuilder(String name) {
         return new DefaultAtomicMapBuilder<>(name, channel);
+    }
+
+    /**
+     * Creates a new named {@link io.atomix.client.set.DistributedSet} builder.
+     * <p>
+     * The set name must be provided when constructing the builder. The name is used to reference a distinct instance of
+     * the primitive within the cluster. Multiple instances of the primitive with the same name will share the same state.
+     * However, the instance of the primitive constructed by the returned builder will be distinct and will not share
+     * local memory (e.g. cache) with any other instance on this node.
+     * <p>
+     * To get an asynchronous instance of the set, use the {@link SyncPrimitive#async()} method:
+     * <pre>
+     *   {@code
+     *   AsyncDistributedSet<String> set = atomix.<String>setBuilder("my-set").build().async();
+     *   }
+     * </pre>
+     *
+     * @param name the primitive name
+     * @param <E>  set element type
+     * @return builder for an distributed set
+     */
+    public <E> DistributedSetBuilder<E> setBuilder(String name) {
+        return new DefaultDistributedSetBuilder<>(name, channel);
     }
 
     /**
