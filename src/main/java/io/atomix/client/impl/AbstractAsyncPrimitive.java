@@ -145,7 +145,7 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         public void cancel() {
             ClientCallStreamObserver<T> observer = this.observer;
             if (observer != null) {
-                observer.cancel(null, null);
+                observer.cancel("stream closed", null);
             }
         }
     }
