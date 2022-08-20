@@ -25,12 +25,12 @@ public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicMap<K, V>> buildAsync() {
         return new DefaultAsyncAtomicMap(name(), channel())
-                .create(tags())
-                .thenApply(map -> new TranscodingAsyncAtomicMap<K, V, String, byte[]>(map,
-                        key -> BaseEncoding.base64().encode(serializer.encode(key)),
-                        key -> serializer.decode(BaseEncoding.base64().decode(key)),
-                        serializer::encode,
-                        serializer::decode))
-                .thenApply(AsyncAtomicMap::sync);
+            .create(tags())
+            .thenApply(map -> new TranscodingAsyncAtomicMap<K, V, String, byte[]>(map,
+                key -> BaseEncoding.base64().encode(serializer.encode(key)),
+                key -> serializer.decode(BaseEncoding.base64().decode(key)),
+                value -> value != null ? serializer.encode(value) : null,
+                bytes -> bytes != null && bytes.length > 0 ? serializer.decode(bytes) : null))
+            .thenApply(AsyncAtomicMap::sync);
     }
 }
