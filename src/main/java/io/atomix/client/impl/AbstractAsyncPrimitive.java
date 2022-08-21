@@ -151,7 +151,9 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
     }
 
     protected <T, U, V> AsyncIterator<V> iterate(BiConsumer<T, StreamObserver<U>> callback, T request, Function<U, V> converter) {
-        return new Iterator<>(callback, request, converter);
+        Iterator<T, U, V> iterator = new Iterator<>(converter);
+        callback.accept(request, iterator);
+        return iterator;
     }
 
     private static class Iterator<T, U, V> implements AsyncIterator<V>, ClientResponseObserver<T, U> {
@@ -162,9 +164,8 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         private boolean closed;
         private Throwable error;
 
-        private Iterator(BiConsumer<T, StreamObserver<U>> callback, T request, Function<U, V> converter) {
+        private Iterator(Function<U, V> converter) {
             this.converter = converter;
-            callback.accept(request, this);
         }
 
         @Override
