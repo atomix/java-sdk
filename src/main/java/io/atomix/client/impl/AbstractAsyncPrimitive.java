@@ -155,29 +155,25 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
     }
 
     private class Iterator<T, U, V> implements AsyncIterator<V>, ClientResponseObserver<T, U> {
-        private final BiConsumer<T, StreamObserver<U>> callback;
-        private final T request;
         private final Function<U, V> converter;
-        private volatile CompletableFuture<V> nextFuture;
+        private CompletableFuture<V> nextFuture;
         private final Queue<V> entries = new LinkedBlockingQueue<>();
-        private volatile ClientCallStreamObserver<T> clientCallStreamObserver;
-        private volatile boolean closed;
-        private volatile Throwable error;
+        private ClientCallStreamObserver<T> clientCallStreamObserver;
+        private boolean closed;
+        private Throwable error;
 
         private Iterator(BiConsumer<T, StreamObserver<U>> callback, T request, Function<U, V> converter) {
-            this.callback = callback;
-            this.request = request;
             this.converter = converter;
             callback.accept(request, this);
         }
 
         @Override
-        public void beforeStart(ClientCallStreamObserver<T> clientCallStreamObserver) {
+        public synchronized void beforeStart(ClientCallStreamObserver<T> clientCallStreamObserver) {
             this.clientCallStreamObserver = clientCallStreamObserver;
         }
 
         @Override
-        public void onNext(U response) {
+        public synchronized void onNext(U response) {
             if (nextFuture != null) {
                 nextFuture.complete(converter.apply(response));
             } else {
@@ -186,47 +182,35 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         }
 
         @Override
-        public void onError(Throwable throwable) {
+        public synchronized void onError(Throwable throwable) {
             error = throwable;
             closed = true;
             if (nextFuture != null) {
-                synchronized (this) {
-                    if (nextFuture != null) {
-                        nextFuture.completeExceptionally(throwable);
-                    }
-                }
+                nextFuture.completeExceptionally(throwable);
             }
         }
 
         @Override
-        public void onCompleted() {
+        public synchronized void onCompleted() {
             closed = true;
             if (nextFuture != null) {
-                synchronized (this) {
-                    if (nextFuture != null) {
-                        nextFuture.complete(null);
-                    }
-                }
+                nextFuture.complete(null);
             }
         }
 
         private CompletableFuture<V> init() {
             if (nextFuture == null) {
-                synchronized (this) {
-                    if (nextFuture == null) {
-                        if (closed) {
-                            if (error != null) {
-                                nextFuture = CompletableFuture.failedFuture(error);
-                            } else {
-                                nextFuture = CompletableFuture.completedFuture(null);
-                            }
-                        } else {
-                            nextFuture = new CompletableFuture<>();
-                            V nextValue = entries.poll();
-                            if (nextValue != null) {
-                                nextFuture.complete(nextValue);
-                            }
-                        }
+                if (closed) {
+                    if (error != null) {
+                        nextFuture = CompletableFuture.failedFuture(error);
+                    } else {
+                        nextFuture = CompletableFuture.completedFuture(null);
+                    }
+                } else {
+                    nextFuture = new CompletableFuture<>();
+                    V nextValue = entries.poll();
+                    if (nextValue != null) {
+                        nextFuture.complete(nextValue);
                     }
                 }
             }
@@ -234,19 +218,20 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         }
 
         @Override
-        public CompletableFuture<Boolean> hasNext() {
+        public synchronized CompletableFuture<Boolean> hasNext() {
             return init().thenApply(Objects::nonNull);
         }
 
         @Override
-        public CompletableFuture<V> next() {
-            CompletableFuture<V> future = init();
-            nextFuture = null;
-            return future;
+        public synchronized CompletableFuture<V> next() {
+            return init().thenApply(result -> {
+                nextFuture = null;
+                return result;
+            });
         }
 
         @Override
-        public CompletableFuture<Void> close() {
+        public synchronized CompletableFuture<Void> close() {
             if (clientCallStreamObserver != null) {
                 clientCallStreamObserver.cancel("closed", null);
             }
