@@ -154,7 +154,7 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         return new Iterator<>(callback, request, converter);
     }
 
-    private class Iterator<T, U, V> implements AsyncIterator<V>, ClientResponseObserver<T, U> {
+    private static class Iterator<T, U, V> implements AsyncIterator<V>, ClientResponseObserver<T, U> {
         private final Function<U, V> converter;
         private CompletableFuture<V> nextFuture;
         private final Queue<V> entries = new LinkedBlockingQueue<>();
