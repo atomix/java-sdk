@@ -201,17 +201,15 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
 
         private CompletableFuture<V> init() {
             if (nextFuture == null) {
-                if (closed) {
+                nextFuture = new CompletableFuture<>();
+                V nextValue = entries.poll();
+                if (nextValue != null) {
+                    nextFuture.complete(nextValue);
+                } else if (closed) {
                     if (error != null) {
                         nextFuture = CompletableFuture.failedFuture(error);
                     } else {
                         nextFuture = CompletableFuture.completedFuture(null);
-                    }
-                } else {
-                    nextFuture = new CompletableFuture<>();
-                    V nextValue = entries.poll();
-                    if (nextValue != null) {
-                        nextFuture.complete(nextValue);
                     }
                 }
             }
