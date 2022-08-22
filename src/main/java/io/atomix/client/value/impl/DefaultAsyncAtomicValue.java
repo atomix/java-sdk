@@ -4,7 +4,13 @@
 
 package io.atomix.client.value.impl;
 
-import io.atomix.api.runtime.value.v1.*;
+import io.atomix.api.runtime.value.v1.CloseRequest;
+import io.atomix.api.runtime.value.v1.CreateRequest;
+import io.atomix.api.runtime.value.v1.EventsRequest;
+import io.atomix.api.runtime.value.v1.GetRequest;
+import io.atomix.api.runtime.value.v1.SetRequest;
+import io.atomix.api.runtime.value.v1.UpdateRequest;
+import io.atomix.api.runtime.value.v1.ValueGrpc;
 import io.atomix.client.Cancellable;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.time.Versioned;
@@ -12,29 +18,27 @@ import io.atomix.client.value.AsyncAtomicValue;
 import io.atomix.client.value.AtomicValue;
 import io.atomix.client.value.AtomicValueEvent;
 import io.atomix.client.value.AtomicValueEventListener;
-import io.grpc.Channel;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Atomic value implementation.
  */
 public class DefaultAsyncAtomicValue
-    extends AbstractAsyncPrimitive<AsyncAtomicValue<String>>
+    extends AbstractAsyncPrimitive<ValueGrpc.ValueStub, AsyncAtomicValue<String>>
     implements AsyncAtomicValue<String> {
-    private final ValueGrpc.ValueStub stub;
 
-    public DefaultAsyncAtomicValue(String name, Channel channel) {
-        super(name);
-        this.stub = ValueGrpc.newStub(channel);
+    public DefaultAsyncAtomicValue(String name, ValueGrpc.ValueStub stub, ScheduledExecutorService executorService) {
+        super(name, stub, executorService);
     }
 
     @Override
     protected CompletableFuture<AsyncAtomicValue<String>> create(Map<String, String> tags) {
-        return execute(stub::create, CreateRequest.newBuilder()
+        return execute(ValueGrpc.ValueStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
             .build())
@@ -43,7 +47,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(stub::close, CloseRequest.newBuilder()
+        return execute(ValueGrpc.ValueStub::close, CloseRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(response -> null);
@@ -51,7 +55,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Versioned<String>> get() {
-        return execute(stub::get, GetRequest.newBuilder()
+        return execute(ValueGrpc.ValueStub::get, GetRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(
@@ -61,7 +65,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Versioned<String>> set(String value) {
-        return execute(stub::set, SetRequest.newBuilder()
+        return execute(ValueGrpc.ValueStub::set, SetRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(value, response.getVersion()));
@@ -69,7 +73,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Versioned<String>> set(String value, long version) {
-        return execute(stub::update, UpdateRequest.newBuilder()
+        return execute(ValueGrpc.ValueStub::update, UpdateRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(
@@ -79,7 +83,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Cancellable> listen(AtomicValueEventListener<String> listener, Executor executor) {
-        return execute(stub::events, EventsRequest.newBuilder()
+        return execute(ValueGrpc.ValueStub::events, EventsRequest.newBuilder()
             .setId(id())
             .build(), response -> {
             switch (response.getEvent().getEventCase()) {

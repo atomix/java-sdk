@@ -8,11 +8,13 @@ package io.atomix.client.value;
 import io.atomix.client.PrimitiveBuilder;
 import io.grpc.Channel;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * Builder for AtomicValue.
  */
 public abstract class AtomicValueBuilder<E> extends PrimitiveBuilder<AtomicValueBuilder<E>, AtomicValue<E>> {
-    protected AtomicValueBuilder(String primitiveName, Channel channel) {
-        super(primitiveName, channel);
+    protected AtomicValueBuilder(String primitiveName, Channel channel, ScheduledExecutorService executorService) {
+        super(primitiveName, channel, executorService);
     }
 }

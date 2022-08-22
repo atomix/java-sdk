@@ -11,6 +11,7 @@ import io.atomix.client.map.AtomicMapBuilder;
 import io.atomix.client.map.impl.DefaultAtomicMapBuilder;
 import io.atomix.client.set.DistributedSetBuilder;
 import io.atomix.client.set.impl.DefaultDistributedSetBuilder;
+import io.atomix.client.utils.concurrent.Threads;
 import io.atomix.client.value.AtomicValueBuilder;
 import io.atomix.client.value.impl.DefaultAtomicValueBuilder;
 import io.grpc.ManagedChannel;
@@ -18,14 +19,20 @@ import io.grpc.NameResolverRegistry;
 import io.grpc.internal.DnsNameResolverProvider;
 import io.grpc.internal.PickFirstLoadBalancerProvider;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public final class AtomixClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AtomixClient.class);
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 5678;
 
     private final ManagedChannel channel;
+    private final ScheduledExecutorService executorService;
 
     static {
         NameResolverRegistry.getDefaultRegistry()
@@ -45,7 +52,14 @@ public final class AtomixClient {
     }
 
     public AtomixClient(ManagedChannel channel) {
+        this(channel, Executors.newScheduledThreadPool(
+            Runtime.getRuntime().availableProcessors() * 2,
+            Threads.namedThreads("atomix-client-%d", LOGGER)));
+    }
+
+    private AtomixClient(ManagedChannel channel, ScheduledExecutorService executorService) {
         this.channel = channel;
+        this.executorService = executorService;
     }
 
     private static ManagedChannel buildChannel(String host, int port) {
@@ -76,7 +90,7 @@ public final class AtomixClient {
      * @return atomic counter builder
      */
     public AtomicCounterBuilder atomicCounterBuilder(String name) {
-        return new DefaultAtomicCounterBuilder(name, channel);
+        return new DefaultAtomicCounterBuilder(name, channel, executorService);
     }
 
     /**
@@ -100,7 +114,7 @@ public final class AtomixClient {
      * @return builder for a atomic map
      */
     public <K, V> AtomicMapBuilder<K, V> atomicMapBuilder(String name) {
-        return new DefaultAtomicMapBuilder<>(name, channel);
+        return new DefaultAtomicMapBuilder<>(name, channel, executorService);
     }
 
     /**
@@ -123,7 +137,7 @@ public final class AtomixClient {
      * @return atomic value builder
      */
     public <V> AtomicValueBuilder<V> atomicValueBuilder(String name) {
-        return new DefaultAtomicValueBuilder<>(name, channel);
+        return new DefaultAtomicValueBuilder<>(name, channel, executorService);
     }
 
     /**
@@ -146,7 +160,7 @@ public final class AtomixClient {
      * @return builder for an distributed set
      */
     public <E> DistributedSetBuilder<E> setBuilder(String name) {
-        return new DefaultDistributedSetBuilder<>(name, channel);
+        return new DefaultDistributedSetBuilder<>(name, channel, executorService);
     }
 
     /**
@@ -156,6 +170,7 @@ public final class AtomixClient {
      */
     public CompletableFuture<Void> close() {
         channel.shutdown();
+        executorService.shutdown();
         return CompletableFuture.completedFuture(null);
     }
 }

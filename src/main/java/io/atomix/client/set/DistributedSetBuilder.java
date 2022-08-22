@@ -8,11 +8,13 @@ package io.atomix.client.set;
 import io.atomix.client.PrimitiveBuilder;
 import io.grpc.Channel;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * Builder for DistributedSet.
  */
 public abstract class DistributedSetBuilder<E> extends PrimitiveBuilder<DistributedSetBuilder<E>, DistributedSet<E>> {
-    protected DistributedSetBuilder(String primitiveName, Channel channel) {
-        super(primitiveName, channel);
+    protected DistributedSetBuilder(String primitiveName, Channel channel, ScheduledExecutorService executorService) {
+        super(primitiveName, channel, executorService);
     }
 }

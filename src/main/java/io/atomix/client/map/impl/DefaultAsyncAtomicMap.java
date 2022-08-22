@@ -6,7 +6,22 @@ package io.atomix.client.map.impl;
 
 import com.google.common.collect.Maps;
 import com.google.protobuf.ByteString;
-import io.atomix.api.runtime.map.v1.*;
+import io.atomix.api.runtime.map.v1.ClearRequest;
+import io.atomix.api.runtime.map.v1.CloseRequest;
+import io.atomix.api.runtime.map.v1.CreateRequest;
+import io.atomix.api.runtime.map.v1.EntriesRequest;
+import io.atomix.api.runtime.map.v1.EventsRequest;
+import io.atomix.api.runtime.map.v1.GetRequest;
+import io.atomix.api.runtime.map.v1.InsertRequest;
+import io.atomix.api.runtime.map.v1.LockRequest;
+import io.atomix.api.runtime.map.v1.MapGrpc;
+import io.atomix.api.runtime.map.v1.PutRequest;
+import io.atomix.api.runtime.map.v1.RemoveRequest;
+import io.atomix.api.runtime.map.v1.SizeRequest;
+import io.atomix.api.runtime.map.v1.SizeResponse;
+import io.atomix.api.runtime.map.v1.UnlockRequest;
+import io.atomix.api.runtime.map.v1.UpdateRequest;
+import io.atomix.api.runtime.map.v1.VersionedValue;
 import io.atomix.client.Cancellable;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;
@@ -23,7 +38,6 @@ import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.set.impl.BlockingDistributedSet;
 import io.atomix.client.time.Versioned;
-import io.grpc.Channel;
 import io.grpc.Status;
 
 import java.time.Duration;
@@ -32,6 +46,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
@@ -39,18 +54,16 @@ import java.util.function.Predicate;
  * Atomix counter implementation.
  */
 public class DefaultAsyncAtomicMap
-    extends AbstractAsyncPrimitive<AsyncAtomicMap<String, byte[]>>
+    extends AbstractAsyncPrimitive<MapGrpc.MapStub, AsyncAtomicMap<String, byte[]>>
     implements AsyncAtomicMap<String, byte[]> {
-    private final MapGrpc.MapStub stub;
 
-    public DefaultAsyncAtomicMap(String name, Channel channel) {
-        super(name);
-        this.stub = MapGrpc.newStub(channel);
+    public DefaultAsyncAtomicMap(String name, MapGrpc.MapStub stub, ScheduledExecutorService executorService) {
+        super(name, stub, executorService);
     }
 
     @Override
     protected CompletableFuture<AsyncAtomicMap<String, byte[]>> create(Map<String, String> tags) {
-        return execute(stub::create, CreateRequest.newBuilder()
+        return execute(MapGrpc.MapStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
             .build())
@@ -59,7 +72,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(stub::close, CloseRequest.newBuilder()
+        return execute(MapGrpc.MapStub::close, CloseRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(response -> null);
@@ -67,7 +80,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Integer> size() {
-        return execute(stub::size, SizeRequest.newBuilder()
+        return execute(MapGrpc.MapStub::size, SizeRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(SizeResponse::getSize);
@@ -75,7 +88,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> containsKey(String key) {
-        return execute(stub::get, GetRequest.newBuilder()
+        return execute(MapGrpc.MapStub::get, GetRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -96,7 +109,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> get(String key) {
-        return execute(stub::get, GetRequest.newBuilder()
+        return execute(MapGrpc.MapStub::get, GetRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -145,14 +158,14 @@ public class DefaultAsyncAtomicMap
             if (r1 == null) {
                 return putIfAbsent(key, computedValue);
             } else if (computedValue == null) {
-                return execute(stub::remove, RemoveRequest.newBuilder()
+                return execute(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
                     .setId(id())
                     .setKey(key)
                     .setPrevVersion(r1.version())
                     .build(), DEFAULT_TIMEOUT)
                     .thenApply(response -> new Versioned<>(existingValue, r1.version()));
             } else {
-                return execute(stub::update, UpdateRequest.newBuilder()
+                return execute(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
                     .setId(id())
                     .setKey(key)
                     .setValue(ByteString.copyFrom(computedValue))
@@ -165,7 +178,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> put(String key, byte[] value) {
-        return execute(stub::put, PutRequest.newBuilder()
+        return execute(MapGrpc.MapStub::put, PutRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -175,7 +188,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> put(String key, byte[] value, Duration ttl) {
-        return execute(stub::put, PutRequest.newBuilder()
+        return execute(MapGrpc.MapStub::put, PutRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -189,7 +202,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> putAndGet(String key, byte[] value) {
-        return execute(stub::put, PutRequest.newBuilder()
+        return execute(MapGrpc.MapStub::put, PutRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -199,7 +212,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> putAndGet(String key, byte[] value, Duration ttl) {
-        return execute(stub::put, PutRequest.newBuilder()
+        return execute(MapGrpc.MapStub::put, PutRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -213,7 +226,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> remove(String key) {
-        return execute(stub::remove, RemoveRequest.newBuilder()
+        return execute(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -229,7 +242,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Void> clear() {
-        return execute(stub::clear, ClearRequest.newBuilder()
+        return execute(MapGrpc.MapStub::clear, ClearRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> null);
@@ -252,7 +265,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> putIfAbsent(String key, byte[] value) {
-        return execute(stub::insert, InsertRequest.newBuilder()
+        return execute(MapGrpc.MapStub::insert, InsertRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -269,7 +282,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> putIfAbsent(String key, byte[] value, Duration ttl) {
-        return execute(stub::insert, InsertRequest.newBuilder()
+        return execute(MapGrpc.MapStub::insert, InsertRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -300,7 +313,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> remove(String key, long version) {
-        return execute(stub::remove, RemoveRequest.newBuilder()
+        return execute(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setPrevVersion(version)
@@ -319,7 +332,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> replace(String key, byte[] value) {
-        return execute(stub::update, UpdateRequest.newBuilder()
+        return execute(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -346,7 +359,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> replace(String key, long oldVersion, byte[] newValue) {
-        return execute(stub::update, UpdateRequest.newBuilder()
+        return execute(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(newValue))
@@ -364,7 +377,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Void> lock(String key) {
-        return execute(stub::lock, LockRequest.newBuilder()
+        return execute(MapGrpc.MapStub::lock, LockRequest.newBuilder()
             .setId(id())
             .addKeys(key)
             .build(), DEFAULT_TIMEOUT)
@@ -373,7 +386,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> tryLock(String key) {
-        return execute(stub::lock, LockRequest.newBuilder()
+        return execute(MapGrpc.MapStub::lock, LockRequest.newBuilder()
             .setId(id())
             .addKeys(key)
             .build(), DEFAULT_TIMEOUT)
@@ -389,7 +402,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> tryLock(String key, Duration timeout) {
-        return execute(stub::lock, LockRequest.newBuilder()
+        return execute(MapGrpc.MapStub::lock, LockRequest.newBuilder()
             .setId(id())
             .addKeys(key)
             .setTimeout(com.google.protobuf.Duration.newBuilder()
@@ -414,7 +427,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Void> unlock(String key) {
-        return execute(stub::unlock, UnlockRequest.newBuilder()
+        return execute(MapGrpc.MapStub::unlock, UnlockRequest.newBuilder()
             .setId(id())
             .addKeys(key)
             .build(), DEFAULT_TIMEOUT)
@@ -423,7 +436,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Cancellable> listen(AtomicMapEventListener<String, byte[]> listener, Executor executor) {
-        return execute(stub::events, EventsRequest.newBuilder()
+        return execute(MapGrpc.MapStub::events, EventsRequest.newBuilder()
             .setId(id())
             .build(), response -> {
             switch (response.getEvent().getEventCase()) {
@@ -543,7 +556,7 @@ public class DefaultAsyncAtomicMap
 
         @Override
         public AsyncIterator<String> iterator() {
-            return iterate(stub::entries, EntriesRequest.newBuilder()
+            return iterate(MapGrpc.MapStub::entries, EntriesRequest.newBuilder()
                 .setId(id())
                 .build(), response -> response.getEntry().getKey());
         }
@@ -633,7 +646,7 @@ public class DefaultAsyncAtomicMap
 
         @Override
         public AsyncIterator<Versioned<byte[]>> iterator() {
-            return iterate(stub::entries, EntriesRequest.newBuilder()
+            return iterate(MapGrpc.MapStub::entries, EntriesRequest.newBuilder()
                 .setId(id())
                 .build(), response -> toVersioned(response.getEntry().getValue()));
         }
@@ -741,7 +754,7 @@ public class DefaultAsyncAtomicMap
 
         @Override
         public AsyncIterator<Map.Entry<String, Versioned<byte[]>>> iterator() {
-            return iterate(stub::entries, EntriesRequest.newBuilder()
+            return iterate(MapGrpc.MapStub::entries, EntriesRequest.newBuilder()
                 .setId(id())
                 .build(), response -> Maps.immutableEntry(
                 response.getEntry().getKey(),

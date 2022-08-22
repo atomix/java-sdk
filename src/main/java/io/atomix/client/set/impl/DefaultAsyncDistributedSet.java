@@ -4,7 +4,19 @@
 
 package io.atomix.client.set.impl;
 
-import io.atomix.api.runtime.set.v1.*;
+import io.atomix.api.runtime.set.v1.AddRequest;
+import io.atomix.api.runtime.set.v1.ClearRequest;
+import io.atomix.api.runtime.set.v1.CloseRequest;
+import io.atomix.api.runtime.set.v1.ContainsRequest;
+import io.atomix.api.runtime.set.v1.ContainsResponse;
+import io.atomix.api.runtime.set.v1.CreateRequest;
+import io.atomix.api.runtime.set.v1.Element;
+import io.atomix.api.runtime.set.v1.ElementsRequest;
+import io.atomix.api.runtime.set.v1.EventsRequest;
+import io.atomix.api.runtime.set.v1.RemoveRequest;
+import io.atomix.api.runtime.set.v1.SetGrpc;
+import io.atomix.api.runtime.set.v1.SizeRequest;
+import io.atomix.api.runtime.set.v1.SizeResponse;
 import io.atomix.client.Cancellable;
 import io.atomix.client.collection.CollectionEvent;
 import io.atomix.client.collection.CollectionEventListener;
@@ -13,7 +25,6 @@ import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.utils.concurrent.Futures;
-import io.grpc.Channel;
 import io.grpc.Status;
 
 import java.time.Duration;
@@ -23,35 +34,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Atomix counter implementation.
  */
 public class DefaultAsyncDistributedSet
-        extends AbstractAsyncPrimitive<AsyncDistributedSet<String>>
-        implements AsyncDistributedSet<String> {
-    private final SetGrpc.SetStub stub;
+    extends AbstractAsyncPrimitive<SetGrpc.SetStub, AsyncDistributedSet<String>>
+    implements AsyncDistributedSet<String> {
 
-    public DefaultAsyncDistributedSet(String name, Channel channel) {
-        super(name);
-        this.stub = SetGrpc.newStub(channel);
+    public DefaultAsyncDistributedSet(String name, SetGrpc.SetStub stub, ScheduledExecutorService executorService) {
+        super(name, stub, executorService);
     }
 
     @Override
     protected CompletableFuture<AsyncDistributedSet<String>> create(Map<String, String> tags) {
-        return execute(stub::create, CreateRequest.newBuilder()
-                .setId(id())
-                .putAllTags(tags)
-                .build())
-                .thenApply(response -> this);
+        return execute(SetGrpc.SetStub::create, CreateRequest.newBuilder()
+            .setId(id())
+            .putAllTags(tags)
+            .build())
+            .thenApply(response -> this);
     }
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(stub::close, CloseRequest.newBuilder()
-                .setId(id())
-                .build())
-                .thenApply(response -> null);
+        return execute(SetGrpc.SetStub::close, CloseRequest.newBuilder()
+            .setId(id())
+            .build())
+            .thenApply(response -> null);
     }
 
     @Override
@@ -61,10 +71,10 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Integer> size() {
-        return execute(stub::size, SizeRequest.newBuilder()
-                .setId(id())
-                .build(), DEFAULT_TIMEOUT)
-                .thenApply(SizeResponse::getSize);
+        return execute(SetGrpc.SetStub::size, SizeRequest.newBuilder()
+            .setId(id())
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(SizeResponse::getSize);
     }
 
     @Override
@@ -74,13 +84,13 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> contains(String value) {
-        return execute(stub::contains, ContainsRequest.newBuilder()
-                .setId(id())
-                .setElement(Element.newBuilder()
-                        .setValue(value)
-                        .build())
-                .build(), DEFAULT_TIMEOUT)
-                .thenApply(ContainsResponse::getContains);
+        return execute(SetGrpc.SetStub::contains, ContainsRequest.newBuilder()
+            .setId(id())
+            .setElement(Element.newBuilder()
+                .setValue(value)
+                .build())
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(ContainsResponse::getContains);
     }
 
     @Override
@@ -94,42 +104,42 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> add(String value) {
-        return execute(stub::add, AddRequest.newBuilder()
-                .setId(id())
-                .setElement(Element.newBuilder()
-                        .setValue(value)
-                        .build())
-                .build(), DEFAULT_TIMEOUT)
-                .thenApply(response -> true)
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.ALREADY_EXISTS.getCode()) {
-                        return false;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+        return execute(SetGrpc.SetStub::add, AddRequest.newBuilder()
+            .setId(id())
+            .setElement(Element.newBuilder()
+                .setValue(value)
+                .build())
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> true)
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.ALREADY_EXISTS.getCode()) {
+                    return false;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
     public CompletableFuture<Boolean> add(String value, Duration ttl) {
-        return execute(stub::add, AddRequest.newBuilder()
-                .setId(id())
-                .setElement(Element.newBuilder()
-                        .setValue(value)
-                        .build())
-                .setTtl(com.google.protobuf.Duration.newBuilder()
-                        .setSeconds(ttl.getSeconds())
-                        .setNanos(ttl.getNano())
-                        .build())
-                .build(), DEFAULT_TIMEOUT)
-                .thenApply(response -> true)
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.ALREADY_EXISTS.getCode()) {
-                        return false;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+        return execute(SetGrpc.SetStub::add, AddRequest.newBuilder()
+            .setId(id())
+            .setElement(Element.newBuilder()
+                .setValue(value)
+                .build())
+            .setTtl(com.google.protobuf.Duration.newBuilder()
+                .setSeconds(ttl.getSeconds())
+                .setNanos(ttl.getNano())
+                .build())
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> true)
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.ALREADY_EXISTS.getCode()) {
+                    return false;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
@@ -143,20 +153,20 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> remove(String value) {
-        return execute(stub::remove, RemoveRequest.newBuilder()
-                .setId(id())
-                .setElement(Element.newBuilder()
-                        .setValue(value)
-                        .build())
-                .build(), DEFAULT_TIMEOUT)
-                .thenApply(response -> true)
-                .exceptionally(t -> {
-                    if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
-                        return false;
-                    } else {
-                        throw (RuntimeException) t;
-                    }
-                });
+        return execute(SetGrpc.SetStub::remove, RemoveRequest.newBuilder()
+            .setId(id())
+            .setElement(Element.newBuilder()
+                .setValue(value)
+                .build())
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> true)
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
+                    return false;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
@@ -170,27 +180,27 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Void> clear() {
-        return execute(stub::clear, ClearRequest.newBuilder()
-                .setId(id())
-                .build(), DEFAULT_TIMEOUT)
-                .thenApply(response -> null);
+        return execute(SetGrpc.SetStub::clear, ClearRequest.newBuilder()
+            .setId(id())
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> null);
     }
 
     @Override
     public CompletableFuture<Cancellable> listen(CollectionEventListener<String> listener, Executor executor) {
-        return execute(stub::events, EventsRequest.newBuilder()
-                .setId(id())
-                .build(), response -> {
+        return execute(SetGrpc.SetStub::events, EventsRequest.newBuilder()
+            .setId(id())
+            .build(), response -> {
             switch (response.getEvent().getEventCase()) {
                 case ADDED:
                     listener.event(new CollectionEvent<>(
-                            CollectionEvent.Type.ADD,
-                            response.getEvent().getAdded().getElement().getValue()));
+                        CollectionEvent.Type.ADD,
+                        response.getEvent().getAdded().getElement().getValue()));
                     break;
                 case REMOVED:
                     listener.event(new CollectionEvent<>(
-                            CollectionEvent.Type.REMOVE,
-                            response.getEvent().getRemoved().getElement().getValue()));
+                        CollectionEvent.Type.REMOVE,
+                        response.getEvent().getRemoved().getElement().getValue()));
                     break;
             }
         }, executor);
@@ -198,9 +208,9 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public AsyncIterator<String> iterator() {
-        return iterate(stub::elements, ElementsRequest.newBuilder()
-                .setId(id())
-                .build(), response -> response.getElement().getValue());
+        return iterate(SetGrpc.SetStub::elements, ElementsRequest.newBuilder()
+            .setId(id())
+            .build(), response -> response.getElement().getValue());
     }
 
     @Override

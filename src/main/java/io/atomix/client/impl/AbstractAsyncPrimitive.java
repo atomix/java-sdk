@@ -4,11 +4,11 @@
 
 package io.atomix.client.impl;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.api.runtime.v1.PrimitiveId;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
 import io.atomix.client.iterator.AsyncIterator;
+import io.atomix.client.utils.concurrent.Executors;
 import io.atomix.client.utils.concurrent.Retries;
 import io.grpc.Status;
 import io.grpc.stub.ClientCallStreamObserver;
@@ -21,11 +21,8 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -34,16 +31,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Simple asynchronous primitive.
  */
-public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implements AsyncPrimitive {
+public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implements AsyncPrimitive {
     private static final Duration MAX_DELAY_BETWEEN_RETRIES = Duration.ofSeconds(5);
     protected static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(1);
     private final String name;
+    private final S stub;
+    private final ScheduledExecutorService executorService;
 
-    // TODO: Replace the single-threaded executor with a serializing thread pool executor.
-    private final ExecutorService streamExecutor = Executors.newSingleThreadExecutor();
-
-    protected AbstractAsyncPrimitive(String name) {
+    protected AbstractAsyncPrimitive(String name, S stub, ScheduledExecutorService executorService) {
         this.name = checkNotNull(name, "primitive name cannot be null");
+        this.stub = checkNotNull(stub, "primitive stub cannot be null");
+        this.executorService = checkNotNull(executorService, "primitive executor cannot be null");
     }
 
     @Override
@@ -57,12 +55,6 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
             .build();
     }
 
-    @Override
-    public CompletableFuture<Void> close() {
-        streamExecutor.shutdown();
-        return CompletableFuture.completedFuture(null);
-    }
-
     /**
      * Creates the primitive and connect.
      *
@@ -70,22 +62,24 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
      */
     protected abstract CompletableFuture<P> create(Map<String, String> tags);
 
-    protected <T, U> CompletableFuture<U> execute(BiConsumer<T, StreamObserver<U>> callback, T request) {
-        return Retries.retryAsync(
-            () -> tryExecute(callback, request),
-            t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
-            MAX_DELAY_BETWEEN_RETRIES);
-    }
-
-    protected <T, U> CompletableFuture<U> execute(BiConsumer<T, StreamObserver<U>> callback, T request, Duration timeout) {
+    protected <T, U> CompletableFuture<U> execute(StubMethodCall<S, T, U> callback, T request) {
         return Retries.retryAsync(
             () -> tryExecute(callback, request),
             t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
             MAX_DELAY_BETWEEN_RETRIES,
-            timeout);
+            executorService);
     }
 
-    private <T, U> CompletableFuture<U> tryExecute(BiConsumer<T, StreamObserver<U>> callback, T request) {
+    protected <T, U> CompletableFuture<U> execute(StubMethodCall<S, T, U> callback, T request, Duration timeout) {
+        return Retries.retryAsync(
+            () -> tryExecute(callback, request),
+            t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
+            MAX_DELAY_BETWEEN_RETRIES,
+            timeout,
+            executorService);
+    }
+
+    private <T, U> CompletableFuture<U> tryExecute(StubMethodCall<S, T, U> callback, T request) {
         CompletableFuture<U> future = new CompletableFuture<>();
         StreamObserver<U> responseObserver = new StreamObserver<U>() {
             @Override
@@ -103,13 +97,17 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
 
             }
         };
-        callback.accept(request, responseObserver);
+        callback.call(stub, request, responseObserver);
         return future;
     }
 
-    protected <T, U> CompletableFuture<Cancellable> execute(BiConsumer<T, StreamObserver<U>> callback, T request, Consumer<U> listener, Executor executor) {
+    protected <T, U> CompletableFuture<Cancellable> execute(StubMethodCall<S, T, U> callback, T request, Consumer<U> listener, Executor executor) {
         ServerStreamCall<T, U> call = new ServerStreamCall<>(listener, executor);
-        return call.call(observer -> callback.accept(request, observer)).thenApply(v -> call);
+        return call.call(observer -> callback.call(stub, request, observer)).thenApply(v -> call);
+    }
+
+    protected interface StubMethodCall<S, T, U> {
+        void call(S stub, T request, StreamObserver<U> streamObserver);
     }
 
     private static class ServerStreamCall<T, U> implements Cancellable {
@@ -161,9 +159,9 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         }
     }
 
-    protected <T, U, V> AsyncIterator<V> iterate(BiConsumer<T, StreamObserver<U>> callback, T request, Function<U, V> converter) {
-        Iterator<T, U, V> iterator = new Iterator<>(converter, streamExecutor);
-        callback.accept(request, iterator);
+    protected <T, U, V> AsyncIterator<V> iterate(StubMethodCall<S, T, U> callback, T request, Function<U, V> converter) {
+        Iterator<T, U, V> iterator = new Iterator<>(converter, Executors.newSerializingExecutor(executorService));
+        callback.call(stub, request, iterator);
         return iterator;
     }
 

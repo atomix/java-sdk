@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -23,14 +24,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @param <P> primitive type
  */
 public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> {
-    protected final String name;
-    protected final Channel channel;
-    protected Map<String, String> tags = new HashMap<>();
+    private final String name;
+    private final Channel channel;
+    private final ScheduledExecutorService executorService;
+    protected final Map<String, String> tags = new HashMap<>();
     protected Serializer serializer;
 
-    protected PrimitiveBuilder(String name, Channel channel) {
+    protected PrimitiveBuilder(String name, Channel channel, ScheduledExecutorService executorService) {
         this.name = checkNotNull(name, "primitive name cannot be null");
         this.channel = checkNotNull(channel, "primitive channel cannot be null");
+        this.executorService = checkNotNull(executorService, "executorService cannot be null");
     }
 
     /**
@@ -40,6 +43,15 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      */
     protected String name() {
         return name;
+    }
+
+    /**
+     * Returns the primitive executor service.
+     *
+     * @return the primitive executor service
+     */
+    protected ScheduledExecutorService executor() {
+        return executorService;
     }
 
     /**

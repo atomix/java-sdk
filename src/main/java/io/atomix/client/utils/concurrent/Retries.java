@@ -9,7 +9,10 @@ import io.atomix.client.PrimitiveException;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -18,23 +21,24 @@ import java.util.function.Supplier;
  * Retry utilities.
  */
 public final class Retries {
-    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors() * 2);
     private static final Duration BASE_DELAY = Duration.ofMillis(10);
 
     public static <T> CompletableFuture<T> retryAsync(
         Supplier<CompletableFuture<T>> callback,
         Predicate<Throwable> exceptionPredicate,
-        Duration maxDelayBetweenRetries) {
-        return retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, null);
+        Duration maxDelayBetweenRetries,
+        ScheduledExecutorService executor) {
+        return retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, null, executor);
     }
 
     public static <T> CompletableFuture<T> retryAsync(
         Supplier<CompletableFuture<T>> callback,
         Predicate<Throwable> exceptionPredicate,
         Duration maxDelayBetweenRetries,
-        @Nullable Duration timeout) {
+        @Nullable Duration timeout,
+        ScheduledExecutorService executor) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, timeout, System.currentTimeMillis(), 1, future);
+        retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, timeout, System.currentTimeMillis(), 1, future, executor);
         return future;
     }
 
@@ -45,7 +49,8 @@ public final class Retries {
         Duration timeout,
         long startTime,
         int attempt,
-        CompletableFuture<T> future) {
+        CompletableFuture<T> future,
+        ScheduledExecutorService executor) {
         callback.get().whenComplete((r1, e1) -> {
             if (e1 != null) {
                 if (!exceptionPredicate.test(e1)) {
@@ -57,8 +62,8 @@ public final class Retries {
                 if (timeout != null && currentTime - startTime > timeout.toMillis()) {
                     future.completeExceptionally(new PrimitiveException.Timeout(String.format("timed out after %d milliseconds", currentTime - startTime)));
                 } else {
-                    EXECUTOR.schedule(() ->
-                            retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, timeout, startTime, attempt + 1, future),
+                    executor.schedule(() ->
+                            retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, timeout, startTime, attempt + 1, future, executor),
                         (int) Math.min(Math.pow(2, attempt) * BASE_DELAY.toMillis(), maxDelayBetweenRetries.toMillis()), TimeUnit.MILLISECONDS);
                 }
             } else {
@@ -72,9 +77,10 @@ public final class Retries {
         Supplier<CompletableFuture<T>> callback,
         Predicate<Throwable> exceptionPredicate,
         int maxRetries,
-        Duration maxDelayBetweenRetries) {
+        Duration maxDelayBetweenRetries,
+        ScheduledExecutorService executor) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        retryAsync(callback, exceptionPredicate, maxRetries, maxDelayBetweenRetries, System.currentTimeMillis(), 1, future);
+        retryAsync(callback, exceptionPredicate, maxRetries, maxDelayBetweenRetries, System.currentTimeMillis(), 1, future, executor);
         return future;
     }
 
@@ -85,7 +91,8 @@ public final class Retries {
         Duration maxDelayBetweenRetries,
         long startTime,
         int attempt,
-        CompletableFuture<T> future) {
+        CompletableFuture<T> future,
+        ScheduledExecutorService executor) {
         callback.get().whenComplete((r1, e1) -> {
             if (e1 != null) {
                 if (!exceptionPredicate.test(e1)) {
@@ -93,8 +100,8 @@ public final class Retries {
                 } else if (attempt == maxRetries) {
                     future.completeExceptionally(new PrimitiveException.Timeout(String.format("timed out after %d milliseconds", System.currentTimeMillis() - startTime)));
                 } else {
-                    EXECUTOR.schedule(() ->
-                            retryAsync(callback, exceptionPredicate, maxRetries, maxDelayBetweenRetries, startTime, attempt + 1, future),
+                    executor.schedule(() ->
+                            retryAsync(callback, exceptionPredicate, maxRetries, maxDelayBetweenRetries, startTime, attempt + 1, future, executor),
                         (int) Math.min(Math.pow(2, attempt) * BASE_DELAY.toMillis(), maxDelayBetweenRetries.toMillis()), TimeUnit.MILLISECONDS);
                 }
             } else {

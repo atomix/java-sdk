@@ -8,12 +8,13 @@ package io.atomix.client.counter;
 import io.atomix.client.PrimitiveBuilder;
 import io.grpc.Channel;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * Builder for AtomicCounter.
  */
 public abstract class AtomicCounterBuilder extends PrimitiveBuilder<AtomicCounterBuilder, AtomicCounter> {
-
-    protected AtomicCounterBuilder(String primitiveName, Channel channel) {
-        super(primitiveName, channel);
+    protected AtomicCounterBuilder(String primitiveName, Channel channel, ScheduledExecutorService executorService) {
+        super(primitiveName, channel, executorService);
     }
 }
