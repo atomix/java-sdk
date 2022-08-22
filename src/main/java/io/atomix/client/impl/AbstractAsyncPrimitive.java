@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
@@ -37,6 +39,9 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
     protected static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(1);
     private final String name;
 
+    // TODO: Replace the single-threaded executor with a serializing thread pool executor.
+    private final ExecutorService streamExecutor = Executors.newSingleThreadExecutor();
+
     protected AbstractAsyncPrimitive(String name) {
         this.name = checkNotNull(name, "primitive name cannot be null");
     }
@@ -50,6 +55,12 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
         return PrimitiveId.newBuilder()
             .setName(name())
             .build();
+    }
+
+    @Override
+    public CompletableFuture<Void> close() {
+        streamExecutor.shutdown();
+        return CompletableFuture.completedFuture(null);
     }
 
     /**
@@ -151,90 +162,107 @@ public abstract class AbstractAsyncPrimitive<P extends AsyncPrimitive> implement
     }
 
     protected <T, U, V> AsyncIterator<V> iterate(BiConsumer<T, StreamObserver<U>> callback, T request, Function<U, V> converter) {
-        Iterator<T, U, V> iterator = new Iterator<>(converter);
+        Iterator<T, U, V> iterator = new Iterator<>(converter, streamExecutor);
         callback.accept(request, iterator);
         return iterator;
     }
 
     private static class Iterator<T, U, V> implements AsyncIterator<V>, ClientResponseObserver<T, U> {
+        private final Executor executor;
         private final Function<U, V> converter;
-        private CompletableFuture<V> nextFuture;
         private final Queue<V> entries = new LinkedBlockingQueue<>();
+        private volatile CompletableFuture<V> nextFuture = new CompletableFuture<>();
         private ClientCallStreamObserver<T> clientCallStreamObserver;
-        private boolean closed;
+        private boolean complete;
         private Throwable error;
+        private boolean closed;
 
-        private Iterator(Function<U, V> converter) {
+        private Iterator(Function<U, V> converter, Executor executor) {
             this.converter = converter;
+            this.executor = executor;
         }
 
         @Override
-        public synchronized void beforeStart(ClientCallStreamObserver<T> clientCallStreamObserver) {
-            this.clientCallStreamObserver = clientCallStreamObserver;
+        public void beforeStart(ClientCallStreamObserver<T> clientCallStreamObserver) {
+            executor.execute(() -> {
+                if (closed) {
+                    clientCallStreamObserver.cancel("stream closed by client", null);
+                } else {
+                    this.clientCallStreamObserver = clientCallStreamObserver;
+                }
+            });
         }
 
         @Override
-        public synchronized void onNext(U response) {
-            if (nextFuture != null) {
-                nextFuture.complete(converter.apply(response));
-            } else {
-                entries.add(converter.apply(response));
-            }
+        public void onNext(U response) {
+            executor.execute(() -> {
+                if (!complete) {
+                    V value = converter.apply(response);
+                    if (!nextFuture.complete(value)) {
+                        entries.add(value);
+                    }
+                }
+            });
         }
 
         @Override
-        public synchronized void onError(Throwable throwable) {
-            error = throwable;
-            closed = true;
-            if (nextFuture != null) {
-                nextFuture.completeExceptionally(throwable);
-            }
+        public void onError(Throwable throwable) {
+            executor.execute(() -> {
+                if (!complete) {
+                    complete = true;
+                    error = throwable;
+                    nextFuture.completeExceptionally(throwable);
+                }
+            });
         }
 
         @Override
-        public synchronized void onCompleted() {
-            closed = true;
-            if (nextFuture != null) {
-                nextFuture.complete(null);
-            }
+        public void onCompleted() {
+            executor.execute(() -> {
+                if (!complete) {
+                    complete = true;
+                    nextFuture.complete(null);
+                }
+            });
         }
 
-        private CompletableFuture<V> init() {
-            if (nextFuture == null) {
-                nextFuture = new CompletableFuture<>();
+        @Override
+        public CompletableFuture<Boolean> hasNext() {
+            return nextFuture.thenApply(Objects::nonNull);
+        }
+
+        @Override
+        public CompletableFuture<V> next() {
+            return nextFuture.thenApplyAsync(result -> {
                 V nextValue = entries.poll();
                 if (nextValue != null) {
-                    nextFuture.complete(nextValue);
-                } else if (closed) {
+                    nextFuture = CompletableFuture.completedFuture(nextValue);
+                } else if (complete) {
                     if (error != null) {
                         nextFuture = CompletableFuture.failedFuture(error);
                     } else {
                         nextFuture = CompletableFuture.completedFuture(null);
                     }
+                } else {
+                    nextFuture = new CompletableFuture<>();
                 }
-            }
-            return nextFuture;
-        }
-
-        @Override
-        public synchronized CompletableFuture<Boolean> hasNext() {
-            return init().thenApply(Objects::nonNull);
-        }
-
-        @Override
-        public synchronized CompletableFuture<V> next() {
-            return init().thenApply(result -> {
-                nextFuture = null;
                 return result;
-            });
+            }, executor);
         }
 
         @Override
-        public synchronized CompletableFuture<Void> close() {
-            if (clientCallStreamObserver != null) {
-                clientCallStreamObserver.cancel("closed", null);
-            }
-            return CompletableFuture.completedFuture(null);
+        public CompletableFuture<Void> close() {
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            executor.execute(() -> {
+                if (!closed) {
+                    closed = true;
+                    if (!complete && clientCallStreamObserver != null) {
+                        clientCallStreamObserver.cancel("stream closed by client", null);
+                    }
+                }
+                future.complete(null);
+            });
+            return future;
         }
     }
 }
