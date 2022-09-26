@@ -4,7 +4,6 @@
 
 package io.atomix.client;
 
-import io.atomix.client.grpc.ServiceConfigBuilder;
 import io.grpc.BindableService;
 import io.grpc.Channel;
 import io.grpc.ServerInterceptor;
@@ -15,9 +14,6 @@ import io.grpc.testing.GrpcCleanupRule;
 import org.junit.Before;
 import org.junit.Rule;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * Base class for the tests.
  */
@@ -25,8 +21,6 @@ public abstract class AbstractPrimitiveTest {
     protected BindableService serviceImpl;
     protected ServerInterceptor serverInterceptor;
     protected Channel channel;
-    protected Double maxAttempts;
-    protected Map<String, ?> serviceConfig;
 
     /**
      * This rule manages automatic graceful shutdown for the registered servers and channels at the
@@ -43,29 +37,22 @@ public abstract class AbstractPrimitiveTest {
         // Create a server, add service, start, and register for automatic graceful shutdown.
         if (serverInterceptor == null) {
             grpcCleanup.register(InProcessServerBuilder.forName(serverName)
-                    .directExecutor()
-                    .addService(serviceImpl)
-                    .build()
-                    .start());
+                .directExecutor()
+                .addService(serviceImpl)
+                .build()
+                .start());
         } else {
             grpcCleanup.register(InProcessServerBuilder.forName(serverName)
-                    .directExecutor()
-                    .addService(ServerInterceptors.intercept(serviceImpl, serverInterceptor))
-                    .build()
-                    .start());
+                .directExecutor()
+                .addService(ServerInterceptors.intercept(serviceImpl, serverInterceptor))
+                .build()
+                .start());
         }
-
-        serviceConfig = new ServiceConfigBuilder().build();
-        List<?> methodConfigs = (List<?>) serviceConfig.get("methodConfig");
-        Map<?, ?> methodConfig = (Map<?, ?>) methodConfigs.get(0);
-        Map<?, ?> retryPolicy = (Map<?, ?>) methodConfig.get("retryPolicy");
-        maxAttempts = (Double) retryPolicy.get("maxAttempts");
 
         // Create a client channel and register for automatic graceful shutdown.
         channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName)
-                .defaultServiceConfig(serviceConfig)
-                .enableRetry()
-                .directExecutor()
-                .build());
+            .enableRetry()
+            .directExecutor()
+            .build());
     }
 }
