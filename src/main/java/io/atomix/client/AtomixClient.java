@@ -7,8 +7,10 @@ package io.atomix.client;
 
 import io.atomix.client.counter.AtomicCounterBuilder;
 import io.atomix.client.counter.impl.DefaultAtomicCounterBuilder;
+import io.atomix.client.map.AtomicCounterMapBuilder;
 import io.atomix.client.map.AtomicMapBuilder;
 import io.atomix.client.map.DistributedMultimapBuilder;
+import io.atomix.client.map.impl.DefaultAtomicCounterMapBuilder;
 import io.atomix.client.map.impl.DefaultAtomicMapBuilder;
 import io.atomix.client.map.impl.DefaultDistributedMultimapBuilder;
 import io.atomix.client.set.DistributedSetBuilder;
@@ -93,6 +95,28 @@ public final class AtomixClient {
      */
     public AtomicCounterBuilder atomicCounterBuilder(String name) {
         return new DefaultAtomicCounterBuilder(name, channel, executorService);
+    }
+
+    /**
+     * Creates a new named {@link io.atomix.client.map.AtomicCounterMap} builder.
+     * <p>
+     * The counter name must be provided when constructing the builder. The name is used to reference a distinct instance of
+     * the primitive within the cluster. Multiple instances of the primitive with the same name will share the same state.
+     * However, the instance of the primitive constructed by the returned builder will be distinct and will not share
+     * local memory (e.g. cache) with any other instance on this node.
+     * <p>
+     * To get an asynchronous instance of the map, use the {@link SyncPrimitive#async()} method:
+     * <pre>
+     *   {@code
+     *   AsyncAtomicCounterMap counterMap = atomix.atomicCounterMapBuilder("my-counter-map").build().async();
+     *   }
+     * </pre>
+     *
+     * @param name the primitive name
+     * @return atomic counter map builder
+     */
+    public <K> AtomicCounterMapBuilder<K> atomicCounterMapBuilder(String name) {
+        return new DefaultAtomicCounterMapBuilder<>(name, channel, executorService);
     }
 
     /**

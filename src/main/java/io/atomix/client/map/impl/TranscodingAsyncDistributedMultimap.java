@@ -44,7 +44,9 @@ import java.util.stream.Collectors;
  * @param <K1> key type of this map
  * @param <V1> value type of this map
  */
-public class TranscodingAsyncDistributedMultimap<K1, V1, K2, V2> extends DelegatingAsyncPrimitive implements AsyncDistributedMultimap<K1, V1> {
+public class TranscodingAsyncDistributedMultimap<K1, V1, K2, V2>
+    extends DelegatingAsyncPrimitive<AsyncDistributedMultimap<K2, V2>>
+    implements AsyncDistributedMultimap<K1, V1> {
 
     private final AsyncDistributedMultimap<K2, V2> backingMap;
     protected final Function<K1, K2> keyEncoder;

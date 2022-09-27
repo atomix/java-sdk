@@ -99,9 +99,9 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
                                   Predicate<? super V> condition,
                                   BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         return Retries.retryable(() -> complete(asyncMap.computeIf(key, condition, remappingFunction)),
-                PrimitiveException.ConcurrentModification.class,
-                Integer.MAX_VALUE,
-                MAX_DELAY_BETWEEN_RETRY_MILLS).get();
+            PrimitiveException.ConcurrentModification.class,
+            Integer.MAX_VALUE,
+            MAX_DELAY_BETWEEN_RETRY_MILLS).get();
     }
 
     @Override

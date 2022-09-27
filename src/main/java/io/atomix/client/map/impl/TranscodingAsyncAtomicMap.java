@@ -36,7 +36,9 @@ import java.util.function.Predicate;
  * @param <K1> key type of this map
  * @param <V1> value type of this map
  */
-public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPrimitive implements AsyncAtomicMap<K1, V1> {
+public class TranscodingAsyncAtomicMap<K1, V1, K2, V2>
+    extends DelegatingAsyncPrimitive<AsyncAtomicMap<K2, V2>>
+    implements AsyncAtomicMap<K1, V1> {
 
     private final AsyncAtomicMap<K2, V2> backingMap;
     protected final Function<K1, K2> keyEncoder;
@@ -49,11 +51,11 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     protected final Function<Entry<K1, Versioned<V1>>, Entry<K2, Versioned<V2>>> entryEncoder;
 
     public TranscodingAsyncAtomicMap(
-            AsyncAtomicMap<K2, V2> backingMap,
-            Function<K1, K2> keyEncoder,
-            Function<K2, K1> keyDecoder,
-            Function<V1, V2> valueEncoder,
-            Function<V2, V1> valueDecoder) {
+        AsyncAtomicMap<K2, V2> backingMap,
+        Function<K1, K2> keyEncoder,
+        Function<K2, K1> keyDecoder,
+        Function<V1, V2> valueEncoder,
+        Function<V2, V1> valueDecoder) {
         super(backingMap);
         this.backingMap = backingMap;
         this.keyEncoder = k -> k == null ? null : keyEncoder.apply(k);
@@ -102,7 +104,7 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     public CompletableFuture<Versioned<V1>> getOrDefault(K1 key, V1 defaultValue) {
         try {
             return backingMap.getOrDefault(keyEncoder.apply(key), valueEncoder.apply(defaultValue))
-                    .thenApply(versionedValueDecoder);
+                .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -114,10 +116,10 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
                                                       BiFunction<? super K1, ? super V1, ? extends V1> remappingFunction) {
         try {
             return backingMap.computeIf(keyEncoder.apply(key),
-                            v -> condition.test(valueDecoder.apply(v)),
-                            (k, v) -> valueEncoder.apply(remappingFunction.apply(keyDecoder.apply(k),
-                                    valueDecoder.apply(v))))
-                    .thenApply(versionedValueDecoder);
+                    v -> condition.test(valueDecoder.apply(v)),
+                    (k, v) -> valueEncoder.apply(remappingFunction.apply(keyDecoder.apply(k),
+                        valueDecoder.apply(v))))
+                .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -167,7 +169,7 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     public CompletableFuture<Versioned<V1>> remove(K1 key) {
         try {
             return backingMap.remove(keyEncoder.apply(key))
-                    .thenApply(versionedValueDecoder);
+                .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -260,7 +262,7 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     public CompletableFuture<Versioned<V1>> replace(K1 key, V1 value) {
         try {
             return backingMap.replace(keyEncoder.apply(key), valueEncoder.apply(value))
-                    .thenApply(versionedValueDecoder);
+                .thenApply(versionedValueDecoder);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -270,8 +272,8 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     public CompletableFuture<Boolean> replace(K1 key, V1 oldValue, V1 newValue) {
         try {
             return backingMap.replace(keyEncoder.apply(key),
-                    valueEncoder.apply(oldValue),
-                    valueEncoder.apply(newValue));
+                valueEncoder.apply(oldValue),
+                valueEncoder.apply(newValue));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
@@ -289,10 +291,10 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2> extends DelegatingAsyncPr
     @Override
     public CompletableFuture<Cancellable> listen(AtomicMapEventListener<K1, V1> listener, Executor executor) {
         return backingMap.listen(event -> listener.event(new AtomicMapEvent<K1, V1>(
-                event.type(),
-                keyDecoder.apply(event.key()),
-                event.newValue() != null ? event.newValue().map(valueDecoder) : null,
-                event.oldValue() != null ? event.oldValue().map(valueDecoder) : null)), executor);
+            event.type(),
+            keyDecoder.apply(event.key()),
+            event.newValue() != null ? event.newValue().map(valueDecoder) : null,
+            event.oldValue() != null ? event.oldValue().map(valueDecoder) : null)), executor);
     }
 
     @Override
