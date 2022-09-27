@@ -228,15 +228,6 @@ public interface AsyncDistributedMultimap<K, V> extends AsyncPrimitive {
      */
     CompletableFuture<Cancellable> listen(MultimapEventListener<K, V> listener, Executor executor);
 
-    /**
-     * Unregisters the specified listener such that it will no longer
-     * receive map change notifications.
-     *
-     * @param listener listener to unregister
-     * @return future that will be completed when the operation finishes
-     */
-    CompletableFuture<Void> removeListener(MultimapEventListener<K, V> listener);
-
     @Override
     default DistributedMultimap<K, V> sync() {
         return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
