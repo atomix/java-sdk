@@ -18,6 +18,7 @@ import io.atomix.client.value.AsyncAtomicValue;
 import io.atomix.client.value.AtomicValue;
 import io.atomix.client.value.AtomicValueEvent;
 import io.atomix.client.value.AtomicValueEventListener;
+import io.grpc.Status;
 
 import java.time.Duration;
 import java.util.Map;
@@ -60,7 +61,14 @@ public class DefaultAsyncAtomicValue
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(
                 response.getValue().getValue().toStringUtf8(),
-                response.getValue().getVersion()));
+                response.getValue().getVersion()))
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
+                    return null;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override

@@ -18,7 +18,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 /**
  * Transcoding async atomic value.
  */
-public class TranscodingAsyncAtomicValue<V1, V2> extends DelegatingAsyncPrimitive implements AsyncAtomicValue<V1> {
+public class TranscodingAsyncAtomicValue<V1, V2> extends DelegatingAsyncPrimitive<AsyncAtomicValue<V2>> implements AsyncAtomicValue<V1> {
     private final AsyncAtomicValue<V2> backingValue;
     private final Function<V1, V2> valueEncoder;
     private final Function<V2, V1> valueDecoder;
@@ -33,19 +33,22 @@ public class TranscodingAsyncAtomicValue<V1, V2> extends DelegatingAsyncPrimitiv
     @Override
     public CompletableFuture<Versioned<V1>> get() {
         return backingValue.get()
-            .thenApply(versioned -> new Versioned<>(valueDecoder.apply(versioned.value()), versioned.version()));
+            .thenApply(versioned -> versioned != null
+                ? new Versioned<>(valueDecoder.apply(versioned.value()), versioned.version()) : null);
     }
 
     @Override
     public CompletableFuture<Versioned<V1>> set(V1 value) {
         return backingValue.set(valueEncoder.apply(value))
-            .thenApply(versioned -> new Versioned<>(valueDecoder.apply(versioned.value()), versioned.version()));
+            .thenApply(versioned -> versioned != null
+                ? new Versioned<>(valueDecoder.apply(versioned.value()), versioned.version()) : null);
     }
 
     @Override
     public CompletableFuture<Versioned<V1>> set(V1 value, long version) {
         return backingValue.set(valueEncoder.apply(value), version)
-            .thenApply(versioned -> new Versioned<>(valueDecoder.apply(versioned.value()), versioned.version()));
+            .thenApply(versioned -> versioned != null
+                ? new Versioned<>(valueDecoder.apply(versioned.value()), versioned.version()) : null);
     }
 
     @Override

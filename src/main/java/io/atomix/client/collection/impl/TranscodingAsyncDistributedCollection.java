@@ -28,7 +28,9 @@ import java.util.stream.Collectors;
  * @param <E2> element type of other collection
  * @param <E1> element type of this collection
  */
-public class TranscodingAsyncDistributedCollection<E1, E2> extends DelegatingAsyncPrimitive implements AsyncDistributedCollection<E1> {
+public class TranscodingAsyncDistributedCollection<E1, E2>
+        extends DelegatingAsyncPrimitive<AsyncDistributedCollection<E2>>
+        implements AsyncDistributedCollection<E1> {
     private final AsyncDistributedCollection<E2> backingCollection;
     private final Function<E1, E2> elementEncoder;
     private final Function<E2, E1> elementDecoder;
