@@ -7,6 +7,8 @@ package io.atomix.client;
 
 import io.atomix.client.counter.AtomicCounterBuilder;
 import io.atomix.client.counter.impl.DefaultAtomicCounterBuilder;
+import io.atomix.client.election.LeaderElectionBuilder;
+import io.atomix.client.election.impl.DefaultLeaderElectionBuilder;
 import io.atomix.client.map.AtomicCounterMapBuilder;
 import io.atomix.client.map.AtomicMapBuilder;
 import io.atomix.client.map.DistributedMultimapBuilder;
@@ -141,6 +143,29 @@ public final class AtomixClient {
      */
     public <K, V> AtomicMapBuilder<K, V> atomicMapBuilder(String name) {
         return new DefaultAtomicMapBuilder<>(name, channel, executorService);
+    }
+
+    /**
+     * Creates a new named {@link io.atomix.client.election.LeaderElection} builder.
+     * <p>
+     * The set name must be provided when constructing the builder. The name is used to reference a distinct instance of
+     * the primitive within the cluster. Multiple instances of the primitive with the same name will share the same state.
+     * However, the instance of the primitive constructed by the returned builder will be distinct and will not share
+     * local memory (e.g. cache) with any other instance on this node.
+     * <p>
+     * To get an asynchronous instance of the set, use the {@link SyncPrimitive#async()} method:
+     * <pre>
+     *   {@code
+     *   AsyncLeaderElection<String> set = atomix.<String>leaderElectionBuilder("my-leader-election").build().async();
+     *   }
+     * </pre>
+     *
+     * @param name the primitive name
+     * @param <T>  set element type
+     * @return builder for a leader election
+     */
+    public <T> LeaderElectionBuilder<T> leaderElectionBuilder(String name) {
+        return new DefaultLeaderElectionBuilder<>(name, channel, executorService);
     }
 
     /**
