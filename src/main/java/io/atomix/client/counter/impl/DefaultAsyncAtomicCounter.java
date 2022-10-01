@@ -39,7 +39,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     protected CompletableFuture<AsyncAtomicCounter> create(Map<String, String> tags) {
-        return execute(CounterGrpc.CounterStub::create, CreateRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
             .build())
@@ -48,7 +48,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(CounterGrpc.CounterStub::close, CloseRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::close, CloseRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(response -> null);
@@ -56,7 +56,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Long> get() {
-        return execute(CounterGrpc.CounterStub::get, GetRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::get, GetRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(GetResponse::getValue);
@@ -64,7 +64,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Void> set(long value) {
-        return execute(CounterGrpc.CounterStub::set, SetRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::set, SetRequest.newBuilder()
             .setId(id())
             .setValue(value).build())
             .thenApply(response -> null);
@@ -73,7 +73,7 @@ public class DefaultAsyncAtomicCounter
     @Override
     public CompletableFuture<Boolean> compareAndSet(long expectedValue, long updateValue) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
-        execute(CounterGrpc.CounterStub::update, UpdateRequest.newBuilder()
+        retry(CounterGrpc.CounterStub::update, UpdateRequest.newBuilder()
             .setId(id())
             .setCheck(expectedValue)
             .setUpdate(updateValue)
@@ -94,7 +94,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Long> addAndGet(long delta) {
-        return execute(CounterGrpc.CounterStub::increment, IncrementRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::increment, IncrementRequest.newBuilder()
             .setId(id())
             .setDelta(delta).build())
             .thenApply(IncrementResponse::getValue);
@@ -102,7 +102,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Long> getAndAdd(long delta) {
-        return execute(CounterGrpc.CounterStub::increment, IncrementRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::increment, IncrementRequest.newBuilder()
             .setId(id())
             .setDelta(delta).build())
             .thenApply(response -> response.getValue() - delta);
@@ -110,7 +110,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Long> incrementAndGet() {
-        return execute(CounterGrpc.CounterStub::increment, IncrementRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::increment, IncrementRequest.newBuilder()
             .setId(id())
             .setDelta(1).build())
             .thenApply(IncrementResponse::getValue);
@@ -118,7 +118,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Long> getAndIncrement() {
-        return execute(CounterGrpc.CounterStub::increment, IncrementRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::increment, IncrementRequest.newBuilder()
             .setId(id())
             .setDelta(1).build())
             .thenApply(response -> response.getValue() - 1);
@@ -126,7 +126,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Long> decrementAndGet() {
-        return execute(CounterGrpc.CounterStub::decrement, DecrementRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::decrement, DecrementRequest.newBuilder()
             .setId(id())
             .setDelta(1).build())
             .thenApply(DecrementResponse::getValue);
@@ -134,7 +134,7 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public CompletableFuture<Long> getAndDecrement() {
-        return execute(CounterGrpc.CounterStub::decrement, DecrementRequest.newBuilder()
+        return retry(CounterGrpc.CounterStub::decrement, DecrementRequest.newBuilder()
             .setId(id())
             .setDelta(1).build())
             .thenApply(response -> response.getValue() + 1);

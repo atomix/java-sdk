@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Leader election implementation.
@@ -42,7 +43,7 @@ public class DefaultAsyncLeaderElection
 
     @Override
     protected CompletableFuture<AsyncLeaderElection<String>> create(Map<String, String> tags) {
-        return execute(LeaderElectionGrpc.LeaderElectionStub::create, CreateRequest.newBuilder()
+        return retry(LeaderElectionGrpc.LeaderElectionStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
             .build())
@@ -51,7 +52,7 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(LeaderElectionGrpc.LeaderElectionStub::close, CloseRequest.newBuilder()
+        return retry(LeaderElectionGrpc.LeaderElectionStub::close, CloseRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(response -> null);
@@ -59,7 +60,7 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Leadership<String>> enter(String identifier) {
-        return execute(LeaderElectionGrpc.LeaderElectionStub::enter, EnterRequest.newBuilder()
+        return retry(LeaderElectionGrpc.LeaderElectionStub::enter, EnterRequest.newBuilder()
             .setId(id())
             .setCandidate(identifier)
             .build(), DEFAULT_TIMEOUT)
@@ -71,7 +72,7 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Void> withdraw(String identifier) {
-        return execute(LeaderElectionGrpc.LeaderElectionStub::withdraw, WithdrawRequest.newBuilder()
+        return retry(LeaderElectionGrpc.LeaderElectionStub::withdraw, WithdrawRequest.newBuilder()
             .setId(id())
             .setCandidate(identifier)
             .build(), DEFAULT_TIMEOUT)
@@ -80,7 +81,7 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Boolean> anoint(String identifier) {
-        return execute(LeaderElectionGrpc.LeaderElectionStub::anoint, AnointRequest.newBuilder()
+        return retry(LeaderElectionGrpc.LeaderElectionStub::anoint, AnointRequest.newBuilder()
             .setId(id())
             .setCandidate(identifier)
             .build(), DEFAULT_TIMEOUT)
@@ -89,7 +90,7 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Boolean> promote(String identifier) {
-        return execute(LeaderElectionGrpc.LeaderElectionStub::promote, PromoteRequest.newBuilder()
+        return retry(LeaderElectionGrpc.LeaderElectionStub::promote, PromoteRequest.newBuilder()
             .setId(id())
             .setCandidate(identifier)
             .build(), DEFAULT_TIMEOUT)
@@ -98,7 +99,7 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Void> evict(String identifier) {
-        return execute(LeaderElectionGrpc.LeaderElectionStub::evict, EvictRequest.newBuilder()
+        return retry(LeaderElectionGrpc.LeaderElectionStub::evict, EvictRequest.newBuilder()
             .setId(id())
             .setCandidate(identifier)
             .build(), DEFAULT_TIMEOUT)
@@ -107,7 +108,7 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Leadership<String>> getLeadership() {
-        return execute(LeaderElectionGrpc.LeaderElectionStub::getTerm, GetTermRequest.newBuilder()
+        return retry(LeaderElectionGrpc.LeaderElectionStub::getTerm, GetTermRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Leadership<>(
@@ -118,13 +119,22 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Cancellable> listen(LeadershipEventListener<String> listener, Executor executor) {
-        return execute(LeaderElectionGrpc.LeaderElectionStub::watch, WatchRequest.newBuilder()
+        AtomicReference<Leadership<String>> leadershipRef = new AtomicReference<>();
+        return retry(LeaderElectionGrpc.LeaderElectionStub::watch, WatchRequest.newBuilder()
             .setId(id())
-            .build(), response -> listener.event(new LeadershipEvent<>(LeadershipEvent.Type.CHANGE,
-            new Leadership<>(
-                !response.getTerm().getLeader().isEmpty() ? null :
-                    new Leader<>(response.getTerm().getLeader(), response.getTerm().getTerm(), System.currentTimeMillis()),
-                response.getTerm().getCandidatesList()), null)), executor);
+            .build(), response -> {
+            Leadership<String> leadership = leadershipRef.get();
+            if (leadership == null
+                || (leadership.leader() == null && !response.getTerm().getLeader().isEmpty())
+                || (leadership.leader() != null && leadership.leader().term() <= response.getTerm().getTerm())) {
+                Leadership<String> newLeadership = new Leadership<>(
+                    !response.getTerm().getLeader().isEmpty() ? null :
+                        new Leader<>(response.getTerm().getLeader(), response.getTerm().getTerm(), System.currentTimeMillis()),
+                    response.getTerm().getCandidatesList());
+                leadershipRef.set(newLeadership);
+                listener.event(new LeadershipEvent<>(LeadershipEvent.Type.CHANGE, newLeadership, leadership));
+            }
+        }, executor);
     }
 
     @Override

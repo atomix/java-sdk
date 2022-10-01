@@ -63,7 +63,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     protected CompletableFuture<AsyncAtomicMap<String, byte[]>> create(Map<String, String> tags) {
-        return execute(MapGrpc.MapStub::create, CreateRequest.newBuilder()
+        return retry(MapGrpc.MapStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
             .build())
@@ -72,7 +72,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(MapGrpc.MapStub::close, CloseRequest.newBuilder()
+        return retry(MapGrpc.MapStub::close, CloseRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(response -> null);
@@ -80,7 +80,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Integer> size() {
-        return execute(MapGrpc.MapStub::size, SizeRequest.newBuilder()
+        return retry(MapGrpc.MapStub::size, SizeRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(SizeResponse::getSize);
@@ -88,7 +88,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> containsKey(String key) {
-        return execute(MapGrpc.MapStub::get, GetRequest.newBuilder()
+        return retry(MapGrpc.MapStub::get, GetRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -109,7 +109,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> get(String key) {
-        return execute(MapGrpc.MapStub::get, GetRequest.newBuilder()
+        return retry(MapGrpc.MapStub::get, GetRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -158,14 +158,14 @@ public class DefaultAsyncAtomicMap
             if (r1 == null) {
                 return putIfAbsent(key, computedValue);
             } else if (computedValue == null) {
-                return execute(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
+                return retry(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
                     .setId(id())
                     .setKey(key)
                     .setPrevVersion(r1.version())
                     .build(), DEFAULT_TIMEOUT)
                     .thenApply(response -> new Versioned<>(existingValue, r1.version()));
             } else {
-                return execute(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
+                return retry(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
                     .setId(id())
                     .setKey(key)
                     .setValue(ByteString.copyFrom(computedValue))
@@ -178,7 +178,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> put(String key, byte[] value) {
-        return execute(MapGrpc.MapStub::put, PutRequest.newBuilder()
+        return retry(MapGrpc.MapStub::put, PutRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -188,7 +188,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> put(String key, byte[] value, Duration ttl) {
-        return execute(MapGrpc.MapStub::put, PutRequest.newBuilder()
+        return retry(MapGrpc.MapStub::put, PutRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -202,7 +202,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> putAndGet(String key, byte[] value) {
-        return execute(MapGrpc.MapStub::put, PutRequest.newBuilder()
+        return retry(MapGrpc.MapStub::put, PutRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -212,7 +212,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> putAndGet(String key, byte[] value, Duration ttl) {
-        return execute(MapGrpc.MapStub::put, PutRequest.newBuilder()
+        return retry(MapGrpc.MapStub::put, PutRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -226,7 +226,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> remove(String key) {
-        return execute(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
+        return retry(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -242,7 +242,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Void> clear() {
-        return execute(MapGrpc.MapStub::clear, ClearRequest.newBuilder()
+        return retry(MapGrpc.MapStub::clear, ClearRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> null);
@@ -265,7 +265,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> putIfAbsent(String key, byte[] value) {
-        return execute(MapGrpc.MapStub::insert, InsertRequest.newBuilder()
+        return retry(MapGrpc.MapStub::insert, InsertRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -282,7 +282,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> putIfAbsent(String key, byte[] value, Duration ttl) {
-        return execute(MapGrpc.MapStub::insert, InsertRequest.newBuilder()
+        return retry(MapGrpc.MapStub::insert, InsertRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -313,7 +313,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> remove(String key, long version) {
-        return execute(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
+        return retry(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setPrevVersion(version)
@@ -332,7 +332,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Versioned<byte[]>> replace(String key, byte[] value) {
-        return execute(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
+        return retry(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(value))
@@ -359,7 +359,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> replace(String key, long oldVersion, byte[] newValue) {
-        return execute(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
+        return retry(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(ByteString.copyFrom(newValue))
@@ -377,7 +377,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Void> lock(String key) {
-        return execute(MapGrpc.MapStub::lock, LockRequest.newBuilder()
+        return retry(MapGrpc.MapStub::lock, LockRequest.newBuilder()
             .setId(id())
             .addKeys(key)
             .build(), DEFAULT_TIMEOUT)
@@ -386,7 +386,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> tryLock(String key) {
-        return execute(MapGrpc.MapStub::lock, LockRequest.newBuilder()
+        return retry(MapGrpc.MapStub::lock, LockRequest.newBuilder()
             .setId(id())
             .addKeys(key)
             .build(), DEFAULT_TIMEOUT)
@@ -402,7 +402,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Boolean> tryLock(String key, Duration timeout) {
-        return execute(MapGrpc.MapStub::lock, LockRequest.newBuilder()
+        return retry(MapGrpc.MapStub::lock, LockRequest.newBuilder()
             .setId(id())
             .addKeys(key)
             .setTimeout(com.google.protobuf.Duration.newBuilder()
@@ -427,7 +427,7 @@ public class DefaultAsyncAtomicMap
 
     @Override
     public CompletableFuture<Void> unlock(String key) {
-        return execute(MapGrpc.MapStub::unlock, UnlockRequest.newBuilder()
+        return retry(MapGrpc.MapStub::unlock, UnlockRequest.newBuilder()
             .setId(id())
             .addKeys(key)
             .build(), DEFAULT_TIMEOUT)

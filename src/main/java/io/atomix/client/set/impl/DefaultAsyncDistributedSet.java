@@ -49,7 +49,7 @@ public class DefaultAsyncDistributedSet
 
     @Override
     protected CompletableFuture<AsyncDistributedSet<String>> create(Map<String, String> tags) {
-        return execute(SetGrpc.SetStub::create, CreateRequest.newBuilder()
+        return retry(SetGrpc.SetStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
             .build())
@@ -58,7 +58,7 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(SetGrpc.SetStub::close, CloseRequest.newBuilder()
+        return retry(SetGrpc.SetStub::close, CloseRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(response -> null);
@@ -71,7 +71,7 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Integer> size() {
-        return execute(SetGrpc.SetStub::size, SizeRequest.newBuilder()
+        return retry(SetGrpc.SetStub::size, SizeRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(SizeResponse::getSize);
@@ -84,7 +84,7 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> contains(String value) {
-        return execute(SetGrpc.SetStub::contains, ContainsRequest.newBuilder()
+        return retry(SetGrpc.SetStub::contains, ContainsRequest.newBuilder()
             .setId(id())
             .setElement(Element.newBuilder()
                 .setValue(value)
@@ -104,7 +104,7 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> add(String value) {
-        return execute(SetGrpc.SetStub::add, AddRequest.newBuilder()
+        return retry(SetGrpc.SetStub::add, AddRequest.newBuilder()
             .setId(id())
             .setElement(Element.newBuilder()
                 .setValue(value)
@@ -122,7 +122,7 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> add(String value, Duration ttl) {
-        return execute(SetGrpc.SetStub::add, AddRequest.newBuilder()
+        return retry(SetGrpc.SetStub::add, AddRequest.newBuilder()
             .setId(id())
             .setElement(Element.newBuilder()
                 .setValue(value)
@@ -153,7 +153,7 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Boolean> remove(String value) {
-        return execute(SetGrpc.SetStub::remove, RemoveRequest.newBuilder()
+        return retry(SetGrpc.SetStub::remove, RemoveRequest.newBuilder()
             .setId(id())
             .setElement(Element.newBuilder()
                 .setValue(value)
@@ -180,7 +180,7 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public CompletableFuture<Void> clear() {
-        return execute(SetGrpc.SetStub::clear, ClearRequest.newBuilder()
+        return retry(SetGrpc.SetStub::clear, ClearRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> null);

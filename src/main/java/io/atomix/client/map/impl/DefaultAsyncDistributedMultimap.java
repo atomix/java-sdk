@@ -36,7 +36,6 @@ import io.atomix.client.map.AsyncDistributedMap;
 import io.atomix.client.map.AsyncDistributedMultimap;
 import io.atomix.client.map.DistributedMap;
 import io.atomix.client.map.DistributedMultimap;
-import io.atomix.client.map.MapEvent;
 import io.atomix.client.map.MapEventListener;
 import io.atomix.client.map.MultimapEvent;
 import io.atomix.client.map.MultimapEventListener;
@@ -71,7 +70,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     protected CompletableFuture<AsyncDistributedMultimap<String, String>> create(Map<String, String> tags) {
-        return execute(MultiMapGrpc.MultiMapStub::create, CreateRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
             .build())
@@ -80,7 +79,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(MultiMapGrpc.MultiMapStub::close, CloseRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::close, CloseRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(response -> null);
@@ -88,7 +87,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Integer> size() {
-        return execute(MultiMapGrpc.MultiMapStub::size, SizeRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::size, SizeRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(SizeResponse::getSize);
@@ -96,7 +95,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Boolean> containsKey(String key) {
-        return execute(MultiMapGrpc.MultiMapStub::get, GetRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::get, GetRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -117,7 +116,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Void> clear() {
-        return execute(MultiMapGrpc.MultiMapStub::clear, ClearRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::clear, ClearRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> null);
@@ -135,7 +134,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Boolean> containsEntry(String key, String value) {
-        return execute(MultiMapGrpc.MultiMapStub::contains, ContainsRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::contains, ContainsRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -144,7 +143,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Boolean> put(String key, String value) {
-        return execute(MultiMapGrpc.MultiMapStub::put, PutRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::put, PutRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(value)
@@ -161,7 +160,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Boolean> remove(String key, String value) {
-        return execute(MultiMapGrpc.MultiMapStub::remove, RemoveRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::remove, RemoveRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(value)
@@ -183,7 +182,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Collection<String>> removeAll(String key) {
-        return execute(MultiMapGrpc.MultiMapStub::removeAll, RemoveAllRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::removeAll, RemoveAllRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -192,7 +191,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Boolean> putAll(String key, Collection<? extends String> values) {
-        return execute(MultiMapGrpc.MultiMapStub::putAll, PutAllRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::putAll, PutAllRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .addAllValues(new HashSet<>(values))
@@ -202,7 +201,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Collection<String>> replaceValues(String key, Collection<String> values) {
-        return execute(MultiMapGrpc.MultiMapStub::replace, ReplaceRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::replace, ReplaceRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .addAllValues(new HashSet<>(values))
@@ -212,7 +211,7 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Collection<String>> get(String key) {
-        return execute(MultiMapGrpc.MultiMapStub::get, GetRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::get, GetRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)

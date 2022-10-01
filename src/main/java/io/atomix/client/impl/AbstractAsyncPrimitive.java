@@ -62,24 +62,24 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
      */
     protected abstract CompletableFuture<P> create(Map<String, String> tags);
 
-    protected <T, U> CompletableFuture<U> execute(StubMethodCall<S, T, U> callback, T request) {
+    protected <T, U> CompletableFuture<U> retry(StubMethodCall<S, T, U> callback, T request) {
         return Retries.retryAsync(
-            () -> tryExecute(callback, request),
+            () -> execute(callback, request),
             t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
             MAX_DELAY_BETWEEN_RETRIES,
             executorService);
     }
 
-    protected <T, U> CompletableFuture<U> execute(StubMethodCall<S, T, U> callback, T request, Duration timeout) {
+    protected <T, U> CompletableFuture<U> retry(StubMethodCall<S, T, U> callback, T request, Duration timeout) {
         return Retries.retryAsync(
-            () -> tryExecute(callback, request),
+            () -> execute(callback, request),
             t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
             MAX_DELAY_BETWEEN_RETRIES,
             timeout,
             executorService);
     }
 
-    private <T, U> CompletableFuture<U> tryExecute(StubMethodCall<S, T, U> callback, T request) {
+    private <T, U> CompletableFuture<U> execute(StubMethodCall<S, T, U> callback, T request) {
         CompletableFuture<U> future = new CompletableFuture<>();
         StreamObserver<U> responseObserver = new StreamObserver<U>() {
             @Override
@@ -99,6 +99,14 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
         };
         callback.call(stub, request, responseObserver);
         return future;
+    }
+
+    protected <T, U> CompletableFuture<Cancellable> retry(StubMethodCall<S, T, U> callback, T request, Consumer<U> listener, Executor executor) {
+        return Retries.retryAsync(
+            () -> execute(callback, request, listener, executor),
+            t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
+            MAX_DELAY_BETWEEN_RETRIES,
+            executorService);
     }
 
     protected <T, U> CompletableFuture<Cancellable> execute(StubMethodCall<S, T, U> callback, T request, Consumer<U> listener, Executor executor) {

@@ -39,7 +39,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     protected CompletableFuture<AsyncAtomicValue<String>> create(Map<String, String> tags) {
-        return execute(ValueGrpc.ValueStub::create, CreateRequest.newBuilder()
+        return retry(ValueGrpc.ValueStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
             .build())
@@ -48,7 +48,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(ValueGrpc.ValueStub::close, CloseRequest.newBuilder()
+        return retry(ValueGrpc.ValueStub::close, CloseRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(response -> null);
@@ -56,7 +56,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Versioned<String>> get() {
-        return execute(ValueGrpc.ValueStub::get, GetRequest.newBuilder()
+        return retry(ValueGrpc.ValueStub::get, GetRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(
@@ -73,7 +73,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Versioned<String>> set(String value) {
-        return execute(ValueGrpc.ValueStub::set, SetRequest.newBuilder()
+        return retry(ValueGrpc.ValueStub::set, SetRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(value, response.getVersion()));
@@ -81,7 +81,7 @@ public class DefaultAsyncAtomicValue
 
     @Override
     public CompletableFuture<Versioned<String>> set(String value, long version) {
-        return execute(ValueGrpc.ValueStub::update, UpdateRequest.newBuilder()
+        return retry(ValueGrpc.ValueStub::update, UpdateRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(

@@ -45,7 +45,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     protected CompletableFuture<AsyncAtomicCounterMap<String>> create(Map<String, String> tags) {
-        return execute(CounterMapGrpc.CounterMapStub::create, CreateRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
             .build())
@@ -54,7 +54,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Void> close() {
-        return execute(CounterMapGrpc.CounterMapStub::close, CloseRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::close, CloseRequest.newBuilder()
             .setId(id())
             .build())
             .thenApply(response -> null);
@@ -62,7 +62,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Integer> size() {
-        return execute(CounterMapGrpc.CounterMapStub::size, SizeRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::size, SizeRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(SizeResponse::getSize);
@@ -70,7 +70,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> incrementAndGet(String key) {
-        return execute(CounterMapGrpc.CounterMapStub::increment, IncrementRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::increment, IncrementRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -79,7 +79,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> decrementAndGet(String key) {
-        return execute(CounterMapGrpc.CounterMapStub::decrement, DecrementRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::decrement, DecrementRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -88,7 +88,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> getAndIncrement(String key) {
-        return execute(CounterMapGrpc.CounterMapStub::increment, IncrementRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::increment, IncrementRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -97,7 +97,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> getAndDecrement(String key) {
-        return execute(CounterMapGrpc.CounterMapStub::decrement, DecrementRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::decrement, DecrementRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -106,7 +106,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> addAndGet(String key, long delta) {
-        return execute(CounterMapGrpc.CounterMapStub::increment, IncrementRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::increment, IncrementRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setDelta(delta)
@@ -116,7 +116,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> getAndAdd(String key, long delta) {
-        return execute(CounterMapGrpc.CounterMapStub::increment, IncrementRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::increment, IncrementRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setDelta(delta)
@@ -126,7 +126,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> get(String key) {
-        return execute(CounterMapGrpc.CounterMapStub::get, GetRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::get, GetRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -142,7 +142,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> put(String key, long newValue) {
-        return execute(CounterMapGrpc.CounterMapStub::set, SetRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::set, SetRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(newValue)
@@ -152,14 +152,14 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> putIfAbsent(String key, long newValue) {
-        return execute(CounterMapGrpc.CounterMapStub::get, GetRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::get, GetRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
             .thenApply(GetResponse::getValue)
             .exceptionallyCompose(t -> {
                 if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
-                    return execute(CounterMapGrpc.CounterMapStub::insert, InsertRequest.newBuilder()
+                    return retry(CounterMapGrpc.CounterMapStub::insert, InsertRequest.newBuilder()
                         .setId(id())
                         .setKey(key)
                         .setValue(newValue)
@@ -180,7 +180,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Boolean> replace(String key, long expectedOldValue, long newValue) {
-        return execute(CounterMapGrpc.CounterMapStub::update, UpdateRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::update, UpdateRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setValue(newValue)
@@ -200,7 +200,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> remove(String key) {
-        return execute(CounterMapGrpc.CounterMapStub::remove, RemoveRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::remove, RemoveRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
@@ -209,7 +209,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Boolean> remove(String key, long value) {
-        return execute(CounterMapGrpc.CounterMapStub::remove, RemoveRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::remove, RemoveRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .setPrevValue(value)
@@ -231,7 +231,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Void> clear() {
-        return execute(CounterMapGrpc.CounterMapStub::clear, ClearRequest.newBuilder()
+        return retry(CounterMapGrpc.CounterMapStub::clear, ClearRequest.newBuilder()
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> null);
