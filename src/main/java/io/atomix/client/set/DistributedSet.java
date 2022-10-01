@@ -5,11 +5,12 @@
 
 package io.atomix.client.set;
 
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.collection.DistributedCollection;
+import io.atomix.client.set.impl.DefaultDistributedSetBuilder;
 
 import java.time.Duration;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * A distributed collection designed for holding unique elements.
@@ -17,6 +18,17 @@ import java.util.concurrent.CompletableFuture;
  * @param <E> set entry type
  */
 public interface DistributedSet<E> extends DistributedCollection<E>, Set<E> {
+
+    /**
+     * Returns a new DistributedSet builder.
+     *
+     * @param channel the AtomixChannel
+     * @return the DistributedSet builder
+     */
+    static <E> DistributedSetBuilder<E> builder(AtomixChannel channel) {
+        return new DefaultDistributedSetBuilder<>(channel);
+    }
+
     /**
      * Adds the specified element to this collection if it is not already present (optional operation).
      *

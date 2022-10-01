@@ -8,15 +8,14 @@ package io.atomix.client.map;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
-import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
+import io.atomix.client.map.impl.BlockingAtomicMap;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.time.Versioned;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
-import java.util.OptionalLong;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +47,7 @@ import java.util.function.Predicate;
  * the returned future will be {@link CompletableFuture#complete completed} when the
  * operation finishes.
  */
-public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
+public interface AsyncAtomicMap<K, V> extends AsyncPrimitive<AsyncAtomicMap<K, V>, AtomicMap<K, V>> {
 
     /**
      * Returns the number of entries in the map.
@@ -116,7 +115,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * or null if the computed value is null
      */
     default CompletableFuture<Versioned<V>> computeIfAbsent(
-            K key, Function<? super K, ? extends V> mappingFunction) {
+        K key, Function<? super K, ? extends V> mappingFunction) {
         return computeIf(key, Objects::isNull, (k, v) -> mappingFunction.apply(k));
     }
 
@@ -132,7 +131,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the new value associated with the specified key, or null if computed value is null
      */
     default CompletableFuture<Versioned<V>> computeIfPresent(
-            K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         return computeIf(key, Objects::nonNull, remappingFunction);
     }
 
@@ -148,7 +147,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the new value associated with the specified key, or null if computed value is null
      */
     default CompletableFuture<Versioned<V>> compute(
-            K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         return computeIf(key, v -> true, remappingFunction);
     }
 
@@ -165,7 +164,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
      * @return the new value associated with the specified key, or the old value if condition evaluates to false
      */
     CompletableFuture<Versioned<V>> computeIf(
-            K key, Predicate<? super V> condition, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
+        K key, Predicate<? super V> condition, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
 
     /**
      * Associates the specified value with the specified key in this map (optional operation).
@@ -361,9 +360,9 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key the key for which to acquire the lock
+     * @param key     the key for which to acquire the lock
      * @param timeout the lock timeout
-     * @param unit the lock unit
+     * @param unit    the lock unit
      * @return an optional long containing the version of the key at the time it was locked
      */
     default CompletableFuture<Boolean> tryLock(K key, long timeout, TimeUnit unit) {
@@ -373,7 +372,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key the key for which to acquire the lock
+     * @param key     the key for which to acquire the lock
      * @param timeout the lock timeout
      * @return an optional long containing the version of the key at the time it was locked
      */
@@ -414,10 +413,7 @@ public interface AsyncAtomicMap<K, V> extends AsyncPrimitive {
     CompletableFuture<Cancellable> listen(AtomicMapEventListener<K, V> listener, Executor executor);
 
     @Override
-    default AtomicMap<K, V> sync() {
-        return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+    default AtomicMap<K, V> sync(Duration operationTimeout) {
+        return new BlockingAtomicMap<>(this, operationTimeout);
     }
-
-    @Override
-    AtomicMap<K, V> sync(Duration operationTimeout);
 }

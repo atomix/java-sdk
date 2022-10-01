@@ -1,8 +1,8 @@
 package io.atomix.client.set;
 
 import com.google.common.collect.Multiset;
-import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
+import io.atomix.client.set.impl.BlockingDistributedMultiset;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -140,10 +140,7 @@ public interface AsyncDistributedMultiset<E> extends AsyncDistributedCollection<
     AsyncDistributedSet<Multiset.Entry<E>> entrySet();
 
     @Override
-    default DistributedMultiset<E> sync() {
-        return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+    default DistributedMultiset<E> sync(Duration operationTimeout) {
+        return new BlockingDistributedMultiset<>(this, operationTimeout);
     }
-
-    @Override
-    DistributedMultiset<E> sync(Duration operationTimeout);
 }

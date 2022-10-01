@@ -1,11 +1,23 @@
 package io.atomix.client.map;
 
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.SyncPrimitive;
+import io.atomix.client.map.impl.DefaultAtomicCounterMapBuilder;
 
 /**
  * Distributed version of com.google.common.util.concurrent.AtomicLongMap.
  */
-public interface AtomicCounterMap<K> extends SyncPrimitive {
+public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, AsyncAtomicCounterMap<K>> {
+
+    /**
+     * Returns a new AtomicCounterMap builder.
+     *
+     * @param channel the AtomixChannel
+     * @return the AtomicCounterMap builder
+     */
+    static <K> AtomicCounterMapBuilder<K> builder(AtomixChannel channel) {
+        return new DefaultAtomicCounterMapBuilder<>(channel);
+    }
 
     /**
      * Increments by one the value currently associated with key, and returns the new value.
@@ -137,7 +149,4 @@ public interface AtomicCounterMap<K> extends SyncPrimitive {
      * Clears all entries from the map.
      */
     void clear();
-
-    @Override
-    AsyncAtomicCounterMap<K> async();
 }

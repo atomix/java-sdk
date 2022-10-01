@@ -12,7 +12,7 @@ import java.util.concurrent.Executor;
 /**
  * Distributed map.
  */
-public interface DistributedMap<K, V> extends SyncPrimitive, Map<K, V> {
+public interface DistributedMap<K, V> extends SyncPrimitive<DistributedMap<K, V>, AsyncDistributedMap<K, V>>, Map<K, V> {
 
     /**
      * Registers the specified listener to be notified whenever the map is updated.
@@ -39,7 +39,4 @@ public interface DistributedMap<K, V> extends SyncPrimitive, Map<K, V> {
 
     @Override
     DistributedCollection<V> values();
-
-    @Override
-    AsyncDistributedMap<K, V> async();
 }

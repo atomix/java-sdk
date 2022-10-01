@@ -8,7 +8,6 @@ import io.atomix.client.value.AtomicValue;
 import io.atomix.client.value.AtomicValueEvent;
 import io.atomix.client.value.AtomicValueEventListener;
 
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -18,7 +17,9 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 /**
  * Transcoding async atomic value.
  */
-public class TranscodingAsyncAtomicValue<V1, V2> extends DelegatingAsyncPrimitive<AsyncAtomicValue<V2>> implements AsyncAtomicValue<V1> {
+public class TranscodingAsyncAtomicValue<V1, V2>
+    extends DelegatingAsyncPrimitive<AsyncAtomicValue<V1>, AtomicValue<V1>, AsyncAtomicValue<V2>>
+    implements AsyncAtomicValue<V1> {
     private final AsyncAtomicValue<V2> backingValue;
     private final Function<V1, V2> valueEncoder;
     private final Function<V2, V1> valueDecoder;
@@ -57,11 +58,6 @@ public class TranscodingAsyncAtomicValue<V1, V2> extends DelegatingAsyncPrimitiv
             AtomicValueEvent.Type.UPDATE,
             valueDecoder.apply(event.newValue()),
             valueDecoder.apply(event.oldValue())), executor);
-    }
-
-    @Override
-    public AtomicValue<V1> sync(Duration operationTimeout) {
-        return new BlockingAtomicValue<>(this, operationTimeout.toMillis());
     }
 
     @Override

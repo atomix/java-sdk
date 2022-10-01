@@ -6,15 +6,16 @@
 package io.atomix.client.map;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.Cancellable;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.collection.DistributedCollection;
+import io.atomix.client.map.impl.DefaultAtomicMapBuilder;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.time.Versioned;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -28,7 +29,17 @@ import java.util.function.Predicate;
  * @param <K> type of key
  * @param <V> type of value
  */
-public interface AtomicMap<K, V> extends SyncPrimitive {
+public interface AtomicMap<K, V> extends SyncPrimitive<AtomicMap<K, V>, AsyncAtomicMap<K, V>> {
+
+    /**
+     * Returns a new AtomicMap builder.
+     *
+     * @param channel the AtomixChannel
+     * @return the AtomicMap builder
+     */
+    static <K, V> AtomicMapBuilder<K, V> builder(AtomixChannel channel) {
+        return new DefaultAtomicMapBuilder<>(channel);
+    }
 
     /**
      * Returns the number of entries in the map.
@@ -96,7 +107,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * if a concurrent modification of map is detected
      */
     Versioned<V> computeIfAbsent(
-            K key, Function<? super K, ? extends V> mappingFunction);
+        K key, Function<? super K, ? extends V> mappingFunction);
 
     /**
      * Attempts to compute a mapping for the specified key and its current mapped value (or
@@ -110,7 +121,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * if a concurrent modification of map is detected
      */
     Versioned<V> compute(
-            K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
+        K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
 
     /**
      * If the value for the specified key is present and non-null, attempts to compute a new
@@ -124,7 +135,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * if a concurrent modification of map is detected
      */
     Versioned<V> computeIfPresent(
-            K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
+        K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
 
     /**
      * If the value for the specified key satisfies a condition, attempts to compute a new
@@ -139,7 +150,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * modification of map is detected
      */
     Versioned<V> computeIf(
-            K key, Predicate<? super V> condition, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
+        K key, Predicate<? super V> condition, BiFunction<? super K, ? super V, ? extends V> remappingFunction);
 
     /**
      * Associates the specified value with the specified key in this map (optional operation).
@@ -336,9 +347,9 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key the key for which to acquire the lock
+     * @param key     the key for which to acquire the lock
      * @param timeout the lock timeout
-     * @param unit the lock unit
+     * @param unit    the lock unit
      * @return an optional long containing the version of the key at the time it was locked
      */
     default boolean tryLock(K key, long timeout, TimeUnit unit) {
@@ -348,7 +359,7 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
     /**
      * Attempts to acquire a lock on the given key.
      *
-     * @param key the key for which to acquire the lock
+     * @param key     the key for which to acquire the lock
      * @param timeout the lock timeout
      * @return an optional long containing the version of the key at the time it was locked
      */
@@ -387,7 +398,4 @@ public interface AtomicMap<K, V> extends SyncPrimitive {
      * @return a cancellable to be used to cancel the listener
      */
     Cancellable listen(AtomicMapEventListener<K, V> listener, Executor executor);
-
-    @Override
-    AsyncAtomicMap<K, V> async();
 }

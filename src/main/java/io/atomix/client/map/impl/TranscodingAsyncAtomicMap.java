@@ -20,7 +20,6 @@ import io.atomix.client.time.Versioned;
 
 import java.time.Duration;
 import java.util.Map.Entry;
-import java.util.OptionalLong;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
@@ -37,7 +36,7 @@ import java.util.function.Predicate;
  * @param <V1> value type of this map
  */
 public class TranscodingAsyncAtomicMap<K1, V1, K2, V2>
-    extends DelegatingAsyncPrimitive<AsyncAtomicMap<K2, V2>>
+    extends DelegatingAsyncPrimitive<AsyncAtomicMap<K1, V1>, AtomicMap<K1, V1>, AsyncAtomicMap<K2, V2>>
     implements AsyncAtomicMap<K1, V1> {
 
     private final AsyncAtomicMap<K2, V2> backingMap;
@@ -295,10 +294,5 @@ public class TranscodingAsyncAtomicMap<K1, V1, K2, V2>
             keyDecoder.apply(event.key()),
             event.newValue() != null ? event.newValue().map(valueDecoder) : null,
             event.oldValue() != null ? event.oldValue().map(valueDecoder) : null)), executor);
-    }
-
-    @Override
-    public AtomicMap<K1, V1> sync(Duration operationTimeout) {
-        return new BlockingAtomicMap<>(this, operationTimeout.toMillis());
     }
 }

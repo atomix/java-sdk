@@ -1,8 +1,6 @@
 package io.atomix.client.map.impl;
 
-import com.google.common.base.Throwables;
 import io.atomix.client.Cancellable;
-import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.collection.impl.BlockingDistributedCollection;
@@ -11,13 +9,11 @@ import io.atomix.client.map.DistributedMap;
 import io.atomix.client.map.MapEventListener;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.set.impl.BlockingDistributedSet;
-import io.atomix.client.utils.concurrent.Retries;
 
-import java.util.ConcurrentModificationException;
+import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * Default implementation of {@code ConsistentMap}.
@@ -25,16 +21,12 @@ import java.util.function.Function;
  * @param <K> type of key.
  * @param <V> type of value.
  */
-public class BlockingDistributedMap<K, V> extends Synchronous<AsyncDistributedMap<K, V>> implements DistributedMap<K, V> {
-
-    private static final int MAX_DELAY_BETWEEN_RETRY_MILLS = 50;
+public class BlockingDistributedMap<K, V> extends Synchronous<DistributedMap<K, V>, AsyncDistributedMap<K, V>> implements DistributedMap<K, V> {
     private final AsyncDistributedMap<K, V> asyncMap;
-    private final long operationTimeoutMillis;
 
-    public BlockingDistributedMap(AsyncDistributedMap<K, V> asyncMap, long operationTimeoutMillis) {
-        super(asyncMap);
+    public BlockingDistributedMap(AsyncDistributedMap<K, V> asyncMap, Duration operationTimeout) {
+        super(asyncMap, operationTimeout);
         this.asyncMap = asyncMap;
-        this.operationTimeoutMillis = operationTimeoutMillis;
     }
 
     @Override
@@ -78,30 +70,12 @@ public class BlockingDistributedMap<K, V> extends Synchronous<AsyncDistributedMa
     }
 
     @Override
-    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
-        return Retries.retryable(() -> complete(asyncMap.computeIfAbsent(key, mappingFunction)),
-            PrimitiveException.ConcurrentModification.class,
-            Integer.MAX_VALUE,
-            MAX_DELAY_BETWEEN_RETRY_MILLS).get();
-    }
-
-    @Override
-    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return Retries.retryable(() -> complete(asyncMap.computeIfPresent(key, remappingFunction)),
-            PrimitiveException.ConcurrentModification.class,
-            Integer.MAX_VALUE,
-            MAX_DELAY_BETWEEN_RETRY_MILLS).get();
-    }
-
-    @Override
     public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return Retries.retryable(() -> complete(asyncMap.compute(key, remappingFunction)),
-            PrimitiveException.ConcurrentModification.class,
-            Integer.MAX_VALUE,
-            MAX_DELAY_BETWEEN_RETRY_MILLS).get();
+        return complete(asyncMap.compute((K) key, remappingFunction));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public V remove(Object key) {
         return complete(asyncMap.remove((K) key));
     }
@@ -113,17 +87,17 @@ public class BlockingDistributedMap<K, V> extends Synchronous<AsyncDistributedMa
 
     @Override
     public DistributedSet<K> keySet() {
-        return new BlockingDistributedSet<K>(asyncMap.keySet(), operationTimeoutMillis);
+        return new BlockingDistributedSet<K>(asyncMap.keySet(), operationTimeout);
     }
 
     @Override
     public DistributedCollection<V> values() {
-        return new BlockingDistributedCollection<>(asyncMap.values(), operationTimeoutMillis);
+        return new BlockingDistributedCollection<>(asyncMap.values(), operationTimeout);
     }
 
     @Override
     public DistributedSet<Map.Entry<K, V>> entrySet() {
-        return new BlockingDistributedSet<>(asyncMap.entrySet(), operationTimeoutMillis);
+        return new BlockingDistributedSet<>(asyncMap.entrySet(), operationTimeout);
     }
 
     @Override
@@ -149,25 +123,5 @@ public class BlockingDistributedMap<K, V> extends Synchronous<AsyncDistributedMa
     @Override
     public AsyncDistributedMap<K, V> async() {
         return asyncMap;
-    }
-
-    protected <T> T complete(CompletableFuture<T> future) {
-        try {
-            return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new PrimitiveException.Interrupted();
-        } catch (TimeoutException e) {
-            throw new PrimitiveException.Timeout();
-        } catch (ExecutionException e) {
-            Throwable cause = Throwables.getRootCause(e);
-            if (cause instanceof PrimitiveException) {
-                throw (PrimitiveException) cause;
-            } else if (cause instanceof ConcurrentModificationException) {
-                throw (ConcurrentModificationException) cause;
-            } else {
-                throw new PrimitiveException(cause);
-            }
-        }
     }
 }

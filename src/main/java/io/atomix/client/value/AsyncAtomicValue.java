@@ -3,8 +3,8 @@ package io.atomix.client.value;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
-import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.time.Versioned;
+import io.atomix.client.value.impl.BlockingAtomicValue;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +20,7 @@ import java.util.concurrent.Executor;
  *
  * @param <V> value type
  */
-public interface AsyncAtomicValue<V> extends AsyncPrimitive {
+public interface AsyncAtomicValue<V> extends AsyncPrimitive<AsyncAtomicValue<V>, AtomicValue<V>> {
 
     /**
      * Gets the current value.
@@ -64,10 +64,7 @@ public interface AsyncAtomicValue<V> extends AsyncPrimitive {
     CompletableFuture<Cancellable> listen(AtomicValueEventListener<V> listener, Executor executor);
 
     @Override
-    default AtomicValue<V> sync() {
-        return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+    default AtomicValue<V> sync(Duration operationTimeout) {
+        return new BlockingAtomicValue<>(this, operationTimeout);
     }
-
-    @Override
-    AtomicValue<V> sync(Duration operationTimeout);
 }

@@ -7,13 +7,11 @@ package io.atomix.client;
 
 
 import io.atomix.client.utils.serializer.Serializer;
-import io.grpc.Channel;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -24,16 +22,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @param <P> primitive type
  */
 public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> {
-    private final String name;
-    private final Channel channel;
-    private final ScheduledExecutorService executorService;
-    protected final Map<String, String> tags = new HashMap<>();
+    private final AtomixChannel channel;
+    private String name;
+    private final Map<String, String> tags = new HashMap<>();
     protected Serializer serializer;
 
-    protected PrimitiveBuilder(String name, Channel channel, ScheduledExecutorService executorService) {
-        this.name = checkNotNull(name, "primitive name cannot be null");
+    protected PrimitiveBuilder(AtomixChannel channel) {
         this.channel = checkNotNull(channel, "primitive channel cannot be null");
-        this.executorService = checkNotNull(executorService, "executorService cannot be null");
+    }
+
+    /**
+     * Sets the primitive name.
+     *
+     * @param name the primitive name
+     * @return the primitive builder
+     */
+    @SuppressWarnings("unchecked")
+    public B withName(String name) {
+        this.name = checkNotNull(name, "primitive name cannot be null");
+        return (B) this;
     }
 
     /**
@@ -46,20 +53,11 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
     }
 
     /**
-     * Returns the primitive executor service.
-     *
-     * @return the primitive executor service
-     */
-    protected ScheduledExecutorService executor() {
-        return executorService;
-    }
-
-    /**
      * Returns the service channel.
      *
      * @return the service channel
      */
-    protected Channel channel() {
+    protected AtomixChannel channel() {
         return channel;
     }
 
@@ -87,7 +85,7 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
     /**
      * Adds a tag to the primitive.
      *
-     * @param key the tag key
+     * @param key   the tag key
      * @param value the tag value
      * @return the primitive builder
      */

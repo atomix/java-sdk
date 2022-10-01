@@ -26,9 +26,9 @@ public class TranscodingAsyncDistributedSet<E1, E2> extends TranscodingAsyncDist
     protected final Function<E2, E1> entryDecoder;
 
     public TranscodingAsyncDistributedSet(
-            AsyncDistributedSet<E2> backingSet,
-            Function<E1, E2> entryEncoder,
-            Function<E2, E1> entryDecoder) {
+        AsyncDistributedSet<E2> backingSet,
+        Function<E1, E2> entryEncoder,
+        Function<E2, E1> entryDecoder) {
         super(backingSet, entryEncoder, entryDecoder);
         this.backingSet = backingSet;
         this.entryEncoder = e -> e == null ? null : entryEncoder.apply(e);
@@ -42,6 +42,6 @@ public class TranscodingAsyncDistributedSet<E1, E2> extends TranscodingAsyncDist
 
     @Override
     public DistributedSet<E1> sync(Duration operationTimeout) {
-        return new BlockingDistributedSet<>(this, operationTimeout.toMillis());
+        return new BlockingDistributedSet<>(this, operationTimeout);
     }
 }

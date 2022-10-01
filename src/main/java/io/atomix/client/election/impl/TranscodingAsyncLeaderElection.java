@@ -9,7 +9,6 @@ import io.atomix.client.election.Leadership;
 import io.atomix.client.election.LeadershipEvent;
 import io.atomix.client.election.LeadershipEventListener;
 
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -20,7 +19,9 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 /**
  * Transcoding async atomic value.
  */
-public class TranscodingAsyncLeaderElection<T1, T2> extends DelegatingAsyncPrimitive<AsyncLeaderElection<T2>> implements AsyncLeaderElection<T1> {
+public class TranscodingAsyncLeaderElection<T1, T2>
+    extends DelegatingAsyncPrimitive<AsyncLeaderElection<T1>, LeaderElection<T1>, AsyncLeaderElection<T2>>
+    implements AsyncLeaderElection<T1> {
     private final AsyncLeaderElection<T2> backingElection;
     private final Function<T1, T2> identifierEncoder;
     private final Function<T2, T1> identifierDecoder;
@@ -90,11 +91,6 @@ public class TranscodingAsyncLeaderElection<T1, T2> extends DelegatingAsyncPrimi
                     event.newLeadership().leader().term(),
                     event.newLeadership().leader().timestamp()),
                 event.newLeadership().candidates().stream().map(identifierDecoder).collect(Collectors.toList()))), executor);
-    }
-
-    @Override
-    public LeaderElection<T1> sync(Duration operationTimeout) {
-        return new BlockingLeaderElection<>(this, operationTimeout.toMillis());
     }
 
     @Override

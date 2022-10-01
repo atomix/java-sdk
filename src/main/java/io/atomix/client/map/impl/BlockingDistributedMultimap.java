@@ -1,10 +1,8 @@
 package io.atomix.client.map.impl;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import io.atomix.client.Cancellable;
-import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.collection.impl.BlockingDistributedCollection;
@@ -18,31 +16,23 @@ import io.atomix.client.set.impl.BlockingDistributedMultiset;
 import io.atomix.client.set.impl.BlockingDistributedSet;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.Collection;
-import java.util.ConcurrentModificationException;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Implementation of {@link DistributedMultimap} providing synchronous access to {@link AsyncDistributedMultimap}.
  */
 public class BlockingDistributedMultimap<K, V>
-    extends Synchronous<AsyncDistributedMultimap<K, V>>
+    extends Synchronous<DistributedMultimap<K, V>, AsyncDistributedMultimap<K, V>>
     implements DistributedMultimap<K, V> {
 
     private final AsyncDistributedMultimap<K, V> asyncMultimap;
-    private final long operationTimeoutMillis;
 
-    public BlockingDistributedMultimap(
-        AsyncDistributedMultimap<K, V> asyncMultimap,
-        long operationTimeoutMillis) {
-        super(asyncMultimap);
+    public BlockingDistributedMultimap(AsyncDistributedMultimap<K, V> asyncMultimap, Duration operationTimeout) {
+        super(asyncMultimap, operationTimeout);
         this.asyncMultimap = asyncMultimap;
-        this.operationTimeoutMillis = operationTimeoutMillis;
     }
 
     @Override
@@ -112,27 +102,27 @@ public class BlockingDistributedMultimap<K, V>
 
     @Override
     public DistributedSet<K> keySet() {
-        return new BlockingDistributedSet<>(asyncMultimap.keySet(), operationTimeoutMillis);
+        return new BlockingDistributedSet<>(asyncMultimap.keySet(), operationTimeout);
     }
 
     @Override
     public DistributedMultiset<K> keys() {
-        return new BlockingDistributedMultiset<>(asyncMultimap.keys(), operationTimeoutMillis);
+        return new BlockingDistributedMultiset<>(asyncMultimap.keys(), operationTimeout);
     }
 
     @Override
     public DistributedMultiset<V> values() {
-        return new BlockingDistributedMultiset<>(asyncMultimap.values(), operationTimeoutMillis);
+        return new BlockingDistributedMultiset<>(asyncMultimap.values(), operationTimeout);
     }
 
     @Override
     public DistributedCollection<Map.Entry<K, V>> entries() {
-        return new BlockingDistributedCollection<>(asyncMultimap.entries(), operationTimeoutMillis);
+        return new BlockingDistributedCollection<>(asyncMultimap.entries(), operationTimeout);
     }
 
     @Override
     public DistributedMap<K, Collection<V>> asMap() {
-        return new BlockingDistributedMap<>(asyncMultimap.asMap(), operationTimeoutMillis);
+        return new BlockingDistributedMap<>(asyncMultimap.asMap(), operationTimeout);
     }
 
     @Override
@@ -143,25 +133,5 @@ public class BlockingDistributedMultimap<K, V>
     @Override
     public AsyncDistributedMultimap<K, V> async() {
         return asyncMultimap;
-    }
-
-    protected <T> T complete(CompletableFuture<T> future) {
-        try {
-            return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new PrimitiveException.Interrupted();
-        } catch (TimeoutException e) {
-            throw new PrimitiveException.Timeout();
-        } catch (ExecutionException e) {
-            Throwable cause = Throwables.getRootCause(e);
-            if (cause instanceof PrimitiveException) {
-                throw (PrimitiveException) cause;
-            } else if (cause instanceof ConcurrentModificationException) {
-                throw (ConcurrentModificationException) cause;
-            } else {
-                throw new PrimitiveException(cause);
-            }
-        }
     }
 }

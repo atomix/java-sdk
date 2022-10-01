@@ -5,16 +5,14 @@
 
 package io.atomix.client.map;
 
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.PrimitiveBuilder;
-import io.grpc.Channel;
-
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Builder for AtomicCounter.
  */
 public abstract class AtomicMapBuilder<K, V> extends PrimitiveBuilder<AtomicMapBuilder<K, V>, AtomicMap<K, V>> {
-    protected AtomicMapBuilder(String primitiveName, Channel channel, ScheduledExecutorService executorService) {
-        super(primitiveName, channel, executorService);
+    protected AtomicMapBuilder(AtomixChannel channel) {
+        super(channel);
     }
 }

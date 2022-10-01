@@ -5,8 +5,9 @@
 
 package io.atomix.client.set;
 
-import io.atomix.client.DistributedPrimitive;
+import io.atomix.client.SyncPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
+import io.atomix.client.set.impl.BlockingDistributedSet;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -31,9 +32,11 @@ public interface AsyncDistributedSet<E> extends AsyncDistributedCollection<E> {
 
     @Override
     default DistributedSet<E> sync() {
-        return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+        return sync(SyncPrimitive.DEFAULT_OPERATION_TIMEOUT);
     }
 
     @Override
-    DistributedSet<E> sync(Duration operationTimeout);
+    default DistributedSet<E> sync(Duration operationTimeout) {
+        return new BlockingDistributedSet<>(this, operationTimeout);
+    }
 }

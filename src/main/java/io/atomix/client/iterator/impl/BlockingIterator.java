@@ -5,10 +5,11 @@
 
 package io.atomix.client.iterator.impl;
 
-import io.atomix.client.PrimitiveException;
+import com.google.common.base.Throwables;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.iterator.SyncIterator;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -19,11 +20,11 @@ import java.util.concurrent.TimeoutException;
  */
 public class BlockingIterator<T> implements SyncIterator<T> {
     private final AsyncIterator<T> asyncIterator;
-    private final long operationTimeoutMillis;
+    private final Duration operationTimeout;
 
-    public BlockingIterator(AsyncIterator<T> asyncIterator, long operationTimeoutMillis) {
+    public BlockingIterator(AsyncIterator<T> asyncIterator, Duration operationTimeout) {
         this.asyncIterator = asyncIterator;
-        this.operationTimeoutMillis = operationTimeoutMillis;
+        this.operationTimeout = operationTimeout;
     }
 
     @Override
@@ -46,19 +47,23 @@ public class BlockingIterator<T> implements SyncIterator<T> {
         return asyncIterator;
     }
 
-    private <T> T complete(CompletableFuture<T> future) {
+    protected <T> T complete(CompletableFuture<T> future) {
+        if (operationTimeout == null) {
+            return future.join();
+        }
         try {
-            return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
+            return future.get(operationTimeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new PrimitiveException.Interrupted();
+            throw new RuntimeException(e);
         } catch (TimeoutException e) {
-            throw new PrimitiveException.Timeout();
+            throw new RuntimeException(e);
         } catch (ExecutionException e) {
-            if (e.getCause() instanceof PrimitiveException) {
-                throw (PrimitiveException) e.getCause();
+            Throwable cause = Throwables.getRootCause(e);
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
             } else {
-                throw new PrimitiveException(e.getCause());
+                throw new RuntimeException(cause);
             }
         }
     }

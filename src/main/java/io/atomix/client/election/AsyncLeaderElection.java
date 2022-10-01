@@ -3,13 +3,13 @@ package io.atomix.client.election;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
-import io.atomix.client.DistributedPrimitive;
+import io.atomix.client.election.impl.BlockingLeaderElection;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public interface AsyncLeaderElection<T> extends AsyncPrimitive {
+public interface AsyncLeaderElection<T> extends AsyncPrimitive<AsyncLeaderElection<T>, LeaderElection<T>> {
 
     /**
      * Attempts to become leader.
@@ -82,10 +82,7 @@ public interface AsyncLeaderElection<T> extends AsyncPrimitive {
     CompletableFuture<Cancellable> listen(LeadershipEventListener<T> listener, Executor executor);
 
     @Override
-    default LeaderElection<T> sync() {
-        return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+    default LeaderElection<T> sync(Duration operationTimeout) {
+        return new BlockingLeaderElection<>(this, operationTimeout);
     }
-
-    @Override
-    LeaderElection<T> sync(Duration operationTimeout);
 }

@@ -10,27 +10,19 @@ import io.atomix.client.Cancellable;
 import io.atomix.client.DelegatingAsyncPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.impl.TranscodingAsyncDistributedCollection;
-import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AsyncDistributedMap;
-import io.atomix.client.map.AtomicMap;
-import io.atomix.client.map.AtomicMapEvent;
-import io.atomix.client.map.AtomicMapEventListener;
 import io.atomix.client.map.DistributedMap;
 import io.atomix.client.map.MapEvent;
 import io.atomix.client.map.MapEventListener;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.impl.TranscodingAsyncDistributedSet;
-import io.atomix.client.time.Versioned;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * An {@code AsyncConsistentMap} that maps its operations to operations on a
@@ -42,7 +34,7 @@ import java.util.stream.Collectors;
  * @param <V1> value type of this map
  */
 public class TranscodingAsyncDistributedMap<K1, V1, K2, V2>
-    extends DelegatingAsyncPrimitive<AsyncDistributedMap<K2, V2>>
+    extends DelegatingAsyncPrimitive<AsyncDistributedMap<K1, V1>, DistributedMap<K1, V1>, AsyncDistributedMap<K2, V2>>
     implements AsyncDistributedMap<K1, V1> {
 
     private final AsyncDistributedMap<K2, V2> backingMap;
@@ -243,10 +235,5 @@ public class TranscodingAsyncDistributedMap<K1, V1, K2, V2>
             keyDecoder.apply(event.key()),
             event.newValue() != null ? valueDecoder.apply(event.newValue()) : null,
             event.oldValue() != null ? valueDecoder.apply(event.oldValue()) : null)), executor);
-    }
-
-    @Override
-    public DistributedMap<K1, V1> sync(Duration operationTimeout) {
-        return new BlockingDistributedMap<>(this, operationTimeout.toMillis());
     }
 }

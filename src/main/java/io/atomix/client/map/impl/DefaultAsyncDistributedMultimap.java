@@ -6,13 +6,6 @@ package io.atomix.client.map.impl;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
-import io.atomix.api.runtime.multimap.v1.GetResponse;
-import io.atomix.api.runtime.multimap.v1.PutAllRequest;
-import io.atomix.api.runtime.multimap.v1.PutAllResponse;
-import io.atomix.api.runtime.multimap.v1.PutRequest;
-import io.atomix.api.runtime.multimap.v1.RemoveAllRequest;
-import io.atomix.api.runtime.multimap.v1.RemoveAllResponse;
-import io.atomix.api.runtime.multimap.v1.RemoveRequest;
 import io.atomix.api.runtime.multimap.v1.ClearRequest;
 import io.atomix.api.runtime.multimap.v1.CloseRequest;
 import io.atomix.api.runtime.multimap.v1.ContainsRequest;
@@ -21,7 +14,14 @@ import io.atomix.api.runtime.multimap.v1.CreateRequest;
 import io.atomix.api.runtime.multimap.v1.EntriesRequest;
 import io.atomix.api.runtime.multimap.v1.EventsRequest;
 import io.atomix.api.runtime.multimap.v1.GetRequest;
+import io.atomix.api.runtime.multimap.v1.GetResponse;
 import io.atomix.api.runtime.multimap.v1.MultiMapGrpc;
+import io.atomix.api.runtime.multimap.v1.PutAllRequest;
+import io.atomix.api.runtime.multimap.v1.PutAllResponse;
+import io.atomix.api.runtime.multimap.v1.PutRequest;
+import io.atomix.api.runtime.multimap.v1.RemoveAllRequest;
+import io.atomix.api.runtime.multimap.v1.RemoveAllResponse;
+import io.atomix.api.runtime.multimap.v1.RemoveRequest;
 import io.atomix.api.runtime.multimap.v1.ReplaceRequest;
 import io.atomix.api.runtime.multimap.v1.ReplaceResponse;
 import io.atomix.api.runtime.multimap.v1.SizeRequest;
@@ -34,17 +34,12 @@ import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.map.AsyncDistributedMap;
 import io.atomix.client.map.AsyncDistributedMultimap;
-import io.atomix.client.map.DistributedMap;
 import io.atomix.client.map.DistributedMultimap;
 import io.atomix.client.map.MapEventListener;
 import io.atomix.client.map.MultimapEvent;
 import io.atomix.client.map.MultimapEventListener;
 import io.atomix.client.set.AsyncDistributedMultiset;
 import io.atomix.client.set.AsyncDistributedSet;
-import io.atomix.client.set.DistributedMultiset;
-import io.atomix.client.set.DistributedSet;
-import io.atomix.client.set.impl.BlockingDistributedMultiset;
-import io.atomix.client.set.impl.BlockingDistributedSet;
 import io.grpc.Status;
 
 import java.time.Duration;
@@ -61,7 +56,7 @@ import java.util.function.Function;
  * Atomix multimap implementation.
  */
 public class DefaultAsyncDistributedMultimap
-    extends AbstractAsyncPrimitive<MultiMapGrpc.MultiMapStub, AsyncDistributedMultimap<String, String>>
+    extends AbstractAsyncPrimitive<AsyncDistributedMultimap<String, String>, DistributedMultimap<String, String>, MultiMapGrpc.MultiMapStub>
     implements AsyncDistributedMultimap<String, String> {
 
     public DefaultAsyncDistributedMultimap(String name, MultiMapGrpc.MultiMapStub stub, ScheduledExecutorService executorService) {
@@ -262,11 +257,6 @@ public class DefaultAsyncDistributedMultimap
         }, executor);
     }
 
-    @Override
-    public DistributedMultimap<String, String> sync(Duration operationTimeout) {
-        return new BlockingDistributedMultimap<>(this, operationTimeout.toMillis());
-    }
-
     private class KeySet implements AsyncDistributedSet<String> {
         @Override
         public String name() {
@@ -355,11 +345,6 @@ public class DefaultAsyncDistributedMultimap
         @Override
         public CompletableFuture<Void> close() {
             return DefaultAsyncDistributedMultimap.this.close();
-        }
-
-        @Override
-        public DistributedSet<String> sync(Duration operationTimeout) {
-            return new BlockingDistributedSet<>(this, operationTimeout.toMillis());
         }
     }
 
@@ -482,11 +467,6 @@ public class DefaultAsyncDistributedMultimap
         public CompletableFuture<Void> close() {
             return DefaultAsyncDistributedMultimap.this.close();
         }
-
-        @Override
-        public DistributedMultiset<String> sync(Duration operationTimeout) {
-            return new BlockingDistributedMultiset<>(this, operationTimeout.toMillis());
-        }
     }
 
     private class Values implements AsyncDistributedMultiset<String> {
@@ -607,11 +587,6 @@ public class DefaultAsyncDistributedMultimap
         public CompletableFuture<Void> close() {
             return DefaultAsyncDistributedMultimap.this.close();
         }
-
-        @Override
-        public DistributedMultiset<String> sync(Duration operationTimeout) {
-            return new BlockingDistributedMultiset<>(this, operationTimeout.toMillis());
-        }
     }
 
     private class Entries implements AsyncDistributedSet<Map.Entry<String, String>> {
@@ -703,11 +678,6 @@ public class DefaultAsyncDistributedMultimap
         @Override
         public CompletableFuture<Void> close() {
             return DefaultAsyncDistributedMultimap.this.close();
-        }
-
-        @Override
-        public DistributedSet<Map.Entry<String, String>> sync(Duration operationTimeout) {
-            return new BlockingDistributedSet<>(this, operationTimeout.toMillis());
         }
     }
 
@@ -820,11 +790,6 @@ public class DefaultAsyncDistributedMultimap
         @Override
         public CompletableFuture<Cancellable> listen(MapEventListener<String, Collection<String>> listener, Executor executor) {
             return CompletableFuture.failedFuture(new UnsupportedOperationException());
-        }
-
-        @Override
-        public DistributedMap<String, Collection<String>> sync(Duration operationTimeout) {
-            return new BlockingDistributedMap<>(this, operationTimeout.toMillis());
         }
 
         @Override

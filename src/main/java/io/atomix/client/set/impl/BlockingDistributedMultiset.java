@@ -2,9 +2,10 @@ package io.atomix.client.set.impl;
 
 import com.google.common.collect.Multiset;
 import io.atomix.client.Cancellable;
-import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
+import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEventListener;
+import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.iterator.SyncIterator;
 import io.atomix.client.iterator.impl.BlockingIterator;
 import io.atomix.client.set.AsyncDistributedMultiset;
@@ -12,10 +13,9 @@ import io.atomix.client.set.DistributedMultiset;
 import io.atomix.client.set.DistributedSet;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.Collection;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
 
 /**
  * Implementation of {@link io.atomix.client.set.DistributedMultiset} that merely delegates to a {@link AsyncDistributedMultiset}
@@ -23,16 +23,13 @@ import java.util.concurrent.*;
  *
  * @param <E> set element type
  */
-public class BlockingDistributedMultiset<E> extends Synchronous<AsyncDistributedMultiset<E>> implements DistributedMultiset<E> {
-
-    private final long operationTimeoutMillis;
+public class BlockingDistributedMultiset<E> extends Synchronous<DistributedCollection<E>, AsyncDistributedCollection<E>> implements DistributedMultiset<E> {
 
     private final AsyncDistributedMultiset<E> asyncSet;
 
-    public BlockingDistributedMultiset(AsyncDistributedMultiset<E> asyncSet, long operationTimeoutMillis) {
-        super(asyncSet);
+    public BlockingDistributedMultiset(AsyncDistributedMultiset<E> asyncSet, Duration operationTimeout) {
+        super(asyncSet, operationTimeout);
         this.asyncSet = asyncSet;
-        this.operationTimeoutMillis = operationTimeoutMillis;
     }
 
     @Override
@@ -112,12 +109,12 @@ public class BlockingDistributedMultiset<E> extends Synchronous<AsyncDistributed
 
     @Override
     public DistributedSet<E> elementSet() {
-        return new BlockingDistributedSet<>(asyncSet.elementSet(), operationTimeoutMillis);
+        return new BlockingDistributedSet<>(asyncSet.elementSet(), operationTimeout);
     }
 
     @Override
     public DistributedSet<Multiset.Entry<E>> entrySet() {
-        return new BlockingDistributedSet<>(async().entrySet(), operationTimeoutMillis);
+        return new BlockingDistributedSet<>(async().entrySet(), operationTimeout);
     }
 
     @Override
@@ -127,7 +124,7 @@ public class BlockingDistributedMultiset<E> extends Synchronous<AsyncDistributed
 
     @Override
     public SyncIterator<E> iterator() {
-        return new BlockingIterator<>(asyncSet.iterator(), operationTimeoutMillis);
+        return new BlockingIterator<>(asyncSet.iterator(), operationTimeout);
     }
 
     @Override
@@ -150,24 +147,5 @@ public class BlockingDistributedMultiset<E> extends Synchronous<AsyncDistributed
     @Override
     public AsyncDistributedMultiset<E> async() {
         return asyncSet;
-    }
-
-    protected <T> T complete(CompletableFuture<T> future) {
-        try {
-            return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new PrimitiveException.Interrupted();
-        } catch (TimeoutException e) {
-            throw new PrimitiveException.Timeout();
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof PrimitiveException) {
-                throw (PrimitiveException) e.getCause();
-            } else if (e.getCause() instanceof NoSuchElementException) {
-                throw (NoSuchElementException) e.getCause();
-            } else {
-                throw new PrimitiveException(e.getCause());
-            }
-        }
     }
 }

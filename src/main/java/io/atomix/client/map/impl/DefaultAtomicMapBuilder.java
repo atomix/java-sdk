@@ -7,26 +7,25 @@ package io.atomix.client.map.impl;
 
 import com.google.common.io.BaseEncoding;
 import io.atomix.api.runtime.map.v1.MapGrpc;
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AtomicMap;
 import io.atomix.client.map.AtomicMapBuilder;
-import io.grpc.Channel;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Atomic counter proxy builder.
  */
 public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
-    public DefaultAtomicMapBuilder(String name, Channel channel, ScheduledExecutorService executorService) {
-        super(name, channel, executorService);
+    public DefaultAtomicMapBuilder(AtomixChannel channel) {
+        super(channel);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicMap<K, V>> buildAsync() {
-        return new DefaultAsyncAtomicMap(name(), MapGrpc.newStub(channel()), executor())
+        return new DefaultAsyncAtomicMap(name(), MapGrpc.newStub(channel()), channel().executor())
             .create(tags())
             .thenApply(map -> new TranscodingAsyncAtomicMap<K, V, String, byte[]>(map,
                 key -> BaseEncoding.base64().encode(serializer.encode(key)),

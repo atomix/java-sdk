@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
 import io.atomix.client.collection.AsyncDistributedCollection;
+import io.atomix.client.map.impl.BlockingDistributedMap;
 import io.atomix.client.set.AsyncDistributedSet;
 
 import java.time.Duration;
@@ -16,7 +17,7 @@ import java.util.function.Function;
 /**
  * Asynchronous distributed map.
  */
-public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
+public interface AsyncDistributedMap<K, V> extends AsyncPrimitive<AsyncDistributedMap<K, V>, DistributedMap<K, V>> {
 
     /**
      * Returns the number of key-value mappings in this map.  If the map contains more than <code>Integer.MAX_VALUE</code>
@@ -384,10 +385,7 @@ public interface AsyncDistributedMap<K, V> extends AsyncPrimitive {
     CompletableFuture<Cancellable> listen(MapEventListener<K, V> listener, Executor executor);
 
     @Override
-    default DistributedMap<K, V> sync() {
-        return sync(Duration.ofMillis(DEFAULT_OPERATION_TIMEOUT_MILLIS));
+    default DistributedMap<K, V> sync(Duration operationTimeout) {
+        return new BlockingDistributedMap<>(this, operationTimeout);
     }
-
-    @Override
-    DistributedMap<K, V> sync(Duration operationTimeout);
 }

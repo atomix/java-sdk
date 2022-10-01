@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Leader election implementation.
  */
 public class DefaultAsyncLeaderElection
-    extends AbstractAsyncPrimitive<LeaderElectionGrpc.LeaderElectionStub, AsyncLeaderElection<String>>
+    extends AbstractAsyncPrimitive<AsyncLeaderElection<String>, LeaderElection<String>, LeaderElectionGrpc.LeaderElectionStub>
     implements AsyncLeaderElection<String> {
 
     public DefaultAsyncLeaderElection(String name, LeaderElectionGrpc.LeaderElectionStub stub, ScheduledExecutorService executorService) {
@@ -139,6 +139,6 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public LeaderElection<String> sync(Duration operationTimeout) {
-        return new BlockingLeaderElection<>(this, operationTimeout.toMillis());
+        return new BlockingLeaderElection<>(this, operationTimeout);
     }
 }

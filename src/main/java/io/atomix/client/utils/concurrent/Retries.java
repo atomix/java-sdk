@@ -5,14 +5,13 @@
 
 package io.atomix.client.utils.concurrent;
 
-import io.atomix.client.PrimitiveException;
-
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -60,7 +59,7 @@ public final class Retries {
 
                 long currentTime = System.currentTimeMillis();
                 if (timeout != null && currentTime - startTime > timeout.toMillis()) {
-                    future.completeExceptionally(new PrimitiveException.Timeout(String.format("timed out after %d milliseconds", currentTime - startTime)));
+                    future.completeExceptionally(new TimeoutException(String.format("timed out after %d milliseconds", currentTime - startTime)));
                 } else {
                     executor.schedule(() ->
                             retryAsync(callback, exceptionPredicate, maxDelayBetweenRetries, timeout, startTime, attempt + 1, future, executor),
@@ -98,7 +97,7 @@ public final class Retries {
                 if (!exceptionPredicate.test(e1)) {
                     future.completeExceptionally(e1);
                 } else if (attempt == maxRetries) {
-                    future.completeExceptionally(new PrimitiveException.Timeout(String.format("timed out after %d milliseconds", System.currentTimeMillis() - startTime)));
+                    future.completeExceptionally(new TimeoutException(String.format("timed out after %d milliseconds", System.currentTimeMillis() - startTime)));
                 } else {
                     executor.schedule(() ->
                             retryAsync(callback, exceptionPredicate, maxRetries, maxDelayBetweenRetries, startTime, attempt + 1, future, executor),

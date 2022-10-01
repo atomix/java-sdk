@@ -11,7 +11,6 @@ import io.atomix.client.collection.impl.TranscodingAsyncDistributedCollection;
 import io.atomix.client.set.AsyncDistributedMultiset;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedMultiset;
-import io.atomix.client.set.DistributedSet;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -78,6 +77,6 @@ public class TranscodingAsyncDistributedMultiset<E1, E2> extends TranscodingAsyn
 
     @Override
     public DistributedMultiset<E1> sync(Duration operationTimeout) {
-        return new BlockingDistributedMultiset<>(this, operationTimeout.toMillis());
+        return new BlockingDistributedMultiset<>(this, operationTimeout);
     }
 }

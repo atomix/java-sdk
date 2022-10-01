@@ -7,6 +7,7 @@ package io.atomix.client.impl;
 import io.atomix.api.runtime.v1.PrimitiveId;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
+import io.atomix.client.SyncPrimitive;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.utils.concurrent.Executors;
 import io.atomix.client.utils.concurrent.Retries;
@@ -31,14 +32,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Simple asynchronous primitive.
  */
-public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implements AsyncPrimitive {
-    private static final Duration MAX_DELAY_BETWEEN_RETRIES = Duration.ofSeconds(5);
+public abstract class AbstractAsyncPrimitive<A extends AsyncPrimitive<A, S>, S extends SyncPrimitive<S, A>, T> implements AsyncPrimitive<A, S> {
+    protected static final Duration MAX_DELAY_BETWEEN_RETRIES = Duration.ofSeconds(5);
     protected static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(1);
     private final String name;
-    private final S stub;
-    private final ScheduledExecutorService executorService;
+    private final T stub;
+    protected final ScheduledExecutorService executorService;
 
-    protected AbstractAsyncPrimitive(String name, S stub, ScheduledExecutorService executorService) {
+    protected AbstractAsyncPrimitive(String name, T stub, ScheduledExecutorService executorService) {
         this.name = checkNotNull(name, "primitive name cannot be null");
         this.stub = checkNotNull(stub, "primitive stub cannot be null");
         this.executorService = checkNotNull(executorService, "primitive executor cannot be null");
@@ -60,9 +61,9 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
      *
      * @return a future to be completed once the primitive is created and connected
      */
-    protected abstract CompletableFuture<P> create(Map<String, String> tags);
+    protected abstract CompletableFuture<A> create(Map<String, String> tags);
 
-    protected <T, U> CompletableFuture<U> retry(StubMethodCall<S, T, U> callback, T request) {
+    protected <U, V> CompletableFuture<V> retry(StubMethodCall<T, U, V> callback, U request) {
         return Retries.retryAsync(
             () -> execute(callback, request),
             t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
@@ -70,7 +71,7 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
             executorService);
     }
 
-    protected <T, U> CompletableFuture<U> retry(StubMethodCall<S, T, U> callback, T request, Duration timeout) {
+    protected <U, V> CompletableFuture<V> retry(StubMethodCall<T, U, V> callback, U request, Duration timeout) {
         return Retries.retryAsync(
             () -> execute(callback, request),
             t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
@@ -79,11 +80,11 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
             executorService);
     }
 
-    private <T, U> CompletableFuture<U> execute(StubMethodCall<S, T, U> callback, T request) {
-        CompletableFuture<U> future = new CompletableFuture<>();
-        StreamObserver<U> responseObserver = new StreamObserver<U>() {
+    private <U, V> CompletableFuture<V> execute(StubMethodCall<T, U, V> callback, U request) {
+        CompletableFuture<V> future = new CompletableFuture<>();
+        StreamObserver<V> responseObserver = new StreamObserver<V>() {
             @Override
-            public void onNext(U response) {
+            public void onNext(V response) {
                 future.complete(response);
             }
 
@@ -101,7 +102,7 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
         return future;
     }
 
-    protected <T, U> CompletableFuture<Cancellable> retry(StubMethodCall<S, T, U> callback, T request, Consumer<U> listener, Executor executor) {
+    protected <U, V> CompletableFuture<Cancellable> retry(StubMethodCall<T, U, V> callback, U request, Consumer<V> listener, Executor executor) {
         return Retries.retryAsync(
             () -> execute(callback, request, listener, executor),
             t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
@@ -109,36 +110,36 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
             executorService);
     }
 
-    protected <T, U> CompletableFuture<Cancellable> execute(StubMethodCall<S, T, U> callback, T request, Consumer<U> listener, Executor executor) {
-        ServerStreamCall<T, U> call = new ServerStreamCall<>(listener, executor);
+    protected <U, V> CompletableFuture<Cancellable> execute(StubMethodCall<T, U, V> callback, U request, Consumer<V> listener, Executor executor) {
+        ServerStreamCall<U, V> call = new ServerStreamCall<>(listener, executor);
         return call.call(observer -> callback.call(stub, request, observer)).thenApply(v -> call);
     }
 
-    protected interface StubMethodCall<S, T, U> {
-        void call(S stub, T request, StreamObserver<U> streamObserver);
+    protected interface StubMethodCall<T, U, V> {
+        void call(T stub, U request, StreamObserver<V> streamObserver);
     }
 
-    private static class ServerStreamCall<T, U> implements Cancellable {
-        private final Consumer<U> consumer;
+    private static class ServerStreamCall<U, V> implements Cancellable {
+        private final Consumer<V> consumer;
         private final Executor executor;
         private final CompletableFuture<Void> future = new CompletableFuture<>();
-        private volatile ClientCallStreamObserver<T> observer;
+        private volatile ClientCallStreamObserver<U> observer;
 
-        public ServerStreamCall(Consumer<U> consumer, Executor executor) {
+        public ServerStreamCall(Consumer<V> consumer, Executor executor) {
             this.consumer = consumer;
             this.executor = executor;
         }
 
-        public CompletableFuture<Void> call(Consumer<StreamObserver<U>> caller) {
-            caller.accept(new ClientResponseObserver<T, U>() {
+        public CompletableFuture<Void> call(Consumer<StreamObserver<V>> caller) {
+            caller.accept(new ClientResponseObserver<U, V>() {
                 @Override
-                public void beforeStart(ClientCallStreamObserver<T> observer) {
+                public void beforeStart(ClientCallStreamObserver<U> observer) {
                     ServerStreamCall.this.observer = observer;
                     executor.execute(() -> future.complete(null));
                 }
 
                 @Override
-                public void onNext(U response) {
+                public void onNext(V response) {
                     executor.execute(() -> consumer.accept(response));
                 }
 
@@ -160,36 +161,36 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
         }
 
         public void cancel() {
-            ClientCallStreamObserver<T> observer = this.observer;
+            ClientCallStreamObserver<U> observer = this.observer;
             if (observer != null) {
                 observer.cancel("stream closed", null);
             }
         }
     }
 
-    protected <T, U, V> AsyncIterator<V> iterate(StubMethodCall<S, T, U> callback, T request, Function<U, V> converter) {
-        Iterator<T, U, V> iterator = new Iterator<>(converter, Executors.newSerializingExecutor(executorService));
+    protected <U, V, W> AsyncIterator<W> iterate(StubMethodCall<T, U, V> callback, U request, Function<V, W> converter) {
+        Iterator<U, V, W> iterator = new Iterator<>(converter, Executors.newSerializingExecutor(executorService));
         callback.call(stub, request, iterator);
         return iterator;
     }
 
-    private static class Iterator<T, U, V> implements AsyncIterator<V>, ClientResponseObserver<T, U> {
+    private static class Iterator<U, V, W> implements AsyncIterator<W>, ClientResponseObserver<U, V> {
         private final Executor executor;
-        private final Function<U, V> converter;
-        private final Queue<V> entries = new LinkedBlockingQueue<>();
-        private volatile CompletableFuture<V> nextFuture = new CompletableFuture<>();
-        private ClientCallStreamObserver<T> clientCallStreamObserver;
+        private final Function<V, W> converter;
+        private final Queue<W> entries = new LinkedBlockingQueue<>();
+        private volatile CompletableFuture<W> nextFuture = new CompletableFuture<>();
+        private ClientCallStreamObserver<U> clientCallStreamObserver;
         private boolean complete;
         private Throwable error;
         private boolean closed;
 
-        private Iterator(Function<U, V> converter, Executor executor) {
+        private Iterator(Function<V, W> converter, Executor executor) {
             this.converter = converter;
             this.executor = executor;
         }
 
         @Override
-        public void beforeStart(ClientCallStreamObserver<T> clientCallStreamObserver) {
+        public void beforeStart(ClientCallStreamObserver<U> clientCallStreamObserver) {
             executor.execute(() -> {
                 if (closed) {
                     clientCallStreamObserver.cancel("stream closed by client", null);
@@ -200,10 +201,10 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
         }
 
         @Override
-        public void onNext(U response) {
+        public void onNext(V response) {
             executor.execute(() -> {
                 if (!complete) {
-                    V value = converter.apply(response);
+                    W value = converter.apply(response);
                     if (!nextFuture.complete(value)) {
                         entries.add(value);
                     }
@@ -238,9 +239,9 @@ public abstract class AbstractAsyncPrimitive<S, P extends AsyncPrimitive> implem
         }
 
         @Override
-        public CompletableFuture<V> next() {
+        public CompletableFuture<W> next() {
             return nextFuture.thenApplyAsync(result -> {
-                V nextValue = entries.poll();
+                W nextValue = entries.poll();
                 if (nextValue != null) {
                     nextFuture = CompletableFuture.completedFuture(nextValue);
                 } else if (complete) {

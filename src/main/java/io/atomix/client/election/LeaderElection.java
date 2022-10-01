@@ -1,8 +1,10 @@
 package io.atomix.client.election;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.Cancellable;
 import io.atomix.client.SyncPrimitive;
+import io.atomix.client.election.impl.DefaultLeaderElectionBuilder;
 
 import java.util.concurrent.Executor;
 
@@ -10,7 +12,17 @@ import java.util.concurrent.Executor;
  * {@code LeaderElector} provides the same functionality as {@link AsyncLeaderElection} with
  * the only difference that all its methods block until the corresponding operation completes.
  */
-public interface LeaderElection<T> extends SyncPrimitive {
+public interface LeaderElection<T> extends SyncPrimitive<LeaderElection<T>, AsyncLeaderElection<T>> {
+
+    /**
+     * Returns a new LeaderElection builder.
+     *
+     * @param channel the AtomixChannel
+     * @return the LeaderElection builder
+     */
+    static <T> LeaderElectionBuilder<T> builder(AtomixChannel channel) {
+        return new DefaultLeaderElectionBuilder<>(channel);
+    }
 
     /**
      * Attempts to become leader.
@@ -81,7 +93,4 @@ public interface LeaderElection<T> extends SyncPrimitive {
      * @return a cancellable context
      */
     Cancellable listen(LeadershipEventListener<T> listener, Executor executor);
-
-    @Override
-    AsyncLeaderElection<T> async();
 }

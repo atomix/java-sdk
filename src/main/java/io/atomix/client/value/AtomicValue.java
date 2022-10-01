@@ -1,9 +1,11 @@
 package io.atomix.client.value;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.Cancellable;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.time.Versioned;
+import io.atomix.client.value.impl.DefaultAtomicValueBuilder;
 
 import java.util.concurrent.Executor;
 
@@ -12,7 +14,17 @@ import java.util.concurrent.Executor;
  *
  * @param <V> value type
  */
-public interface AtomicValue<V> extends SyncPrimitive {
+public interface AtomicValue<V> extends SyncPrimitive<AtomicValue<V>, AsyncAtomicValue<V>> {
+
+    /**
+     * Returns a new AtomicValue builder.
+     *
+     * @param channel the AtomixChannel
+     * @return the AtomicValue builder
+     */
+    static <V> AtomicValueBuilder<V> builder(AtomixChannel channel) {
+        return new DefaultAtomicValueBuilder<>(channel);
+    }
 
     /**
      * Gets the current value.
@@ -52,7 +64,4 @@ public interface AtomicValue<V> extends SyncPrimitive {
      * @param listener listener to notify about events
      */
     Cancellable listen(AtomicValueEventListener<V> listener, Executor executor);
-
-    @Override
-    AsyncAtomicValue<V> async();
 }

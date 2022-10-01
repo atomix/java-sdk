@@ -18,8 +18,10 @@ import io.atomix.api.runtime.set.v1.SetGrpc;
 import io.atomix.api.runtime.set.v1.SizeRequest;
 import io.atomix.api.runtime.set.v1.SizeResponse;
 import io.atomix.client.Cancellable;
+import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;
 import io.atomix.client.collection.CollectionEventListener;
+import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.set.AsyncDistributedSet;
@@ -40,7 +42,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * Atomix counter implementation.
  */
 public class DefaultAsyncDistributedSet
-    extends AbstractAsyncPrimitive<SetGrpc.SetStub, AsyncDistributedSet<String>>
+    extends AbstractAsyncPrimitive<AsyncDistributedCollection<String>, DistributedCollection<String>, SetGrpc.SetStub>
     implements AsyncDistributedSet<String> {
 
     public DefaultAsyncDistributedSet(String name, SetGrpc.SetStub stub, ScheduledExecutorService executorService) {
@@ -48,7 +50,7 @@ public class DefaultAsyncDistributedSet
     }
 
     @Override
-    protected CompletableFuture<AsyncDistributedSet<String>> create(Map<String, String> tags) {
+    protected CompletableFuture<AsyncDistributedCollection<String>> create(Map<String, String> tags) {
         return retry(SetGrpc.SetStub::create, CreateRequest.newBuilder()
             .setId(id())
             .putAllTags(tags)
@@ -215,6 +217,6 @@ public class DefaultAsyncDistributedSet
 
     @Override
     public DistributedSet<String> sync(Duration operationTimeout) {
-        return new BlockingDistributedSet<>(this, operationTimeout.toMillis());
+        return new BlockingDistributedSet<>(this, operationTimeout);
     }
 }

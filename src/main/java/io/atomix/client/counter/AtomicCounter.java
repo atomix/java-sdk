@@ -5,12 +5,25 @@
 
 package io.atomix.client.counter;
 
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.SyncPrimitive;
+import io.atomix.client.counter.impl.DefaultAtomicCounterBuilder;
 
 /**
  * Distributed version of java.util.concurrent.atomic.AtomicLong.
  */
-public interface AtomicCounter extends SyncPrimitive {
+public interface AtomicCounter extends SyncPrimitive<AtomicCounter, AsyncAtomicCounter> {
+
+    /**
+     * Returns a new AtomicCounter builder.
+     *
+     * @param channel the AtomixChannel
+     * @return the AtomicCounter builder
+     */
+    static AtomicCounterBuilder builder(AtomixChannel channel) {
+        return new DefaultAtomicCounterBuilder(channel);
+    }
+
     /**
      * Atomically increment by one and return the updated value.
      *

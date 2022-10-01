@@ -8,6 +8,7 @@ package io.atomix.client.collection;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
+import io.atomix.client.collection.impl.BlockingDistributedCollection;
 import io.atomix.client.iterator.AsyncIterable;
 
 import java.time.Duration;
@@ -18,7 +19,7 @@ import java.util.concurrent.Executor;
 /**
  * Asynchronous distributed collection.
  */
-public interface AsyncDistributedCollection<E> extends AsyncPrimitive, AsyncIterable<E> {
+public interface AsyncDistributedCollection<E> extends AsyncPrimitive<AsyncDistributedCollection<E>, DistributedCollection<E>>, AsyncIterable<E> {
 
     /**
      * Adds the specified element to this collection if it is not already present (optional operation).
@@ -120,10 +121,7 @@ public interface AsyncDistributedCollection<E> extends AsyncPrimitive, AsyncIter
     CompletableFuture<Cancellable> listen(CollectionEventListener<E> listener, Executor executor);
 
     @Override
-    default DistributedCollection<E> sync() {
-        return sync(Duration.ofMillis(DEFAULT_OPERATION_TIMEOUT_MILLIS));
+    default DistributedCollection<E> sync(Duration operationTimeout) {
+        return new BlockingDistributedCollection<>(this, operationTimeout);
     }
-
-    @Override
-    DistributedCollection<E> sync(Duration operationTimeout);
 }

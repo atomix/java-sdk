@@ -17,7 +17,7 @@ import java.util.concurrent.Executor;
 /**
  * Distributed collection.
  */
-public interface DistributedCollection<E> extends SyncPrimitive, SyncIterable<E>, Collection<E> {
+public interface DistributedCollection<E> extends SyncPrimitive<DistributedCollection<E>, AsyncDistributedCollection<E>>, SyncIterable<E>, Collection<E> {
     @Override
     SyncIterator<E> iterator();
 

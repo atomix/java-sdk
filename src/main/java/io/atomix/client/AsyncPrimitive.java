@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Asynchronous primitive.
  */
-public interface AsyncPrimitive extends DistributedPrimitive {
+public interface AsyncPrimitive<A extends AsyncPrimitive<A, S>, S extends SyncPrimitive<S, A>> extends DistributedPrimitive {
 
     /**
      * Closes the primitive.
@@ -25,7 +25,9 @@ public interface AsyncPrimitive extends DistributedPrimitive {
      *
      * @return the synchronous primitive
      */
-    SyncPrimitive sync();
+    default S sync() {
+        return sync(SyncPrimitive.DEFAULT_OPERATION_TIMEOUT);
+    }
 
     /**
      * Returns a synchronous wrapper around the asynchronous primitive.
@@ -33,6 +35,6 @@ public interface AsyncPrimitive extends DistributedPrimitive {
      * @param operationTimeout the synchronous operation timeout
      * @return the synchronous primitive
      */
-    SyncPrimitive sync(Duration operationTimeout);
+    S sync(Duration operationTimeout);
 
 }

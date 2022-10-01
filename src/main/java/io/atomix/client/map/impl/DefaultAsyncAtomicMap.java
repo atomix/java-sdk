@@ -26,8 +26,6 @@ import io.atomix.client.Cancellable;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;
 import io.atomix.client.collection.CollectionEventListener;
-import io.atomix.client.collection.DistributedCollection;
-import io.atomix.client.collection.impl.BlockingDistributedCollection;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.map.AsyncAtomicMap;
@@ -35,14 +33,14 @@ import io.atomix.client.map.AtomicMap;
 import io.atomix.client.map.AtomicMapEvent;
 import io.atomix.client.map.AtomicMapEventListener;
 import io.atomix.client.set.AsyncDistributedSet;
-import io.atomix.client.set.DistributedSet;
-import io.atomix.client.set.impl.BlockingDistributedSet;
 import io.atomix.client.time.Versioned;
+import io.atomix.client.utils.concurrent.Retries;
 import io.grpc.Status;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -54,7 +52,7 @@ import java.util.function.Predicate;
  * Atomix counter implementation.
  */
 public class DefaultAsyncAtomicMap
-    extends AbstractAsyncPrimitive<MapGrpc.MapStub, AsyncAtomicMap<String, byte[]>>
+    extends AbstractAsyncPrimitive<AsyncAtomicMap<String, byte[]>, AtomicMap<String, byte[]>, MapGrpc.MapStub>
     implements AsyncAtomicMap<String, byte[]> {
 
     public DefaultAsyncAtomicMap(String name, MapGrpc.MapStub stub, ScheduledExecutorService executorService) {
@@ -134,9 +132,22 @@ public class DefaultAsyncAtomicMap
     }
 
     @Override
-    public CompletableFuture<Versioned<byte[]>> computeIf(String key,
-                                                          Predicate<? super byte[]> condition,
-                                                          BiFunction<? super String, ? super byte[], ? extends byte[]> remappingFunction) {
+    public CompletableFuture<Versioned<byte[]>> computeIf(
+        String key,
+        Predicate<? super byte[]> condition,
+        BiFunction<? super String, ? super byte[], ? extends byte[]> remappingFunction) {
+        return Retries.retryAsync(
+            () -> compute(key, condition, remappingFunction),
+            e -> e instanceof ConcurrentModificationException,
+            MAX_DELAY_BETWEEN_RETRIES,
+            DEFAULT_TIMEOUT,
+            executorService);
+    }
+
+    private CompletableFuture<Versioned<byte[]>> compute(
+        String key,
+        Predicate<? super byte[]> condition,
+        BiFunction<? super String, ? super byte[], ? extends byte[]> remappingFunction) {
         return get(key).thenCompose(r1 -> {
             byte[] existingValue = r1 == null ? null : r1.value();
             // if the condition evaluates to false, return existing value.
@@ -155,24 +166,57 @@ public class DefaultAsyncAtomicMap
                 return CompletableFuture.completedFuture(null);
             }
 
+            CompletableFuture<Versioned<byte[]>> future = new CompletableFuture<>();
             if (r1 == null) {
-                return putIfAbsent(key, computedValue);
+                retry(MapGrpc.MapStub::insert, InsertRequest.newBuilder()
+                    .setId(id())
+                    .setKey(key)
+                    .setValue(ByteString.copyFrom(computedValue))
+                    .build(), DEFAULT_TIMEOUT)
+                    .whenComplete((r, t) -> {
+                        if (t == null) {
+                            future.complete(new Versioned<>(computedValue, r.getVersion()));
+                        } else if (Status.fromThrowable(t).getCode() == Status.Code.ALREADY_EXISTS) {
+                            future.completeExceptionally(new ConcurrentModificationException());
+                        } else {
+                            future.completeExceptionally(t);
+                        }
+                    });
             } else if (computedValue == null) {
-                return retry(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
+                retry(MapGrpc.MapStub::remove, RemoveRequest.newBuilder()
                     .setId(id())
                     .setKey(key)
                     .setPrevVersion(r1.version())
                     .build(), DEFAULT_TIMEOUT)
-                    .thenApply(response -> new Versioned<>(existingValue, r1.version()));
+                    .whenComplete((r, t) -> {
+                        if (t == null) {
+                            future.complete(new Versioned<>(existingValue, r1.version()));
+                        } else if (Status.fromThrowable(t).getCode() == Status.NOT_FOUND.getCode()) {
+                            future.completeExceptionally(new ConcurrentModificationException());
+                        } else if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
+                            future.completeExceptionally(new ConcurrentModificationException());
+                        } else {
+                            future.completeExceptionally(t);
+                        }
+                    });
             } else {
-                return retry(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
+                retry(MapGrpc.MapStub::update, UpdateRequest.newBuilder()
                     .setId(id())
                     .setKey(key)
                     .setValue(ByteString.copyFrom(computedValue))
                     .setPrevVersion(r1.version())
                     .build(), DEFAULT_TIMEOUT)
-                    .thenApply(response -> new Versioned<>(computedValue, response.getVersion()));
+                    .whenComplete((r, t) -> {
+                        if (t == null) {
+                            future.complete(new Versioned<>(computedValue, r.getVersion()));
+                        } else if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
+                            future.completeExceptionally(new ConcurrentModificationException());
+                        } else {
+                            future.completeExceptionally(t);
+                        }
+                    });
             }
+            return future;
         });
     }
 
@@ -465,11 +509,6 @@ public class DefaultAsyncAtomicMap
         }, executor);
     }
 
-    @Override
-    public AtomicMap<String, byte[]> sync(Duration operationTimeout) {
-        return new BlockingAtomicMap<>(this, operationTimeout.toMillis());
-    }
-
     private static Versioned<byte[]> toVersioned(VersionedValue value) {
         return new Versioned<>(
             value.getValue().toByteArray(),
@@ -565,11 +604,6 @@ public class DefaultAsyncAtomicMap
         public CompletableFuture<Void> close() {
             return DefaultAsyncAtomicMap.this.close();
         }
-
-        @Override
-        public DistributedSet<String> sync(Duration operationTimeout) {
-            return new BlockingDistributedSet<>(this, operationTimeout.toMillis());
-        }
     }
 
     private class Values implements AsyncDistributedCollection<Versioned<byte[]>> {
@@ -654,11 +688,6 @@ public class DefaultAsyncAtomicMap
         @Override
         public CompletableFuture<Void> close() {
             return DefaultAsyncAtomicMap.this.close();
-        }
-
-        @Override
-        public DistributedCollection<Versioned<byte[]>> sync(Duration operationTimeout) {
-            return new BlockingDistributedCollection<>(this, operationTimeout.toMillis());
         }
     }
 
@@ -764,11 +793,6 @@ public class DefaultAsyncAtomicMap
         @Override
         public CompletableFuture<Void> close() {
             return DefaultAsyncAtomicMap.this.close();
-        }
-
-        @Override
-        public DistributedSet<Map.Entry<String, Versioned<byte[]>>> sync(Duration operationTimeout) {
-            return new BlockingDistributedSet<>(this, operationTimeout.toMillis());
         }
     }
 }

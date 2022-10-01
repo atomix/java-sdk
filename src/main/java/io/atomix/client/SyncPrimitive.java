@@ -5,10 +5,13 @@
 
 package io.atomix.client;
 
+import java.time.Duration;
+
 /**
  * Synchronous primitive.
  */
-public interface SyncPrimitive extends DistributedPrimitive {
+public interface SyncPrimitive<S extends SyncPrimitive<S, A>, A extends AsyncPrimitive<A, S>> extends DistributedPrimitive {
+    Duration DEFAULT_OPERATION_TIMEOUT = Duration.ofSeconds(5);
 
     /**
      * Closes the primitive.
@@ -20,6 +23,6 @@ public interface SyncPrimitive extends DistributedPrimitive {
      *
      * @return the underlying asynchronous primitive
      */
-    AsyncPrimitive async();
+    A async();
 
 }

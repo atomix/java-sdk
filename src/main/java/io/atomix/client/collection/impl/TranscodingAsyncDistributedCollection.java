@@ -14,7 +14,6 @@ import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.iterator.impl.TranscodingIterator;
 
-import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -29,16 +28,16 @@ import java.util.stream.Collectors;
  * @param <E1> element type of this collection
  */
 public class TranscodingAsyncDistributedCollection<E1, E2>
-        extends DelegatingAsyncPrimitive<AsyncDistributedCollection<E2>>
-        implements AsyncDistributedCollection<E1> {
+    extends DelegatingAsyncPrimitive<AsyncDistributedCollection<E1>, DistributedCollection<E1>, AsyncDistributedCollection<E2>>
+    implements AsyncDistributedCollection<E1> {
     private final AsyncDistributedCollection<E2> backingCollection;
     private final Function<E1, E2> elementEncoder;
     private final Function<E2, E1> elementDecoder;
 
     public TranscodingAsyncDistributedCollection(
-            AsyncDistributedCollection<E2> backingCollection,
-            Function<E1, E2> elementEncoder,
-            Function<E2, E1> elementDecoder) {
+        AsyncDistributedCollection<E2> backingCollection,
+        Function<E1, E2> elementEncoder,
+        Function<E2, E1> elementDecoder) {
         super(backingCollection);
         this.backingCollection = backingCollection;
         this.elementEncoder = k -> k == null ? null : elementEncoder.apply(k);
@@ -103,10 +102,5 @@ public class TranscodingAsyncDistributedCollection<E1, E2>
     @Override
     public CompletableFuture<Cancellable> listen(CollectionEventListener<E1> listener, Executor executor) {
         return backingCollection.listen(event -> new CollectionEvent<>(event.type(), elementDecoder.apply(event.element())), executor);
-    }
-
-    @Override
-    public DistributedCollection<E1> sync(Duration operationTimeout) {
-        return new BlockingDistributedCollection<>(this, operationTimeout.toMillis());
     }
 }

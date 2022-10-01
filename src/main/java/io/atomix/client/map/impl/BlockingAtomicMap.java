@@ -5,9 +5,7 @@
 
 package io.atomix.client.map.impl;
 
-import com.google.common.base.Throwables;
 import io.atomix.client.Cancellable;
-import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.collection.impl.BlockingDistributedCollection;
@@ -17,13 +15,10 @@ import io.atomix.client.map.AtomicMapEventListener;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.set.impl.BlockingDistributedSet;
 import io.atomix.client.time.Versioned;
-import io.atomix.client.utils.concurrent.Retries;
 
 import java.time.Duration;
-import java.util.ConcurrentModificationException;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -34,16 +29,14 @@ import java.util.function.Predicate;
  * @param <K> type of key.
  * @param <V> type of value.
  */
-public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> implements AtomicMap<K, V> {
+public class BlockingAtomicMap<K, V> extends Synchronous<AtomicMap<K, V>, AsyncAtomicMap<K, V>> implements AtomicMap<K, V> {
 
     private static final int MAX_DELAY_BETWEEN_RETRY_MILLS = 50;
     private final AsyncAtomicMap<K, V> asyncMap;
-    private final long operationTimeoutMillis;
 
-    public BlockingAtomicMap(AsyncAtomicMap<K, V> asyncMap, long operationTimeoutMillis) {
-        super(asyncMap);
+    public BlockingAtomicMap(AsyncAtomicMap<K, V> asyncMap, Duration operationTimeout) {
+        super(asyncMap, operationTimeout);
         this.asyncMap = asyncMap;
-        this.operationTimeoutMillis = operationTimeoutMillis;
     }
 
     @Override
@@ -77,31 +70,23 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     }
 
     @Override
-    public Versioned<V> computeIfAbsent(K key,
-                                        Function<? super K, ? extends V> mappingFunction) {
-        return computeIf(key, Objects::isNull, (k, v) -> mappingFunction.apply(k));
+    public Versioned<V> computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        return complete(asyncMap.computeIfAbsent(key, mappingFunction));
     }
 
     @Override
-    public Versioned<V> computeIfPresent(K key,
-                                         BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return computeIf(key, Objects::nonNull, remappingFunction);
+    public Versioned<V> compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return complete(asyncMap.compute(key, remappingFunction));
     }
 
     @Override
-    public Versioned<V> compute(K key,
-                                BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return computeIf(key, v -> true, remappingFunction);
+    public Versioned<V> computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return complete(asyncMap.computeIfPresent(key, remappingFunction));
     }
 
     @Override
-    public Versioned<V> computeIf(K key,
-                                  Predicate<? super V> condition,
-                                  BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        return Retries.retryable(() -> complete(asyncMap.computeIf(key, condition, remappingFunction)),
-            PrimitiveException.ConcurrentModification.class,
-            Integer.MAX_VALUE,
-            MAX_DELAY_BETWEEN_RETRY_MILLS).get();
+    public Versioned<V> computeIf(K key, Predicate<? super V> condition, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        return complete(asyncMap.computeIf(key, condition, remappingFunction));
     }
 
     @Override
@@ -126,17 +111,17 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
 
     @Override
     public DistributedSet<K> keySet() {
-        return new BlockingDistributedSet<K>(asyncMap.keySet(), operationTimeoutMillis);
+        return new BlockingDistributedSet<K>(asyncMap.keySet(), operationTimeout);
     }
 
     @Override
     public DistributedCollection<Versioned<V>> values() {
-        return new BlockingDistributedCollection<>(asyncMap.values(), operationTimeoutMillis);
+        return new BlockingDistributedCollection<>(asyncMap.values(), operationTimeout);
     }
 
     @Override
     public DistributedSet<Map.Entry<K, Versioned<V>>> entrySet() {
-        return new BlockingDistributedSet<>(asyncMap.entrySet(), operationTimeoutMillis);
+        return new BlockingDistributedSet<>(asyncMap.entrySet(), operationTimeout);
     }
 
     @Override
@@ -202,25 +187,5 @@ public class BlockingAtomicMap<K, V> extends Synchronous<AsyncAtomicMap<K, V>> i
     @Override
     public AsyncAtomicMap<K, V> async() {
         return asyncMap;
-    }
-
-    protected <T> T complete(CompletableFuture<T> future) {
-        try {
-            return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new PrimitiveException.Interrupted();
-        } catch (TimeoutException e) {
-            throw new PrimitiveException.Timeout();
-        } catch (ExecutionException e) {
-            Throwable cause = Throwables.getRootCause(e);
-            if (cause instanceof PrimitiveException) {
-                throw (PrimitiveException) cause;
-            } else if (cause instanceof ConcurrentModificationException) {
-                throw (ConcurrentModificationException) cause;
-            } else {
-                throw new PrimitiveException(cause);
-            }
-        }
     }
 }

@@ -1,30 +1,23 @@
 package io.atomix.client.map.impl;
 
-import com.google.common.base.Throwables;
-import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.map.AsyncAtomicCounterMap;
 import io.atomix.client.map.AtomicCounterMap;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.time.Duration;
 
 /**
  * Default implementation of {@code AtomicCounterMap}.
  *
  * @param <K> map key type
  */
-public class BlockingAtomicCounterMap<K> extends Synchronous<AsyncAtomicCounterMap<K>> implements AtomicCounterMap<K> {
+public class BlockingAtomicCounterMap<K> extends Synchronous<AtomicCounterMap<K>, AsyncAtomicCounterMap<K>> implements AtomicCounterMap<K> {
 
     private final AsyncAtomicCounterMap<K> asyncCounterMap;
-    private final long operationTimeoutMillis;
 
-    public BlockingAtomicCounterMap(AsyncAtomicCounterMap<K> asyncCounterMap, long operationTimeoutMillis) {
-        super(asyncCounterMap);
+    public BlockingAtomicCounterMap(AsyncAtomicCounterMap<K> asyncCounterMap, Duration operationTimeout) {
+        super(asyncCounterMap, operationTimeout);
         this.asyncCounterMap = asyncCounterMap;
-        this.operationTimeoutMillis = operationTimeoutMillis;
     }
 
     @Override
@@ -105,23 +98,5 @@ public class BlockingAtomicCounterMap<K> extends Synchronous<AsyncAtomicCounterM
     @Override
     public AsyncAtomicCounterMap<K> async() {
         return asyncCounterMap;
-    }
-
-    private <T> T complete(CompletableFuture<T> future) {
-        try {
-            return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new PrimitiveException.Interrupted();
-        } catch (TimeoutException e) {
-            throw new PrimitiveException.Timeout();
-        } catch (ExecutionException e) {
-            Throwable cause = Throwables.getRootCause(e);
-            if (cause instanceof PrimitiveException) {
-                throw (PrimitiveException) cause;
-            } else {
-                throw new PrimitiveException(cause);
-            }
-        }
     }
 }

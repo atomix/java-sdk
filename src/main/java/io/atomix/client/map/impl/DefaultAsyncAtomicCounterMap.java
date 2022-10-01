@@ -14,7 +14,6 @@ import io.atomix.api.runtime.countermap.v1.GetRequest;
 import io.atomix.api.runtime.countermap.v1.GetResponse;
 import io.atomix.api.runtime.countermap.v1.IncrementRequest;
 import io.atomix.api.runtime.countermap.v1.IncrementResponse;
-import io.atomix.api.runtime.countermap.v1.InsertRequest;
 import io.atomix.api.runtime.countermap.v1.RemoveRequest;
 import io.atomix.api.runtime.countermap.v1.RemoveResponse;
 import io.atomix.api.runtime.countermap.v1.SetRequest;
@@ -27,7 +26,6 @@ import io.atomix.client.map.AsyncAtomicCounterMap;
 import io.atomix.client.map.AtomicCounterMap;
 import io.grpc.Status;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,7 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * Atomix counter implementation.
  */
 public class DefaultAsyncAtomicCounterMap
-    extends AbstractAsyncPrimitive<CounterMapGrpc.CounterMapStub, AsyncAtomicCounterMap<String>>
+    extends AbstractAsyncPrimitive<AsyncAtomicCounterMap<String>, AtomicCounterMap<String>, CounterMapGrpc.CounterMapStub>
     implements AsyncAtomicCounterMap<String> {
 
     public DefaultAsyncAtomicCounterMap(String name, CounterMapGrpc.CounterMapStub stub, ScheduledExecutorService executorService) {
@@ -152,30 +150,7 @@ public class DefaultAsyncAtomicCounterMap
 
     @Override
     public CompletableFuture<Long> putIfAbsent(String key, long newValue) {
-        return retry(CounterMapGrpc.CounterMapStub::get, GetRequest.newBuilder()
-            .setId(id())
-            .setKey(key)
-            .build(), DEFAULT_TIMEOUT)
-            .thenApply(GetResponse::getValue)
-            .exceptionallyCompose(t -> {
-                if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
-                    return retry(CounterMapGrpc.CounterMapStub::insert, InsertRequest.newBuilder()
-                        .setId(id())
-                        .setKey(key)
-                        .setValue(newValue)
-                        .build(), DEFAULT_TIMEOUT)
-                        .thenApply(v -> 0L)
-                        .exceptionallyCompose(u -> {
-                            if (Status.fromThrowable(t).getCode() == Status.Code.ALREADY_EXISTS) {
-                                return putIfAbsent(key, newValue);
-                            } else {
-                                throw (RuntimeException) t;
-                            }
-                        });
-                } else {
-                    throw (RuntimeException) t;
-                }
-            });
+        return CompletableFuture.failedFuture(new UnsupportedOperationException());
     }
 
     @Override
@@ -235,10 +210,5 @@ public class DefaultAsyncAtomicCounterMap
             .setId(id())
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> null);
-    }
-
-    @Override
-    public AtomicCounterMap<String> sync(Duration operationTimeout) {
-        return new BlockingAtomicCounterMap<>(this, operationTimeout.toMillis());
     }
 }

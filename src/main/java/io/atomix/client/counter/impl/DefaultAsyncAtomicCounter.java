@@ -30,7 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * Atomix counter implementation.
  */
 public class DefaultAsyncAtomicCounter
-    extends AbstractAsyncPrimitive<CounterGrpc.CounterStub, AsyncAtomicCounter>
+    extends AbstractAsyncPrimitive<AsyncAtomicCounter, AtomicCounter, CounterGrpc.CounterStub>
     implements AsyncAtomicCounter {
 
     public DefaultAsyncAtomicCounter(String name, CounterGrpc.CounterStub stub, ScheduledExecutorService executorService) {
@@ -142,6 +142,6 @@ public class DefaultAsyncAtomicCounter
 
     @Override
     public AtomicCounter sync(Duration operationTimeout) {
-        return new BlockingAtomicCounter(this, operationTimeout.toMillis());
+        return new BlockingAtomicCounter(this, operationTimeout);
     }
 }

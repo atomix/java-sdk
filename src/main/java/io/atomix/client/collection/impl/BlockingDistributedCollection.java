@@ -5,9 +5,7 @@
 
 package io.atomix.client.collection.impl;
 
-import com.google.common.base.Throwables;
 import io.atomix.client.Cancellable;
-import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEventListener;
@@ -15,9 +13,9 @@ import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.iterator.SyncIterator;
 import io.atomix.client.iterator.impl.BlockingIterator;
 
+import java.time.Duration;
 import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
 
 /**
  * Implementation of {@link DistributedCollection} that merely delegates to a {@link AsyncDistributedCollection} and
@@ -25,16 +23,13 @@ import java.util.concurrent.*;
  *
  * @param <E> collection element type
  */
-public class BlockingDistributedCollection<E> extends Synchronous<AsyncDistributedCollection<E>> implements DistributedCollection<E> {
-
-    private final long operationTimeoutMillis;
+public class BlockingDistributedCollection<E> extends Synchronous<DistributedCollection<E>, AsyncDistributedCollection<E>> implements DistributedCollection<E> {
 
     private final AsyncDistributedCollection<E> asyncCollection;
 
-    public BlockingDistributedCollection(AsyncDistributedCollection<E> asyncCollection, long operationTimeoutMillis) {
-        super(asyncCollection);
+    public BlockingDistributedCollection(AsyncDistributedCollection<E> asyncCollection, Duration operationTimeout) {
+        super(asyncCollection, operationTimeout);
         this.asyncCollection = asyncCollection;
-        this.operationTimeoutMillis = operationTimeoutMillis;
     }
 
     @Override
@@ -94,7 +89,7 @@ public class BlockingDistributedCollection<E> extends Synchronous<AsyncDistribut
 
     @Override
     public SyncIterator<E> iterator() {
-        return new BlockingIterator<>(asyncCollection.iterator(), operationTimeoutMillis);
+        return new BlockingIterator<>(asyncCollection.iterator(), operationTimeout);
     }
 
     @Override
@@ -117,25 +112,5 @@ public class BlockingDistributedCollection<E> extends Synchronous<AsyncDistribut
     @Override
     public AsyncDistributedCollection<E> async() {
         return asyncCollection;
-    }
-
-    protected <T> T complete(CompletableFuture<T> future) {
-        try {
-            return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new PrimitiveException.Interrupted();
-        } catch (TimeoutException e) {
-            throw new PrimitiveException.Timeout();
-        } catch (ExecutionException e) {
-            Throwable cause = Throwables.getRootCause(e);
-            if (cause instanceof PrimitiveException) {
-                throw (PrimitiveException) cause;
-            } else if (cause instanceof NoSuchElementException) {
-                throw (NoSuchElementException) cause;
-            } else {
-                throw new PrimitiveException(cause);
-            }
-        }
     }
 }

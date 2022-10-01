@@ -10,12 +10,8 @@ import io.atomix.client.Cancellable;
 import io.atomix.client.DelegatingAsyncPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.impl.TranscodingAsyncDistributedCollection;
-import io.atomix.client.map.AsyncAtomicMap;
 import io.atomix.client.map.AsyncDistributedMap;
 import io.atomix.client.map.AsyncDistributedMultimap;
-import io.atomix.client.map.AtomicMap;
-import io.atomix.client.map.AtomicMapEvent;
-import io.atomix.client.map.AtomicMapEventListener;
 import io.atomix.client.map.DistributedMultimap;
 import io.atomix.client.map.MultimapEvent;
 import io.atomix.client.map.MultimapEventListener;
@@ -23,16 +19,12 @@ import io.atomix.client.set.AsyncDistributedMultiset;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.impl.TranscodingAsyncDistributedMultiset;
 import io.atomix.client.set.impl.TranscodingAsyncDistributedSet;
-import io.atomix.client.time.Versioned;
 
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +37,7 @@ import java.util.stream.Collectors;
  * @param <V1> value type of this map
  */
 public class TranscodingAsyncDistributedMultimap<K1, V1, K2, V2>
-    extends DelegatingAsyncPrimitive<AsyncDistributedMultimap<K2, V2>>
+    extends DelegatingAsyncPrimitive<AsyncDistributedMultimap<K1, V1>, DistributedMultimap<K1, V1>, AsyncDistributedMultimap<K2, V2>>
     implements AsyncDistributedMultimap<K1, V1> {
 
     private final AsyncDistributedMultimap<K2, V2> backingMap;
@@ -226,10 +218,5 @@ public class TranscodingAsyncDistributedMultimap<K1, V1, K2, V2>
             keyDecoder.apply(event.key()),
             valueDecoder.apply(event.newValue()),
             valueDecoder.apply(event.oldValue()))), executor);
-    }
-
-    @Override
-    public DistributedMultimap<K1, V1> sync(Duration operationTimeout) {
-        return new BlockingDistributedMultimap<>(this, operationTimeout.toMillis());
     }
 }

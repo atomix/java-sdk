@@ -5,29 +5,22 @@
 
 package io.atomix.client.counter.impl;
 
-import com.google.common.base.Throwables;
-import io.atomix.client.PrimitiveException;
 import io.atomix.client.Synchronous;
 import io.atomix.client.counter.AsyncAtomicCounter;
 import io.atomix.client.counter.AtomicCounter;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.time.Duration;
 
 /**
  * Default implementation for a {@code AtomicCounter} backed by a {@link AsyncAtomicCounter}.
  */
-public class BlockingAtomicCounter extends Synchronous<AsyncAtomicCounter> implements AtomicCounter {
+public class BlockingAtomicCounter extends Synchronous<AtomicCounter, AsyncAtomicCounter> implements AtomicCounter {
 
     private final AsyncAtomicCounter asyncCounter;
-    private final long operationTimeoutMillis;
 
-    public BlockingAtomicCounter(AsyncAtomicCounter asyncCounter, long operationTimeoutMillis) {
-        super(asyncCounter);
+    public BlockingAtomicCounter(AsyncAtomicCounter asyncCounter, Duration operationTimeout) {
+        super(asyncCounter, operationTimeout);
         this.asyncCounter = asyncCounter;
-        this.operationTimeoutMillis = operationTimeoutMillis;
     }
 
     @Override
@@ -78,23 +71,5 @@ public class BlockingAtomicCounter extends Synchronous<AsyncAtomicCounter> imple
     @Override
     public AsyncAtomicCounter async() {
         return asyncCounter;
-    }
-
-    private <T> T complete(CompletableFuture<T> future) {
-        try {
-            return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new PrimitiveException.Interrupted();
-        } catch (TimeoutException e) {
-            throw new PrimitiveException.Timeout();
-        } catch (ExecutionException e) {
-            Throwable cause = Throwables.getRootCause(e);
-            if (cause instanceof PrimitiveException) {
-                throw (PrimitiveException) cause;
-            } else {
-                throw new PrimitiveException(cause);
-            }
-        }
     }
 }

@@ -6,7 +6,7 @@
 package io.atomix.client.counter;
 
 import io.atomix.client.AsyncPrimitive;
-import io.atomix.client.DistributedPrimitive;
+import io.atomix.client.counter.impl.BlockingAtomicCounter;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * An async atomic counter dispenses monotonically increasing values.
  */
-public interface AsyncAtomicCounter extends AsyncPrimitive {
+public interface AsyncAtomicCounter extends AsyncPrimitive<AsyncAtomicCounter, AtomicCounter> {
     /**
      * Atomically increment by one and return the updated value.
      *
@@ -87,10 +87,7 @@ public interface AsyncAtomicCounter extends AsyncPrimitive {
     CompletableFuture<Boolean> compareAndSet(long expectedValue, long updateValue);
 
     @Override
-    default AtomicCounter sync() {
-        return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+    default AtomicCounter sync(Duration operationTimeout) {
+        return new BlockingAtomicCounter(this, operationTimeout);
     }
-
-    @Override
-    AtomicCounter sync(Duration operationTimeout);
 }

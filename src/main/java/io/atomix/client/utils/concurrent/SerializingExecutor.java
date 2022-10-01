@@ -3,8 +3,6 @@ package io.atomix.client.utils.concurrent;
 import java.util.LinkedList;
 import java.util.concurrent.Executor;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 final class SerializingExecutor implements Executor {
     private final Executor parent;
     private final LinkedList<Runnable> tasks = new LinkedList<>();

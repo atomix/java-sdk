@@ -3,8 +3,8 @@ package io.atomix.client.map;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
-import io.atomix.client.DistributedPrimitive;
 import io.atomix.client.collection.AsyncDistributedCollection;
+import io.atomix.client.map.impl.BlockingDistributedMultimap;
 import io.atomix.client.set.AsyncDistributedMultiset;
 import io.atomix.client.set.AsyncDistributedSet;
 
@@ -22,7 +22,7 @@ import java.util.concurrent.Executor;
  * Certain operations may be too expensive when backed by a distributed data
  * structure and have been labeled as such.
  */
-public interface AsyncDistributedMultimap<K, V> extends AsyncPrimitive {
+public interface AsyncDistributedMultimap<K, V> extends AsyncPrimitive<AsyncDistributedMultimap<K, V>, DistributedMultimap<K, V>> {
 
     /**
      * Returns the number of key-value pairs in this multimap.
@@ -229,10 +229,7 @@ public interface AsyncDistributedMultimap<K, V> extends AsyncPrimitive {
     CompletableFuture<Cancellable> listen(MultimapEventListener<K, V> listener, Executor executor);
 
     @Override
-    default DistributedMultimap<K, V> sync() {
-        return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+    default DistributedMultimap<K, V> sync(Duration operationTimeout) {
+        return new BlockingDistributedMultimap<>(this, operationTimeout);
     }
-
-    @Override
-    DistributedMultimap<K, V> sync(Duration operationTimeout);
 }

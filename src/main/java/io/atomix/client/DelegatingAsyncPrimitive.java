@@ -15,7 +15,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Base class for primitive delegates.
  */
-public abstract class DelegatingAsyncPrimitive<T extends AsyncPrimitive> implements AsyncPrimitive {
+public abstract class DelegatingAsyncPrimitive<A extends AsyncPrimitive<A, S>, S extends SyncPrimitive<S, A>, T extends AsyncPrimitive<T, ?>> implements AsyncPrimitive<A, S> {
     private final T primitive;
 
     public DelegatingAsyncPrimitive(T primitive) {

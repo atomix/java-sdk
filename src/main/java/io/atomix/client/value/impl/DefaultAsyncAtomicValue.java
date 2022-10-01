@@ -20,7 +20,6 @@ import io.atomix.client.value.AtomicValueEvent;
 import io.atomix.client.value.AtomicValueEventListener;
 import io.grpc.Status;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -30,7 +29,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * Atomic value implementation.
  */
 public class DefaultAsyncAtomicValue
-    extends AbstractAsyncPrimitive<ValueGrpc.ValueStub, AsyncAtomicValue<String>>
+    extends AbstractAsyncPrimitive<AsyncAtomicValue<String>, AtomicValue<String>, ValueGrpc.ValueStub>
     implements AsyncAtomicValue<String> {
 
     public DefaultAsyncAtomicValue(String name, ValueGrpc.ValueStub stub, ScheduledExecutorService executorService) {
@@ -43,7 +42,7 @@ public class DefaultAsyncAtomicValue
             .setId(id())
             .putAllTags(tags)
             .build())
-            .thenApply(response -> this);
+            .thenApply(v -> this);
     }
 
     @Override
@@ -114,10 +113,5 @@ public class DefaultAsyncAtomicValue
                     break;
             }
         }, executor);
-    }
-
-    @Override
-    public AtomicValue<String> sync(Duration operationTimeout) {
-        return new BlockingAtomicValue<>(this, operationTimeout.toMillis());
     }
 }

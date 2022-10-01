@@ -4,7 +4,6 @@ import io.atomix.client.DelegatingAsyncPrimitive;
 import io.atomix.client.map.AsyncAtomicCounterMap;
 import io.atomix.client.map.AtomicCounterMap;
 
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -12,7 +11,7 @@ import java.util.function.Function;
  * An {@code AsyncAtomicCounterMap} that transcodes keys.
  */
 public class TranscodingAsyncAtomicCounterMap<K1, K2>
-    extends DelegatingAsyncPrimitive<AsyncAtomicCounterMap<K2>>
+    extends DelegatingAsyncPrimitive<AsyncAtomicCounterMap<K1>, AtomicCounterMap<K1>, AsyncAtomicCounterMap<K2>>
     implements AsyncAtomicCounterMap<K1> {
     private final AsyncAtomicCounterMap<K2> backingMap;
     private final Function<K1, K2> keyEncoder;
@@ -156,10 +155,5 @@ public class TranscodingAsyncAtomicCounterMap<K1, K2>
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
-    }
-
-    @Override
-    public AtomicCounterMap<K1> sync(Duration operationTimeout) {
-        return new BlockingAtomicCounterMap<>(this, operationTimeout.toMillis());
     }
 }

@@ -1,7 +1,7 @@
 package io.atomix.client.map;
 
 import io.atomix.client.AsyncPrimitive;
-import io.atomix.client.DistributedPrimitive;
+import io.atomix.client.map.impl.BlockingAtomicCounterMap;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * An async atomic counter map dispenses monotonically increasing values associated with key.
  */
-public interface AsyncAtomicCounterMap<K> extends AsyncPrimitive {
+public interface AsyncAtomicCounterMap<K> extends AsyncPrimitive<AsyncAtomicCounterMap<K>, AtomicCounterMap<K>> {
 
     /**
      * Increments by one the value currently associated with key, and returns the new value.
@@ -146,10 +146,7 @@ public interface AsyncAtomicCounterMap<K> extends AsyncPrimitive {
     CompletableFuture<Void> clear();
 
     @Override
-    default AtomicCounterMap<K> sync() {
-        return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+    default AtomicCounterMap<K> sync(Duration operationTimeout) {
+        return new BlockingAtomicCounterMap<>(this, operationTimeout);
     }
-
-    @Override
-    AtomicCounterMap<K> sync(Duration operationTimeout);
 }

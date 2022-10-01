@@ -5,7 +5,7 @@
 
 package io.atomix.client.iterator;
 
-import io.atomix.client.DistributedPrimitive;
+import io.atomix.client.SyncPrimitive;
 import io.atomix.client.iterator.impl.BlockingIterator;
 
 import java.time.Duration;
@@ -44,7 +44,7 @@ public interface AsyncIterator<T> {
      * @return the synchronous iterator
      */
     default Iterator<T> sync() {
-        return sync(Duration.ofMillis(DistributedPrimitive.DEFAULT_OPERATION_TIMEOUT_MILLIS));
+        return sync(SyncPrimitive.DEFAULT_OPERATION_TIMEOUT);
     }
 
     /**
@@ -54,6 +54,6 @@ public interface AsyncIterator<T> {
      * @return the synchronous iterator
      */
     default Iterator<T> sync(Duration timeout) {
-        return new BlockingIterator<>(this, timeout.toMillis());
+        return new BlockingIterator<>(this, timeout);
     }
 }

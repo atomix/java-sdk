@@ -2,9 +2,11 @@ package io.atomix.client.map;
 
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.Cancellable;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.collection.DistributedCollection;
+import io.atomix.client.map.impl.DefaultDistributedMultimapBuilder;
 import io.atomix.client.set.DistributedMultiset;
 import io.atomix.client.set.DistributedSet;
 
@@ -17,7 +19,17 @@ import java.util.concurrent.Executor;
  * {@link AsyncDistributedMultimap}.  Instead of returning futures this map
  * blocks until the future completes then returns the result.
  */
-public interface DistributedMultimap<K, V> extends SyncPrimitive, Multimap<K, V> {
+public interface DistributedMultimap<K, V> extends SyncPrimitive<DistributedMultimap<K, V>, AsyncDistributedMultimap<K, V>>, Multimap<K, V> {
+
+    /**
+     * Returns a new DistributedMultimap builder.
+     *
+     * @param channel the AtomixChannel
+     * @return the DistributedMultimap builder
+     */
+    static <K, V> DistributedMultimapBuilder<K, V> builder(AtomixChannel channel) {
+        return new DefaultDistributedMultimapBuilder<>(channel);
+    }
 
     /**
      * Returns a set of the keys contained in this multimap with one or more
@@ -76,7 +88,4 @@ public interface DistributedMultimap<K, V> extends SyncPrimitive, Multimap<K, V>
      * @param executor executor to use for handling incoming map events
      */
     Cancellable listen(MultimapEventListener<K, V> listener, Executor executor);
-
-    @Override
-    AsyncDistributedMultimap<K, V> async();
 }
