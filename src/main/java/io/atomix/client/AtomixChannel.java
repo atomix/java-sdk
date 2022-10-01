@@ -3,8 +3,11 @@ package io.atomix.client;
 import io.atomix.client.utils.concurrent.Threads;
 import io.grpc.CallOptions;
 import io.grpc.ClientCall;
+import io.grpc.LoadBalancerProvider;
+import io.grpc.LoadBalancerRegistry;
 import io.grpc.ManagedChannel;
 import io.grpc.MethodDescriptor;
+import io.grpc.NameResolverProvider;
 import io.grpc.NameResolverRegistry;
 import io.grpc.internal.DnsNameResolverProvider;
 import io.grpc.internal.PickFirstLoadBalancerProvider;
@@ -23,10 +26,14 @@ public class AtomixChannel extends ManagedChannel {
     private static final Logger LOGGER = LoggerFactory.getLogger(AtomixChannel.class);
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 5678;
+    private static final LoadBalancerProvider PICK_FIRST_LOAD_BALANCER_PROVIDER = new PickFirstLoadBalancerProvider();
+    private static final NameResolverProvider DNS_NAME_RESOLVER_PROVIDER = new DnsNameResolverProvider();
 
     static {
+        LoadBalancerRegistry.getDefaultRegistry()
+            .register(PICK_FIRST_LOAD_BALANCER_PROVIDER);
         NameResolverRegistry.getDefaultRegistry()
-            .register(new DnsNameResolverProvider());
+            .register(DNS_NAME_RESOLVER_PROVIDER);
     }
 
     private final ManagedChannel parent;
@@ -59,8 +66,8 @@ public class AtomixChannel extends ManagedChannel {
         return NettyChannelBuilder.forAddress(host, port)
             .usePlaintext()
             .enableRetry()
-            .nameResolverFactory(new DnsNameResolverProvider())
-            .defaultLoadBalancingPolicy(new PickFirstLoadBalancerProvider().getPolicyName())
+            .nameResolverFactory(DNS_NAME_RESOLVER_PROVIDER)
+            .defaultLoadBalancingPolicy(PICK_FIRST_LOAD_BALANCER_PROVIDER.getPolicyName())
             .build();
     }
 
