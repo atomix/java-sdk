@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 /**
  * State of leadership for an election.
  * <p>
- * Provided by this construct is the current {@link Leader leader} and the list of
- * {@link T candidateIds}s currently registered as candidates for election for the topic.
+ * Provided by this construct is the current leader and the list of {@link T candidateIds}s
+ * currently registered as candidates for election for a term.
  * Keep in mind that only registered candidates can become leaders.
  */
 public class Leadership<T> {
