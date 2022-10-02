@@ -3,7 +3,6 @@ package io.atomix.client.election.impl;
 import io.atomix.client.Cancellable;
 import io.atomix.client.DelegatingAsyncPrimitive;
 import io.atomix.client.election.AsyncLeaderElection;
-import io.atomix.client.election.Leader;
 import io.atomix.client.election.LeaderElection;
 import io.atomix.client.election.Leadership;
 import io.atomix.client.election.LeadershipEvent;
@@ -12,7 +11,6 @@ import io.atomix.client.election.LeadershipEventListener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 
@@ -36,12 +34,7 @@ public class TranscodingAsyncLeaderElection<T1, T2>
     @Override
     public CompletableFuture<Leadership<T1>> enter(T1 identifier) {
         return backingElection.enter(identifierEncoder.apply(identifier))
-            .thenApply(leadership -> new Leadership<>(
-                leadership.leader() == null ? null : new Leader<>(
-                    identifierDecoder.apply(leadership.leader().id()),
-                    leadership.leader().term(),
-                    leadership.leader().timestamp()),
-                leadership.candidates().stream().map(identifierDecoder).collect(Collectors.toList())));
+                   .thenApply(leadership -> leadership.map(identifierDecoder));
     }
 
     @Override
@@ -67,36 +60,21 @@ public class TranscodingAsyncLeaderElection<T1, T2>
     @Override
     public CompletableFuture<Leadership<T1>> getLeadership() {
         return backingElection.getLeadership()
-            .thenApply(leadership -> new Leadership<>(
-                leadership.leader() == null ? null : new Leader<>(
-                    identifierDecoder.apply(leadership.leader().id()),
-                    leadership.leader().term(),
-                    leadership.leader().timestamp()),
-                leadership.candidates().stream().map(identifierDecoder).collect(Collectors.toList())));
+                   .thenApply(leadership -> leadership.map(identifierDecoder));
     }
 
     @Override
     public CompletableFuture<Cancellable> listen(LeadershipEventListener<T1> listener, Executor executor) {
         return backingElection.listen(event -> new LeadershipEvent<>(
             LeadershipEvent.Type.CHANGE,
-            new Leadership<>(
-                event.newLeadership().leader() == null ? null : new Leader<>(
-                    identifierDecoder.apply(event.newLeadership().leader().id()),
-                    event.newLeadership().leader().term(),
-                    event.newLeadership().leader().timestamp()),
-                event.newLeadership().candidates().stream().map(identifierDecoder).collect(Collectors.toList())),
-            event.oldLeadership() == null ? null : new Leadership<>(
-                event.newLeadership().leader() == null ? null : new Leader<>(
-                    identifierDecoder.apply(event.newLeadership().leader().id()),
-                    event.newLeadership().leader().term(),
-                    event.newLeadership().leader().timestamp()),
-                event.newLeadership().candidates().stream().map(identifierDecoder).collect(Collectors.toList()))), executor);
+            event.newLeadership().map(identifierDecoder),
+            event.oldLeadership() != null ? event.oldLeadership().map(identifierDecoder) : null), executor);
     }
 
     @Override
     public String toString() {
         return toStringHelper(this)
-            .add("backingValue", backingElection)
-            .toString();
+                   .add("backingValue", backingElection)
+                   .toString();
     }
 }

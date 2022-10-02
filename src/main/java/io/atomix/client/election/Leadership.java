@@ -16,21 +16,31 @@ import java.util.stream.Collectors;
  * Keep in mind that only registered candidates can become leaders.
  */
 public class Leadership<T> {
-
-    private final Leader<T> leader;
+    private final long term;
+    private final T leader;
     private final List<T> candidates;
 
-    public Leadership(Leader<T> leader, List<T> candidates) {
+    public Leadership(long term, T leader, List<T> candidates) {
+        this.term = term;
         this.leader = leader;
         this.candidates = ImmutableList.copyOf(candidates);
     }
 
     /**
-     * Returns the leader for this topic.
+     * Returns the leadership term.
      *
-     * @return leader; will be null if there is no leader for topic
+     * @return the leadership term
      */
-    public Leader<T> leader() {
+    public long term() {
+        return term;
+    }
+
+    /**
+     * Returns the current leader for the term.
+     *
+     * @return leader; will be null if there is no leader for the term
+     */
+    public T leader() {
         return leader;
     }
 
@@ -53,13 +63,14 @@ public class Leadership<T> {
      */
     public <U> Leadership<U> map(Function<T, U> mapper) {
         return new Leadership<>(
-                leader != null ? leader.map(mapper) : null,
-                candidates.stream().map(mapper).collect(Collectors.toList()));
+            term,
+            leader != null ? mapper.apply(leader) : null,
+            candidates.stream().map(mapper).collect(Collectors.toList()));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(leader, candidates);
+        return Objects.hash(term, leader, candidates);
     }
 
     @Override
@@ -69,8 +80,9 @@ public class Leadership<T> {
         }
         if (obj instanceof Leadership) {
             final Leadership other = (Leadership) obj;
-            return Objects.equals(this.leader, other.leader)
-                    && Objects.equals(this.candidates, other.candidates);
+            return this.term == other.term
+                       && Objects.equals(this.leader, other.leader)
+                       && Objects.equals(this.candidates, other.candidates);
         }
         return false;
     }
@@ -78,8 +90,9 @@ public class Leadership<T> {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this.getClass())
-                .add("leader", leader)
-                .add("candidates", candidates)
-                .toString();
+                   .add("term", term)
+                   .add("leader", leader)
+                   .add("candidates", candidates)
+                   .toString();
     }
 }
