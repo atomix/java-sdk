@@ -44,6 +44,11 @@ public class BlockingLeaderElection<V> extends Synchronous<LeaderElection<V>, As
     }
 
     @Override
+    public boolean demote(V identifier) {
+        return complete(asyncLeaderElection.demote(identifier));
+    }
+
+    @Override
     public void evict(V identifier) {
         complete(asyncLeaderElection.evict(identifier));
     }

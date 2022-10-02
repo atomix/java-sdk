@@ -34,7 +34,7 @@ public class TranscodingAsyncLeaderElection<T1, T2>
     @Override
     public CompletableFuture<Leadership<T1>> enter(T1 identifier) {
         return backingElection.enter(identifierEncoder.apply(identifier))
-                   .thenApply(leadership -> leadership.map(identifierDecoder));
+            .thenApply(leadership -> leadership.map(identifierDecoder));
     }
 
     @Override
@@ -53,6 +53,11 @@ public class TranscodingAsyncLeaderElection<T1, T2>
     }
 
     @Override
+    public CompletableFuture<Boolean> demote(T1 identifier) {
+        return backingElection.demote(identifierEncoder.apply(identifier));
+    }
+
+    @Override
     public CompletableFuture<Void> evict(T1 identifier) {
         return backingElection.evict(identifierEncoder.apply(identifier));
     }
@@ -60,7 +65,7 @@ public class TranscodingAsyncLeaderElection<T1, T2>
     @Override
     public CompletableFuture<Leadership<T1>> getLeadership() {
         return backingElection.getLeadership()
-                   .thenApply(leadership -> leadership.map(identifierDecoder));
+            .thenApply(leadership -> leadership.map(identifierDecoder));
     }
 
     @Override
@@ -74,7 +79,7 @@ public class TranscodingAsyncLeaderElection<T1, T2>
     @Override
     public String toString() {
         return toStringHelper(this)
-                   .add("backingValue", backingElection)
-                   .toString();
+            .add("backingValue", backingElection)
+            .toString();
     }
 }

@@ -50,13 +50,22 @@ public interface LeaderElection<T> extends SyncPrimitive<LeaderElection<T>, Asyn
     boolean anoint(T identifier);
 
     /**
-     * Attempts to promote a node to top of candidate list.
+     * Attempts to promote a node.
      *
      * @param identifier identifier of the new top candidate
      * @return {@code true} if node is now the top candidate. This operation can fail (i.e. return
      * {@code false}) if the node is not registered to run for election.
      */
     boolean promote(T identifier);
+
+    /**
+     * Attempts to demote a node.
+     *
+     * @param identifier identifier of the new top candidate
+     * @return {@code true} if node is now the top candidate. This operation can fail (i.e. return
+     * {@code false}) if the node is not registered to run for election.
+     */
+    boolean demote(T identifier);
 
     /**
      * Attempts to evict a node from all leadership elections it is registered for.

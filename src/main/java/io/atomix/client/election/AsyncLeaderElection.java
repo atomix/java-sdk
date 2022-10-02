@@ -37,13 +37,22 @@ public interface AsyncLeaderElection<T> extends AsyncPrimitive<AsyncLeaderElecti
     CompletableFuture<Boolean> anoint(T identifier);
 
     /**
-     * Attempts to promote a node to top of candidate list.
+     * Attempts to promote a node, moving it up one level in the candidate queue.
      *
-     * @param identifier identifier of the new top candidate
-     * @return {@code true} if node is now the top candidate. This operation can fail (i.e. return
+     * @param identifier identifier of the candidate to promote
+     * @return {@code true} if the node was promoted. This operation can fail (i.e. return
      * {@code false}) if the node is not registered to run for election.
      */
     CompletableFuture<Boolean> promote(T identifier);
+
+    /**
+     * Attempts to demote a node, moving it down one level in the candidate queue.
+     *
+     * @param identifier identifier of the candidate to demote
+     * @return {@code true} if node was demoted. This operation can fail (i.e. return
+     * {@code false}) if the node is not registered to run for election.
+     */
+    CompletableFuture<Boolean> demote(T identifier);
 
     /**
      * Attempts to evict a node from all leadership elections it is registered for.
