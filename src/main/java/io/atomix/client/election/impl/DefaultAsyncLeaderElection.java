@@ -4,18 +4,19 @@
 
 package io.atomix.client.election.impl;
 
-import io.atomix.api.runtime.election.v1.Term;
-import io.atomix.client.Cancellable;
 import io.atomix.api.runtime.election.v1.AnointRequest;
 import io.atomix.api.runtime.election.v1.CloseRequest;
 import io.atomix.api.runtime.election.v1.CreateRequest;
+import io.atomix.api.runtime.election.v1.DemoteRequest;
 import io.atomix.api.runtime.election.v1.EnterRequest;
 import io.atomix.api.runtime.election.v1.EvictRequest;
 import io.atomix.api.runtime.election.v1.GetTermRequest;
 import io.atomix.api.runtime.election.v1.LeaderElectionGrpc;
 import io.atomix.api.runtime.election.v1.PromoteRequest;
+import io.atomix.api.runtime.election.v1.Term;
 import io.atomix.api.runtime.election.v1.WatchRequest;
 import io.atomix.api.runtime.election.v1.WithdrawRequest;
+import io.atomix.client.Cancellable;
 import io.atomix.client.election.AsyncLeaderElection;
 import io.atomix.client.election.LeaderElection;
 import io.atomix.client.election.Leadership;
@@ -96,8 +97,11 @@ public class DefaultAsyncLeaderElection
 
     @Override
     public CompletableFuture<Boolean> demote(String identifier) {
-        // TODO: Add demote RPC to LeaderElection API
-        return CompletableFuture.failedFuture(new UnsupportedOperationException("demote"));
+        return retry(LeaderElectionGrpc.LeaderElectionStub::demote, DemoteRequest.newBuilder()
+            .setId(id())
+            .setCandidate(identifier)
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(response -> response.getTerm().getCandidatesList().contains(identifier));
     }
 
     @Override
