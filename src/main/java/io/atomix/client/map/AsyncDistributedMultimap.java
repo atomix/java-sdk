@@ -112,6 +112,19 @@ public interface AsyncDistributedMultimap<K, V> extends AsyncPrimitive<AsyncDist
     CompletableFuture<Boolean> removeAll(K key, Collection<? extends V> values);
 
     /**
+     * Removes the key-value pairs with the specified key and values if they
+     * exist. In implementations that allow duplicates each instance of a key
+     * will remove one matching entry, which one is not defined. Equivalent to
+     * repeated calls to {@code remove()} for each key value pair but more
+     * efficient.
+     *
+     * @param mappings the set of maps to be removed
+     * @return a future whose value will be true if the map changes because of
+     * this call, false otherwise.
+     */
+    CompletableFuture<Boolean> removeAll(Map<K, Collection<? extends V>> mappings);
+
+    /**
      * Removes all values associated with the specified key as well as the key
      * itself.
      *
@@ -134,6 +147,18 @@ public interface AsyncDistributedMultimap<K, V> extends AsyncPrimitive<AsyncDist
      * results from this call, false otherwise
      */
     CompletableFuture<Boolean> putAll(K key, Collection<? extends V> values);
+
+    /**
+     * Adds the set of key-value pairs of the specified key with each of the
+     * values in the iterable if each key-value pair does not already exist,
+     * if the pair does exist the behavior is implementation specific.
+     * (Same as repeated puts but with efficiency gains.)
+     *
+     * @param mappings the set of maps to be added
+     * @return a future whose value will be true if any change in the map
+     * results from this call, false otherwise
+     */
+    CompletableFuture<Boolean> putAll(Map<K, Collection<? extends V>> mappings);
 
     /**
      * Stores all the values in values associated with the key specified,

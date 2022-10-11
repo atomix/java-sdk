@@ -12,6 +12,7 @@ import io.atomix.client.set.DistributedSet;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 /**
@@ -30,6 +31,29 @@ public interface DistributedMultimap<K, V> extends SyncPrimitive<DistributedMult
     static <K, V> DistributedMultimapBuilder<K, V> builder(AtomixChannel channel) {
         return new DefaultDistributedMultimapBuilder<>(channel);
     }
+
+    /**
+     * Adds the set of key-value pairs of the specified key with each of the
+     * values in the iterable if each key-value pair does not already exist,
+     * if the pair does exist the behavior is implementation specific.
+     * (Same as repeated puts but with efficiency gains.)
+     *
+     * @param mappings the set of maps to be added
+     * @return true if any change in the map results from this call, false otherwise
+     */
+    boolean putAll(Map<K, Collection<? extends V>> mappings);
+
+    /**
+     * Removes the key-value pairs with the specified key and values if they
+     * exist. In implementations that allow duplicates each instance of a key
+     * will remove one matching entry, which one is not defined. Equivalent to
+     * repeated calls to {@code remove()} for each key value pair but more
+     * efficient.
+     *
+     * @param mappings the set of maps to be removed
+     * @return true if the map changes because of this call, false otherwise
+     */
+    boolean removeAll(Map<K, Collection<? extends V>> mappings);
 
     /**
      * Returns a set of the keys contained in this multimap with one or more

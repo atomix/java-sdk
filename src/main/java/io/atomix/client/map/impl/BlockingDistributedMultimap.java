@@ -66,28 +66,43 @@ public class BlockingDistributedMultimap<K, V>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean remove(@Nullable Object key, @Nullable Object value) {
         return complete(asyncMultimap.remove((K) key, (V) value));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean putAll(@Nullable K key, Iterable<? extends V> values) {
         return complete(asyncMultimap.putAll(key, values instanceof Collection ? (Collection<V>) values : Lists.newArrayList(values)));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
-        throw new UnsupportedOperationException();
+        return complete(asyncMultimap.putAll((Map<K, Collection<? extends V>>) (Map) multimap.asMap()));
     }
 
     @Override
+    public boolean putAll(Map<K, Collection<? extends V>> mappings) {
+        return complete(asyncMultimap.putAll(mappings));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public Collection<V> replaceValues(@Nullable K key, Iterable<? extends V> values) {
-        return complete(asyncMultimap.replaceValues(key, values instanceof Collection ? (Collection<V>) values : Lists.<V>newArrayList(values)));
+        return complete(asyncMultimap.replaceValues(key, values instanceof Collection ? (Collection<V>) values : Lists.newArrayList(values)));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Collection<V> removeAll(@Nullable Object key) {
         return complete(asyncMultimap.removeAll((K) key));
+    }
+
+    @Override
+    public boolean removeAll(Map<K, Collection<? extends V>> mappings) {
+        return complete(asyncMultimap.removeAll(mappings));
     }
 
     @Override

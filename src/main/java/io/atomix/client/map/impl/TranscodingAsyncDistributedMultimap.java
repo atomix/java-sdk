@@ -21,6 +21,7 @@ import io.atomix.client.set.impl.TranscodingAsyncDistributedMultiset;
 import io.atomix.client.set.impl.TranscodingAsyncDistributedSet;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -144,10 +145,40 @@ public class TranscodingAsyncDistributedMultimap<K1, V1, K2, V2>
     }
 
     @Override
+    public CompletableFuture<Boolean> removeAll(Map<K1, Collection<? extends V1>> mappings) {
+        try {
+            return backingMap.removeAll(mappings.entrySet().stream()
+                .map(entry -> Maps.immutableEntry(
+                    keyEncoder.apply(entry.getKey()),
+                    entry.getValue().stream()
+                        .map(valueEncoder)
+                        .collect(Collectors.toList())))
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    @Override
     public CompletableFuture<Boolean> putAll(K1 key, Collection<? extends V1> values) {
         try {
             return backingMap.putAll(keyEncoder.apply(key),
                 values.stream().map(valueEncoder).collect(Collectors.toSet()));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    @Override
+    public CompletableFuture<Boolean> putAll(Map<K1, Collection<? extends V1>> mappings) {
+        try {
+            return backingMap.putAll(mappings.entrySet().stream()
+                .map(entry -> Maps.immutableEntry(
+                    keyEncoder.apply(entry.getKey()),
+                    entry.getValue().stream()
+                        .map(valueEncoder)
+                        .collect(Collectors.toList())))
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)));
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }

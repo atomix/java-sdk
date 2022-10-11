@@ -6,6 +6,12 @@ package io.atomix.client.map.impl;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
+import io.atomix.api.runtime.multimap.v1.Entry;
+import io.atomix.api.runtime.multimap.v1.PutEntriesRequest;
+import io.atomix.api.runtime.multimap.v1.PutEntriesResponse;
+import io.atomix.api.runtime.multimap.v1.RemoveEntriesRequest;
+import io.atomix.api.runtime.multimap.v1.RemoveEntriesResponse;
+import io.atomix.api.runtime.multimap.v1.RemoveResponse;
 import io.atomix.client.Cancellable;
 import io.atomix.api.runtime.multimap.v1.ClearRequest;
 import io.atomix.api.runtime.multimap.v1.CloseRequest;
@@ -44,6 +50,7 @@ import io.grpc.Status;
 
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -51,6 +58,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Atomix multimap implementation.
@@ -163,7 +171,7 @@ public class DefaultAsyncDistributedMultimap
             .thenApply(response -> true)
             .exceptionally(t -> {
                 if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
-                    return null;
+                    return false;
                 } else {
                     throw (RuntimeException) t;
                 }
@@ -172,16 +180,50 @@ public class DefaultAsyncDistributedMultimap
 
     @Override
     public CompletableFuture<Boolean> removeAll(String key, Collection<? extends String> values) {
-        return CompletableFuture.failedFuture(new UnsupportedOperationException());
+        return retry(MultiMapGrpc.MultiMapStub::removeAll, RemoveAllRequest.newBuilder()
+            .setId(id())
+            .setKey(key)
+            .addAllValues(new HashSet<>(values))
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(RemoveAllResponse::getUpdated)
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
+                    return false;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public CompletableFuture<Boolean> removeAll(Map<String, Collection<? extends String>> mappings) {
+        return retry(MultiMapGrpc.MultiMapStub::removeEntries, RemoveEntriesRequest.newBuilder()
+            .setId(id())
+            .addAllEntries(mappings.entrySet().stream()
+                .map(entry -> Entry.newBuilder()
+                    .setKey(entry.getKey())
+                    .addAllValues((Collection<String>) entry.getValue())
+                    .build())
+                .collect(Collectors.toList()))
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(RemoveEntriesResponse::getUpdated);
     }
 
     @Override
     public CompletableFuture<Collection<String>> removeAll(String key) {
-        return retry(MultiMapGrpc.MultiMapStub::removeAll, RemoveAllRequest.newBuilder()
+        return retry(MultiMapGrpc.MultiMapStub::remove, RemoveRequest.newBuilder()
             .setId(id())
             .setKey(key)
             .build(), DEFAULT_TIMEOUT)
-            .thenApply(RemoveAllResponse::getValuesList);
+            .thenApply(response -> (Collection<String>) response.getValuesList())
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
+                    return Collections.emptyList();
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
@@ -192,6 +234,21 @@ public class DefaultAsyncDistributedMultimap
             .addAllValues(new HashSet<>(values))
             .build(), DEFAULT_TIMEOUT)
             .thenApply(PutAllResponse::getUpdated);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public CompletableFuture<Boolean> putAll(Map<String, Collection<? extends String>> mappings) {
+        return retry(MultiMapGrpc.MultiMapStub::putEntries, PutEntriesRequest.newBuilder()
+            .setId(id())
+            .addAllEntries(mappings.entrySet().stream()
+                .map(entry -> Entry.newBuilder()
+                    .setKey(entry.getKey())
+                    .addAllValues((Collection<String>) entry.getValue())
+                    .build())
+                .collect(Collectors.toList()))
+            .build(), DEFAULT_TIMEOUT)
+            .thenApply(PutEntriesResponse::getUpdated);
     }
 
     @Override
@@ -578,9 +635,7 @@ public class DefaultAsyncDistributedMultimap
 
         @Override
         public AsyncIterator<String> iterator() {
-            return iterate(MultiMapGrpc.MultiMapStub::entries, EntriesRequest.newBuilder()
-                .setId(id())
-                .build(), response -> response.getEntry().getValue());
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -668,11 +723,7 @@ public class DefaultAsyncDistributedMultimap
 
         @Override
         public AsyncIterator<Map.Entry<String, String>> iterator() {
-            return iterate(MultiMapGrpc.MultiMapStub::entries, EntriesRequest.newBuilder()
-                .setId(id())
-                .build(), response -> Maps.immutableEntry(
-                response.getEntry().getKey(),
-                response.getEntry().getValue()));
+            throw new UnsupportedOperationException();
         }
 
         @Override
