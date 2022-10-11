@@ -50,7 +50,9 @@ import io.grpc.Status;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -634,7 +636,9 @@ public class DefaultAsyncDistributedMultimap
 
         @Override
         public AsyncIterator<String> iterator() {
-            throw new UnsupportedOperationException();
+            return new IteratorIterator<>(iterate(MultiMapGrpc.MultiMapStub::entries, EntriesRequest.newBuilder()
+                .setId(id())
+                .build(), response -> response.getEntry().getValuesList().iterator()));
         }
 
         @Override
@@ -722,12 +726,67 @@ public class DefaultAsyncDistributedMultimap
 
         @Override
         public AsyncIterator<Map.Entry<String, String>> iterator() {
-            throw new UnsupportedOperationException();
+            return new IteratorIterator<>(iterate(MultiMapGrpc.MultiMapStub::entries, EntriesRequest.newBuilder()
+                .setId(id())
+                .build(), response -> {
+                Map<String, String> entries = new HashMap<>();
+                for (String value : response.getEntry().getValuesList()) {
+                    entries.put(response.getEntry().getKey(), value);
+                }
+                return entries.entrySet().iterator();
+            }));
         }
 
         @Override
         public CompletableFuture<Void> close() {
             return DefaultAsyncDistributedMultimap.this.close();
+        }
+    }
+
+    private static class IteratorIterator<T> implements AsyncIterator<T> {
+        private final AsyncIterator<Iterator<T>> iterator;
+        private volatile CompletableFuture<Iterator<T>> future;
+
+        private IteratorIterator(AsyncIterator<Iterator<T>> iterator) {
+            this.iterator = iterator;
+            this.future = iterator.next();
+        }
+
+        @Override
+        public CompletableFuture<Boolean> hasNext() {
+            return future.thenCompose(i -> {
+                if (i == null) {
+                    return CompletableFuture.completedFuture(false);
+                }
+                if (i.hasNext()) {
+                    return CompletableFuture.completedFuture(true);
+                }
+                return iterator.hasNext();
+            });
+        }
+
+        @Override
+        public CompletableFuture<T> next() {
+            return future.thenCompose(i1 -> {
+                if (i1 == null) {
+                    return CompletableFuture.completedFuture(null);
+                }
+                if (i1.hasNext()) {
+                    return CompletableFuture.completedFuture(i1.next());
+                }
+                future = iterator.next();
+                return future.thenApply(i2 -> {
+                    if (i2 != null) {
+                        return i2.next();
+                    }
+                    return null;
+                });
+            });
+        }
+
+        @Override
+        public CompletableFuture<Void> close() {
+            return iterator.close();
         }
     }
 
