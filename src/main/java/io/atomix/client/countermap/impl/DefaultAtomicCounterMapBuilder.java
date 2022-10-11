@@ -3,14 +3,14 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package io.atomix.client.map.impl;
+package io.atomix.client.countermap.impl;
 
 import com.google.common.io.BaseEncoding;
 import io.atomix.api.runtime.countermap.v1.CounterMapGrpc;
 import io.atomix.client.AtomixChannel;
-import io.atomix.client.map.AsyncAtomicCounterMap;
-import io.atomix.client.map.AtomicCounterMap;
-import io.atomix.client.map.AtomicCounterMapBuilder;
+import io.atomix.client.countermap.AsyncAtomicCounterMap;
+import io.atomix.client.countermap.AtomicCounterMap;
+import io.atomix.client.countermap.AtomicCounterMapBuilder;
 
 import java.util.concurrent.CompletableFuture;
 

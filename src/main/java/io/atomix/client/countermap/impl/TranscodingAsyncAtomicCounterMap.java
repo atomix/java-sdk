@@ -1,8 +1,8 @@
-package io.atomix.client.map.impl;
+package io.atomix.client.countermap.impl;
 
 import io.atomix.client.DelegatingAsyncPrimitive;
-import io.atomix.client.map.AsyncAtomicCounterMap;
-import io.atomix.client.map.AtomicCounterMap;
+import io.atomix.client.countermap.AsyncAtomicCounterMap;
+import io.atomix.client.countermap.AtomicCounterMap;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;

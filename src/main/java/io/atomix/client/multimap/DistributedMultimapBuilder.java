@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package io.atomix.client.map;
+package io.atomix.client.multimap;
 
 import io.atomix.client.AtomixChannel;
 import io.atomix.client.PrimitiveBuilder;
@@ -11,8 +11,8 @@ import io.atomix.client.PrimitiveBuilder;
 /**
  * Builder for AtomicCounter.
  */
-public abstract class AtomicCounterMapBuilder<K> extends PrimitiveBuilder<AtomicCounterMapBuilder<K>, AtomicCounterMap<K>> {
-    protected AtomicCounterMapBuilder(AtomixChannel channel) {
+public abstract class DistributedMultimapBuilder<K, V> extends PrimitiveBuilder<DistributedMultimapBuilder<K, V>, DistributedMultimap<K, V>> {
+    protected DistributedMultimapBuilder(AtomixChannel channel) {
         super(channel);
     }
 }

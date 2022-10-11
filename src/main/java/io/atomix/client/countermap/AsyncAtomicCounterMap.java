@@ -1,23 +1,15 @@
-package io.atomix.client.map;
+package io.atomix.client.countermap;
 
-import io.atomix.client.SyncPrimitive;
-import io.atomix.client.AtomixChannel;
-import io.atomix.client.map.impl.DefaultAtomicCounterMapBuilder;
+import io.atomix.client.AsyncPrimitive;
+import io.atomix.client.countermap.impl.BlockingAtomicCounterMap;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * Distributed version of com.google.common.util.concurrent.AtomicLongMap.
+ * An async atomic counter map dispenses monotonically increasing values associated with key.
  */
-public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, AsyncAtomicCounterMap<K>> {
-
-    /**
-     * Returns a new AtomicCounterMap builder.
-     *
-     * @param channel the AtomixChannel
-     * @return the AtomicCounterMap builder
-     */
-    static <K> AtomicCounterMapBuilder<K> builder(AtomixChannel channel) {
-        return new DefaultAtomicCounterMapBuilder<>(channel);
-    }
+public interface AsyncAtomicCounterMap<K> extends AsyncPrimitive<AsyncAtomicCounterMap<K>, AtomicCounterMap<K>> {
 
     /**
      * Increments by one the value currently associated with key, and returns the new value.
@@ -25,7 +17,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param key key with which the specified value is to be associated
      * @return incremented value
      */
-    long incrementAndGet(K key);
+    CompletableFuture<Long> incrementAndGet(K key);
 
     /**
      * Decrements by one the value currently associated with key, and returns the new value.
@@ -33,7 +25,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param key key with which the specified value is to be associated
      * @return updated value
      */
-    long decrementAndGet(K key);
+    CompletableFuture<Long> decrementAndGet(K key);
 
     /**
      * Increments by one the value currently associated with key, and returns the old value.
@@ -41,7 +33,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param key key with which the specified value is to be associated
      * @return previous value
      */
-    long getAndIncrement(K key);
+    CompletableFuture<Long> getAndIncrement(K key);
 
     /**
      * Decrements by one the value currently associated with key, and returns the old value.
@@ -49,7 +41,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param key key with which the specified value is to be associated
      * @return previous value
      */
-    long getAndDecrement(K key);
+    CompletableFuture<Long> getAndDecrement(K key);
 
     /**
      * Adds delta to the value currently associated with key, and returns the new value.
@@ -58,7 +50,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param delta the value to add
      * @return updated value
      */
-    long addAndGet(K key, long delta);
+    CompletableFuture<Long> addAndGet(K key, long delta);
 
     /**
      * Adds delta to the value currently associated with key, and returns the old value.
@@ -67,7 +59,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param delta the value to add
      * @return previous value
      */
-    long getAndAdd(K key, long delta);
+    CompletableFuture<Long> getAndAdd(K key, long delta);
 
     /**
      * Returns the value associated with key, or zero if there is no value associated with key.
@@ -75,7 +67,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param key key with which the specified value is to be associated
      * @return current value
      */
-    long get(K key);
+    CompletableFuture<Long> get(K key);
 
     /**
      * Associates ewValue with key in this map, and returns the value previously
@@ -85,7 +77,8 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param newValue the value to put
      * @return previous value or zero
      */
-    long put(K key, long newValue);
+    CompletableFuture<Long> put(K key, long newValue);
+
 
     /**
      * If key is not already associated with a value or if key is associated with
@@ -96,7 +89,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param newValue the value to put
      * @return previous value or zero
      */
-    long putIfAbsent(K key, long newValue);
+    CompletableFuture<Long> putIfAbsent(K key, long newValue);
 
     /**
      * If (key, expectedOldValue) is currently in the map, this method replaces
@@ -110,7 +103,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param newValue         the value to replace
      * @return true if the value was replaced, false otherwise
      */
-    boolean replace(K key, long expectedOldValue, long newValue);
+    CompletableFuture<Boolean> replace(K key, long expectedOldValue, long newValue);
 
     /**
      * Removes and returns the value associated with key. If key is not
@@ -119,7 +112,7 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param key key with which the specified value is to be associated
      * @return the previous value associated with the specified key or null
      */
-    long remove(K key);
+    CompletableFuture<Long> remove(K key);
 
     /**
      * If (key, value) is currently in the map, this method removes it and returns
@@ -129,24 +122,31 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
      * @param value the value to remove
      * @return true if the value was removed, false otherwise
      */
-    boolean remove(K key, long value);
+    CompletableFuture<Boolean> remove(K key, long value);
 
     /**
      * Returns the number of entries in the map.
      *
-     * @return the number of entries in the map, including {@code 0} values
+     * @return the number of entries in the map
      */
-    int size();
+    CompletableFuture<Integer> size();
 
     /**
-     * If the map is empty, returns true, otherwise false.
+     * Returns a boolean indicating whether the map is empty.
      *
-     * @return true if the map is empty.
+     * @return true if the map is empty, false otherwise
      */
-    boolean isEmpty();
+    CompletableFuture<Boolean> isEmpty();
 
     /**
-     * Clears all entries from the map.
+     * Removes all entries from the map.
+     *
+     * @return void
      */
-    void clear();
+    CompletableFuture<Void> clear();
+
+    @Override
+    default AtomicCounterMap<K> sync(Duration operationTimeout) {
+        return new BlockingAtomicCounterMap<>(this, operationTimeout);
+    }
 }

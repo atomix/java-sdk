@@ -1,8 +1,9 @@
-package io.atomix.client.set;
+package io.atomix.client.multiset;
 
 import com.google.common.collect.Multiset;
 import io.atomix.client.collection.AsyncDistributedCollection;
-import io.atomix.client.set.impl.BlockingDistributedMultiset;
+import io.atomix.client.set.AsyncDistributedSet;
+import io.atomix.client.multiset.impl.BlockingDistributedMultiset;
 
 import java.time.Duration;
 import java.util.Collections;

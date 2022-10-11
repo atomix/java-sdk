@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package io.atomix.client.map.impl;
+package io.atomix.client.multimap.impl;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
@@ -11,7 +11,6 @@ import io.atomix.api.runtime.multimap.v1.PutEntriesRequest;
 import io.atomix.api.runtime.multimap.v1.PutEntriesResponse;
 import io.atomix.api.runtime.multimap.v1.RemoveEntriesRequest;
 import io.atomix.api.runtime.multimap.v1.RemoveEntriesResponse;
-import io.atomix.api.runtime.multimap.v1.RemoveResponse;
 import io.atomix.client.Cancellable;
 import io.atomix.api.runtime.multimap.v1.ClearRequest;
 import io.atomix.api.runtime.multimap.v1.CloseRequest;
@@ -39,12 +38,12 @@ import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.map.AsyncDistributedMap;
-import io.atomix.client.map.AsyncDistributedMultimap;
-import io.atomix.client.map.DistributedMultimap;
+import io.atomix.client.multimap.AsyncDistributedMultimap;
+import io.atomix.client.multimap.DistributedMultimap;
 import io.atomix.client.map.MapEventListener;
-import io.atomix.client.map.MultimapEvent;
-import io.atomix.client.map.MultimapEventListener;
-import io.atomix.client.set.AsyncDistributedMultiset;
+import io.atomix.client.multimap.MultimapEvent;
+import io.atomix.client.multimap.MultimapEventListener;
+import io.atomix.client.multiset.AsyncDistributedMultiset;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.grpc.Status;
 

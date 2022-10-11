@@ -3,14 +3,14 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package io.atomix.client.map.impl;
+package io.atomix.client.multimap.impl;
 
 import com.google.common.io.BaseEncoding;
 import io.atomix.client.AtomixChannel;
 import io.atomix.api.runtime.multimap.v1.MultiMapGrpc;
-import io.atomix.client.map.AsyncDistributedMultimap;
-import io.atomix.client.map.DistributedMultimap;
-import io.atomix.client.map.DistributedMultimapBuilder;
+import io.atomix.client.multimap.AsyncDistributedMultimap;
+import io.atomix.client.multimap.DistributedMultimap;
+import io.atomix.client.multimap.DistributedMultimapBuilder;
 
 import java.util.concurrent.CompletableFuture;
 

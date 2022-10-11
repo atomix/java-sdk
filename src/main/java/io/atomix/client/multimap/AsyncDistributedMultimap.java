@@ -1,11 +1,12 @@
-package io.atomix.client.map;
+package io.atomix.client.multimap;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
 import io.atomix.client.collection.AsyncDistributedCollection;
-import io.atomix.client.map.impl.BlockingDistributedMultimap;
-import io.atomix.client.set.AsyncDistributedMultiset;
+import io.atomix.client.map.AsyncDistributedMap;
+import io.atomix.client.multimap.impl.BlockingDistributedMultimap;
+import io.atomix.client.multiset.AsyncDistributedMultiset;
 import io.atomix.client.set.AsyncDistributedSet;
 
 import java.time.Duration;

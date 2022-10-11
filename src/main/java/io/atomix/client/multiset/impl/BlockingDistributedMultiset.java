@@ -1,4 +1,4 @@
-package io.atomix.client.set.impl;
+package io.atomix.client.multiset.impl;
 
 import com.google.common.collect.Multiset;
 import io.atomix.client.Cancellable;
@@ -8,9 +8,10 @@ import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.iterator.SyncIterator;
 import io.atomix.client.iterator.impl.BlockingIterator;
-import io.atomix.client.set.AsyncDistributedMultiset;
-import io.atomix.client.set.DistributedMultiset;
+import io.atomix.client.multiset.AsyncDistributedMultiset;
+import io.atomix.client.multiset.DistributedMultiset;
 import io.atomix.client.set.DistributedSet;
+import io.atomix.client.set.impl.BlockingDistributedSet;
 
 import javax.annotation.Nullable;
 import java.time.Duration;

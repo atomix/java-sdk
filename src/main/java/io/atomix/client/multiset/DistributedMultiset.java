@@ -1,7 +1,8 @@
-package io.atomix.client.set;
+package io.atomix.client.multiset;
 
 import com.google.common.collect.Multiset;
 import io.atomix.client.collection.DistributedCollection;
+import io.atomix.client.set.DistributedSet;
 
 import java.util.Spliterator;
 import java.util.Spliterators;

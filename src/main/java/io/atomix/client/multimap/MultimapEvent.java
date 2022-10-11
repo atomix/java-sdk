@@ -1,4 +1,4 @@
-package io.atomix.client.map;
+package io.atomix.client.multimap;
 
 import com.google.common.base.MoreObjects;
 import io.atomix.client.event.AbstractEvent;

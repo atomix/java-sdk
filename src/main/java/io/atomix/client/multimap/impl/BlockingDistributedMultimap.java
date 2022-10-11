@@ -1,4 +1,4 @@
-package io.atomix.client.map.impl;
+package io.atomix.client.multimap.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -6,13 +6,14 @@ import io.atomix.client.Cancellable;
 import io.atomix.client.Synchronous;
 import io.atomix.client.collection.DistributedCollection;
 import io.atomix.client.collection.impl.BlockingDistributedCollection;
-import io.atomix.client.map.AsyncDistributedMultimap;
+import io.atomix.client.map.impl.BlockingDistributedMap;
+import io.atomix.client.multimap.AsyncDistributedMultimap;
 import io.atomix.client.map.DistributedMap;
-import io.atomix.client.map.DistributedMultimap;
-import io.atomix.client.map.MultimapEventListener;
-import io.atomix.client.set.DistributedMultiset;
+import io.atomix.client.multimap.DistributedMultimap;
+import io.atomix.client.multimap.MultimapEventListener;
+import io.atomix.client.multiset.DistributedMultiset;
 import io.atomix.client.set.DistributedSet;
-import io.atomix.client.set.impl.BlockingDistributedMultiset;
+import io.atomix.client.multiset.impl.BlockingDistributedMultiset;
 import io.atomix.client.set.impl.BlockingDistributedSet;
 
 import javax.annotation.Nullable;

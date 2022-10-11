@@ -1,4 +1,4 @@
-package io.atomix.client.map;
+package io.atomix.client.multimap;
 
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -6,13 +6,13 @@ import io.atomix.client.AtomixChannel;
 import io.atomix.client.Cancellable;
 import io.atomix.client.SyncPrimitive;
 import io.atomix.client.collection.DistributedCollection;
-import io.atomix.client.map.impl.DefaultDistributedMultimapBuilder;
-import io.atomix.client.set.DistributedMultiset;
+import io.atomix.client.map.DistributedMap;
+import io.atomix.client.multimap.impl.DefaultDistributedMultimapBuilder;
+import io.atomix.client.multiset.DistributedMultiset;
 import io.atomix.client.set.DistributedSet;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 /**

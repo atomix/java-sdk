@@ -3,14 +3,15 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package io.atomix.client.set.impl;
+package io.atomix.client.multiset.impl;
 
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import io.atomix.client.collection.impl.TranscodingAsyncDistributedCollection;
-import io.atomix.client.set.AsyncDistributedMultiset;
+import io.atomix.client.multiset.AsyncDistributedMultiset;
 import io.atomix.client.set.AsyncDistributedSet;
-import io.atomix.client.set.DistributedMultiset;
+import io.atomix.client.multiset.DistributedMultiset;
+import io.atomix.client.set.impl.TranscodingAsyncDistributedSet;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
