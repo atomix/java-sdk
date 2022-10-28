@@ -4,10 +4,10 @@
 
 package io.atomix.client.impl;
 
+import io.atomix.api.runtime.v1.PrimitiveId;
 import io.atomix.client.AsyncPrimitive;
 import io.atomix.client.Cancellable;
 import io.atomix.client.SyncPrimitive;
-import io.atomix.api.runtime.v1.PrimitiveId;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.utils.concurrent.Executors;
 import io.atomix.client.utils.concurrent.Retries;
@@ -17,9 +17,9 @@ import io.grpc.stub.ClientResponseObserver;
 import io.grpc.stub.StreamObserver;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -57,11 +57,11 @@ public abstract class AbstractAsyncPrimitive<A extends AsyncPrimitive<A, S>, S e
     }
 
     /**
-     * Creates the primitive and connect.
+     * Creates the primitive and connect.Ø
      *
      * @return a future to be completed once the primitive is created and connected
      */
-    protected abstract CompletableFuture<A> create(Map<String, String> tags);
+    protected abstract CompletableFuture<A> create(Set<String> tags);
 
     protected <U, V> CompletableFuture<V> retry(StubMethodCall<T, U, V> callback, U request) {
         return Retries.retryAsync(

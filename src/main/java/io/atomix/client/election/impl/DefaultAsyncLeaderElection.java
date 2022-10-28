@@ -25,7 +25,7 @@ import io.atomix.client.election.LeadershipEventListener;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 
 import java.time.Duration;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,10 +43,10 @@ public class DefaultAsyncLeaderElection
     }
 
     @Override
-    protected CompletableFuture<AsyncLeaderElection<String>> create(Map<String, String> tags) {
+    protected CompletableFuture<AsyncLeaderElection<String>> create(Set<String> tags) {
         return retry(LeaderElectionGrpc.LeaderElectionStub::create, CreateRequest.newBuilder()
             .setId(id())
-            .putAllTags(tags)
+            .addAllTags(tags)
             .build())
             .thenApply(response -> this);
     }

@@ -6,41 +6,41 @@ package io.atomix.client.multimap.impl;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
-import io.atomix.api.runtime.multimap.v1.Entry;
-import io.atomix.api.runtime.multimap.v1.PutEntriesRequest;
-import io.atomix.api.runtime.multimap.v1.PutEntriesResponse;
-import io.atomix.api.runtime.multimap.v1.RemoveEntriesRequest;
-import io.atomix.api.runtime.multimap.v1.RemoveEntriesResponse;
-import io.atomix.client.Cancellable;
 import io.atomix.api.runtime.multimap.v1.ClearRequest;
 import io.atomix.api.runtime.multimap.v1.CloseRequest;
 import io.atomix.api.runtime.multimap.v1.ContainsRequest;
 import io.atomix.api.runtime.multimap.v1.ContainsResponse;
 import io.atomix.api.runtime.multimap.v1.CreateRequest;
 import io.atomix.api.runtime.multimap.v1.EntriesRequest;
+import io.atomix.api.runtime.multimap.v1.Entry;
 import io.atomix.api.runtime.multimap.v1.EventsRequest;
 import io.atomix.api.runtime.multimap.v1.GetRequest;
 import io.atomix.api.runtime.multimap.v1.GetResponse;
 import io.atomix.api.runtime.multimap.v1.MultiMapGrpc;
 import io.atomix.api.runtime.multimap.v1.PutAllRequest;
 import io.atomix.api.runtime.multimap.v1.PutAllResponse;
+import io.atomix.api.runtime.multimap.v1.PutEntriesRequest;
+import io.atomix.api.runtime.multimap.v1.PutEntriesResponse;
 import io.atomix.api.runtime.multimap.v1.PutRequest;
 import io.atomix.api.runtime.multimap.v1.RemoveAllRequest;
 import io.atomix.api.runtime.multimap.v1.RemoveAllResponse;
+import io.atomix.api.runtime.multimap.v1.RemoveEntriesRequest;
+import io.atomix.api.runtime.multimap.v1.RemoveEntriesResponse;
 import io.atomix.api.runtime.multimap.v1.RemoveRequest;
 import io.atomix.api.runtime.multimap.v1.ReplaceRequest;
 import io.atomix.api.runtime.multimap.v1.ReplaceResponse;
 import io.atomix.api.runtime.multimap.v1.SizeRequest;
 import io.atomix.api.runtime.multimap.v1.SizeResponse;
+import io.atomix.client.Cancellable;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;
 import io.atomix.client.collection.CollectionEventListener;
 import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.iterator.AsyncIterator;
 import io.atomix.client.map.AsyncDistributedMap;
+import io.atomix.client.map.MapEventListener;
 import io.atomix.client.multimap.AsyncDistributedMultimap;
 import io.atomix.client.multimap.DistributedMultimap;
-import io.atomix.client.map.MapEventListener;
 import io.atomix.client.multimap.MultimapEvent;
 import io.atomix.client.multimap.MultimapEventListener;
 import io.atomix.client.multiset.AsyncDistributedMultiset;
@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -73,10 +74,10 @@ public class DefaultAsyncDistributedMultimap
     }
 
     @Override
-    protected CompletableFuture<AsyncDistributedMultimap<String, String>> create(Map<String, String> tags) {
+    protected CompletableFuture<AsyncDistributedMultimap<String, String>> create(Set<String> tags) {
         return retry(MultiMapGrpc.MultiMapStub::create, CreateRequest.newBuilder()
             .setId(id())
-            .putAllTags(tags)
+            .addAllTags(tags)
             .build())
             .thenApply(response -> this);
     }

@@ -15,6 +15,7 @@ import io.grpc.Status;
 import java.time.Duration;
 import java.util.Map;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -27,10 +28,10 @@ public class DefaultAsyncAtomicLock
     }
 
     @Override
-    protected CompletableFuture<AsyncAtomicLock> create(Map<String, String> tags) {
+    protected CompletableFuture<AsyncAtomicLock> create(Set<String> tags) {
         return retry(LockGrpc.LockStub::create, CreateRequest.newBuilder()
             .setId(id())
-            .putAllTags(tags)
+            .addAllTags(tags)
             .build())
             .thenApply(response -> this);
     }

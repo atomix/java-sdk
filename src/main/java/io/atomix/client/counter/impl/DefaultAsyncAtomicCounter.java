@@ -22,7 +22,7 @@ import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.grpc.Status;
 
 import java.time.Duration;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -38,10 +38,10 @@ public class DefaultAsyncAtomicCounter
     }
 
     @Override
-    protected CompletableFuture<AsyncAtomicCounter> create(Map<String, String> tags) {
+    protected CompletableFuture<AsyncAtomicCounter> create(Set<String> tags) {
         return retry(CounterGrpc.CounterStub::create, CreateRequest.newBuilder()
             .setId(id())
-            .putAllTags(tags)
+            .addAllTags(tags)
             .build())
             .thenApply(response -> this);
     }

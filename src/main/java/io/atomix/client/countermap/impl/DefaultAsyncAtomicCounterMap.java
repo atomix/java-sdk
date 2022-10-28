@@ -21,12 +21,12 @@ import io.atomix.api.runtime.countermap.v1.SetResponse;
 import io.atomix.api.runtime.countermap.v1.SizeRequest;
 import io.atomix.api.runtime.countermap.v1.SizeResponse;
 import io.atomix.api.runtime.countermap.v1.UpdateRequest;
-import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.atomix.client.countermap.AsyncAtomicCounterMap;
 import io.atomix.client.countermap.AtomicCounterMap;
+import io.atomix.client.impl.AbstractAsyncPrimitive;
 import io.grpc.Status;
 
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -42,10 +42,10 @@ public class DefaultAsyncAtomicCounterMap
     }
 
     @Override
-    protected CompletableFuture<AsyncAtomicCounterMap<String>> create(Map<String, String> tags) {
+    protected CompletableFuture<AsyncAtomicCounterMap<String>> create(Set<String> tags) {
         return retry(CounterMapGrpc.CounterMapStub::create, CreateRequest.newBuilder()
             .setId(id())
-            .putAllTags(tags)
+            .addAllTags(tags)
             .build())
             .thenApply(response -> this);
     }

@@ -20,7 +20,7 @@ import io.atomix.client.value.AtomicValueEvent;
 import io.atomix.client.value.AtomicValueEventListener;
 import io.grpc.Status;
 
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -37,10 +37,10 @@ public class DefaultAsyncAtomicValue
     }
 
     @Override
-    protected CompletableFuture<AsyncAtomicValue<String>> create(Map<String, String> tags) {
+    protected CompletableFuture<AsyncAtomicValue<String>> create(Set<String> tags) {
         return retry(ValueGrpc.ValueStub::create, CreateRequest.newBuilder()
             .setId(id())
-            .putAllTags(tags)
+            .addAllTags(tags)
             .build())
             .thenApply(v -> this);
     }

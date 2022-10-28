@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -60,10 +61,10 @@ public class DefaultAsyncAtomicMap
     }
 
     @Override
-    protected CompletableFuture<AsyncAtomicMap<String, byte[]>> create(Map<String, String> tags) {
+    protected CompletableFuture<AsyncAtomicMap<String, byte[]>> create(Set<String> tags) {
         return retry(MapGrpc.MapStub::create, CreateRequest.newBuilder()
             .setId(id())
-            .putAllTags(tags)
+            .addAllTags(tags)
             .build())
             .thenApply(response -> this);
     }

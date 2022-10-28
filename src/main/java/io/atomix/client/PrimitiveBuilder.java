@@ -8,8 +8,10 @@ package io.atomix.client;
 
 import io.atomix.client.utils.serializer.Serializer;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -24,7 +26,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> {
     private final AtomixChannel channel;
     private String name;
-    private final Map<String, String> tags = new HashMap<>();
+    private final Set<String> tags = new HashSet<>();
     protected Serializer serializer;
 
     protected PrimitiveBuilder(AtomixChannel channel) {
@@ -66,7 +68,7 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      *
      * @return the primitive tags
      */
-    protected Map<String, String> tags() {
+    protected Set<String> tags() {
         return tags;
     }
 
@@ -77,21 +79,32 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      * @return the primitive builder
      */
     @SuppressWarnings("unchecked")
-    public B withTags(Map<String, String> tags) {
-        this.tags.putAll(tags);
+    public B withTags(String... tags) {
+        this.tags.addAll(Arrays.asList(tags));
+        return (B) this;
+    }
+
+    /**
+     * Sets the primitive tags.
+     *
+     * @param tags the primitive tags
+     * @return the primitive builder
+     */
+    @SuppressWarnings("unchecked")
+    public B withTags(Collection<String> tags) {
+        this.tags.addAll(tags);
         return (B) this;
     }
 
     /**
      * Adds a tag to the primitive.
      *
-     * @param key   the tag key
-     * @param value the tag value
+     * @param tag the tag to add
      * @return the primitive builder
      */
     @SuppressWarnings("unchecked")
-    public B withTag(String key, String value) {
-        tags.put(key, value);
+    public B withTag(String tag) {
+        tags.add(tag);
         return (B) this;
     }
 

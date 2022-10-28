@@ -4,7 +4,6 @@
 
 package io.atomix.client.set.impl;
 
-import io.atomix.client.Cancellable;
 import io.atomix.api.runtime.set.v1.AddRequest;
 import io.atomix.api.runtime.set.v1.ClearRequest;
 import io.atomix.api.runtime.set.v1.CloseRequest;
@@ -18,6 +17,7 @@ import io.atomix.api.runtime.set.v1.RemoveRequest;
 import io.atomix.api.runtime.set.v1.SetGrpc;
 import io.atomix.api.runtime.set.v1.SizeRequest;
 import io.atomix.api.runtime.set.v1.SizeResponse;
+import io.atomix.client.Cancellable;
 import io.atomix.client.collection.AsyncDistributedCollection;
 import io.atomix.client.collection.CollectionEvent;
 import io.atomix.client.collection.CollectionEventListener;
@@ -33,7 +33,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -50,10 +50,10 @@ public class DefaultAsyncDistributedSet
     }
 
     @Override
-    protected CompletableFuture<AsyncDistributedCollection<String>> create(Map<String, String> tags) {
+    protected CompletableFuture<AsyncDistributedCollection<String>> create(Set<String> tags) {
         return retry(SetGrpc.SetStub::create, CreateRequest.newBuilder()
             .setId(id())
-            .putAllTags(tags)
+            .addAllTags(tags)
             .build())
             .thenApply(response -> this);
     }
