@@ -511,6 +511,9 @@ public class DefaultAsyncAtomicMap
     }
 
     private static Versioned<byte[]> toVersioned(VersionedValue value) {
+        if (value.getVersion() == 0) {
+            return null;
+        }
         return new Versioned<>(
             value.getValue().toByteArray(),
             value.getVersion());
