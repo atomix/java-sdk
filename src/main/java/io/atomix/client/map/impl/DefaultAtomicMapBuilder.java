@@ -5,7 +5,6 @@
 
 package io.atomix.client.map.impl;
 
-import com.google.common.io.BaseEncoding;
 import io.atomix.api.runtime.map.v1.MapGrpc;
 import io.atomix.client.AtomixChannel;
 import io.atomix.client.map.AsyncAtomicMap;
@@ -25,13 +24,21 @@ public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicMap<K, V>> buildAsync() {
+        if (keyEncoder == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("keyEncoder cannot be null"));
+        }
+        if (keyDecoder == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("keyDecoder cannot be null"));
+        }
+        if (valueEncoder == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("valueEncoder cannot be null"));
+        }
+        if (valueDecoder == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("valueDecoder cannot be null"));
+        }
         return new DefaultAsyncAtomicMap(name(), MapGrpc.newStub(channel()), channel().executor())
             .create(tags())
-            .thenApply(map -> new TranscodingAsyncAtomicMap<K, V, String, byte[]>(map,
-                key -> BaseEncoding.base64().encode(serializer.encode(key)),
-                key -> serializer.decode(BaseEncoding.base64().decode(key)),
-                value -> value != null ? serializer.encode(value) : null,
-                bytes -> bytes != null && bytes.length > 0 ? serializer.decode(bytes) : null))
+            .thenApply(map -> new TranscodingAsyncAtomicMap<>(map, keyEncoder, keyDecoder, valueEncoder, valueDecoder))
             .thenApply(AsyncAtomicMap::sync);
     }
 }

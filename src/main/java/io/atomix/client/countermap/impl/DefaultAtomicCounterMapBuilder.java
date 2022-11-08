@@ -23,12 +23,13 @@ public class DefaultAtomicCounterMapBuilder<K> extends AtomicCounterMapBuilder<K
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicCounterMap<K>> buildAsync() {
+        if (keyEncoder == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("keyEncoder cannot be null"));
+        }
         return new DefaultAsyncAtomicCounterMap(name(), CounterMapGrpc.newStub(channel()), channel().executor())
             .create(tags())
-            .thenApply(multimap -> new TranscodingAsyncAtomicCounterMap<K, String>(multimap,
-                key -> BaseEncoding.base64().encode(serializer.encode(key))))
+            .thenApply(multimap -> new TranscodingAsyncAtomicCounterMap<>(multimap, keyEncoder))
             .thenApply(AsyncAtomicCounterMap::sync);
     }
 }

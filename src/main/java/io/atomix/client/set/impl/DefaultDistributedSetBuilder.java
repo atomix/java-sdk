@@ -5,9 +5,8 @@
 
 package io.atomix.client.set.impl;
 
-import com.google.common.io.BaseEncoding;
-import io.atomix.client.AtomixChannel;
 import io.atomix.api.runtime.set.v1.SetGrpc;
+import io.atomix.client.AtomixChannel;
 import io.atomix.client.set.AsyncDistributedSet;
 import io.atomix.client.set.DistributedSet;
 import io.atomix.client.set.DistributedSetBuilder;
@@ -25,11 +24,15 @@ public class DefaultDistributedSetBuilder<E> extends DistributedSetBuilder<E> {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<DistributedSet<E>> buildAsync() {
+        if (elementEncoder == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("elementEncoder cannot be null"));
+        }
+        if (elementDecoder == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("elementDecoder cannot be null"));
+        }
         return new DefaultAsyncDistributedSet(name(), SetGrpc.newStub(channel()), channel().executor())
             .create(tags())
-            .thenApply(set -> new TranscodingAsyncDistributedSet<E, String>((AsyncDistributedSet<String>) set,
-                key -> BaseEncoding.base64().encode(serializer.encode(key)),
-                key -> serializer.decode(BaseEncoding.base64().decode(key))))
+            .thenApply(set -> new TranscodingAsyncDistributedSet<>((AsyncDistributedSet<String>) set, elementEncoder, elementDecoder))
             .thenApply(AsyncDistributedSet::sync);
     }
 }

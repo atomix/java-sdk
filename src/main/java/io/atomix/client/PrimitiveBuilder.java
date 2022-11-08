@@ -5,9 +5,6 @@
 
 package io.atomix.client;
 
-
-import io.atomix.client.utils.serializer.Serializer;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,7 +24,6 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
     private final AtomixChannel channel;
     private String name;
     private final Set<String> tags = new HashSet<>();
-    protected Serializer serializer;
 
     protected PrimitiveBuilder(AtomixChannel channel) {
         this.channel = checkNotNull(channel, "primitive channel cannot be null");
@@ -105,18 +101,6 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
     @SuppressWarnings("unchecked")
     public B withTag(String tag) {
         tags.add(tag);
-        return (B) this;
-    }
-
-    /**
-     * Sets the serializer for the primitive.
-     *
-     * @param serializer the primitive serializer
-     * @return the primitive builder
-     */
-    @SuppressWarnings("unchecked")
-    public B withSerializer(Serializer serializer) {
-        this.serializer = serializer;
         return (B) this;
     }
 

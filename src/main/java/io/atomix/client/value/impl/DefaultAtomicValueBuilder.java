@@ -5,7 +5,6 @@
 
 package io.atomix.client.value.impl;
 
-import com.google.common.io.BaseEncoding;
 import io.atomix.api.runtime.value.v1.ValueGrpc;
 import io.atomix.client.AtomixChannel;
 import io.atomix.client.value.AsyncAtomicValue;
@@ -25,11 +24,15 @@ public class DefaultAtomicValueBuilder<E> extends AtomicValueBuilder<E> {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicValue<E>> buildAsync() {
+        if (encoder == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("encoder cannot be null"));
+        }
+        if (decoder == null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("decoder cannot be null"));
+        }
         return new DefaultAsyncAtomicValue(name(), ValueGrpc.newStub(channel()), channel().executor())
             .create(tags())
-            .thenApply(set -> new TranscodingAsyncAtomicValue<E, String>(set,
-                key -> BaseEncoding.base64().encode(serializer.encode(key)),
-                key -> serializer.decode(BaseEncoding.base64().decode(key))))
+            .thenApply(set -> new TranscodingAsyncAtomicValue<>(set, encoder, decoder))
             .thenApply(AsyncAtomicValue::sync);
     }
 }
