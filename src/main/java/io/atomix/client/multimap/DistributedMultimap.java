@@ -25,6 +25,15 @@ public interface DistributedMultimap<K, V> extends SyncPrimitive<DistributedMult
     /**
      * Returns a new DistributedMultimap builder.
      *
+     * @return the DistributedMultimap builder
+     */
+    static <K, V> DistributedMultimapBuilder<K, V> builder() {
+        return builder(AtomixChannel.instance());
+    }
+
+    /**
+     * Returns a new DistributedMultimap builder.
+     *
      * @param channel the AtomixChannel
      * @return the DistributedMultimap builder
      */

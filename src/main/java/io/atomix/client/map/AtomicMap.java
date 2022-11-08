@@ -34,6 +34,15 @@ public interface AtomicMap<K, V> extends SyncPrimitive<AtomicMap<K, V>, AsyncAto
     /**
      * Returns a new AtomicMap builder.
      *
+     * @return the AtomicMap builder
+     */
+    static <K, V> AtomicMapBuilder<K, V> builder() {
+        return builder(AtomixChannel.instance());
+    }
+
+    /**
+     * Returns a new AtomicMap builder.
+     *
      * @param channel the AtomixChannel
      * @return the AtomicMap builder
      */

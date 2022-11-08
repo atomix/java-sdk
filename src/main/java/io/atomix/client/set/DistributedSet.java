@@ -22,6 +22,15 @@ public interface DistributedSet<E> extends DistributedCollection<E>, Set<E> {
     /**
      * Returns a new DistributedSet builder.
      *
+     * @return the DistributedSet builder
+     */
+    static <E> DistributedSetBuilder<E> builder() {
+        return builder(AtomixChannel.instance());
+    }
+
+    /**
+     * Returns a new DistributedSet builder.
+     *
      * @param channel the AtomixChannel
      * @return the DistributedSet builder
      */

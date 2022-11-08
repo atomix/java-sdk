@@ -14,6 +14,15 @@ public interface AtomicLock extends SyncPrimitive<AtomicLock, AsyncAtomicLock> {
     /**
      * Returns a new AtomicLock builder.
      *
+     * @return the AtomicLock builder
+     */
+    static AtomicLockBuilder builder() {
+        return builder(AtomixChannel.instance());
+    }
+
+    /**
+     * Returns a new AtomicLock builder.
+     *
      * @param channel the AtomixChannel
      * @return the AtomicLock builder
      */

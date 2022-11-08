@@ -13,6 +13,15 @@ public interface DistributedLock extends SyncPrimitive<DistributedLock, AsyncDis
     /**
      * Returns a new DistributedLock builder.
      *
+     * @return the DistributedLock builder
+     */
+    static DistributedLockBuilder builder() {
+        return builder(AtomixChannel.instance());
+    }
+
+    /**
+     * Returns a new DistributedLock builder.
+     *
      * @param channel the AtomixChannel
      * @return the DistributedLock builder
      */

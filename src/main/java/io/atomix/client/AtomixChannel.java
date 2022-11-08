@@ -36,6 +36,24 @@ public class AtomixChannel extends ManagedChannel {
             .register(DNS_NAME_RESOLVER_PROVIDER);
     }
 
+    private static volatile AtomixChannel instance;
+
+    /**
+     * Returns the singleton {@link AtomixChannel} instance for use in Kubernetes pods.
+     *
+     * @return the singleton instance
+     */
+    public static AtomixChannel instance() {
+        if (instance == null) {
+            synchronized (AtomixChannel.class) {
+                if (instance == null) {
+                    instance = new AtomixChannel();
+                }
+            }
+        }
+        return instance;
+    }
+
     private final ManagedChannel parent;
     private final ScheduledExecutorService executorService;
 

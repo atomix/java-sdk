@@ -12,6 +12,15 @@ public interface AtomicCounterMap<K> extends SyncPrimitive<AtomicCounterMap<K>, 
     /**
      * Returns a new AtomicCounterMap builder.
      *
+     * @return the AtomicCounterMap builder
+     */
+    static <K> AtomicCounterMapBuilder<K> builder() {
+        return builder(AtomixChannel.instance());
+    }
+
+    /**
+     * Returns a new AtomicCounterMap builder.
+     *
      * @param channel the AtomixChannel
      * @return the AtomicCounterMap builder
      */

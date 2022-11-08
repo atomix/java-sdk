@@ -19,6 +19,15 @@ public interface AtomicValue<V> extends SyncPrimitive<AtomicValue<V>, AsyncAtomi
     /**
      * Returns a new AtomicValue builder.
      *
+     * @return the AtomicValue builder
+     */
+    static <V> AtomicValueBuilder<V> builder() {
+        return builder(AtomixChannel.instance());
+    }
+
+    /**
+     * Returns a new AtomicValue builder.
+     *
      * @param channel the AtomixChannel
      * @return the AtomicValue builder
      */

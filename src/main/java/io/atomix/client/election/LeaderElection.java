@@ -17,6 +17,15 @@ public interface LeaderElection<T> extends SyncPrimitive<LeaderElection<T>, Asyn
     /**
      * Returns a new LeaderElection builder.
      *
+     * @return the LeaderElection builder
+     */
+    static <T> LeaderElectionBuilder<T> builder() {
+        return builder(AtomixChannel.instance());
+    }
+
+    /**
+     * Returns a new LeaderElection builder.
+     *
      * @param channel the AtomixChannel
      * @return the LeaderElection builder
      */

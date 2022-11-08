@@ -17,6 +17,15 @@ public interface AtomicCounter extends SyncPrimitive<AtomicCounter, AsyncAtomicC
     /**
      * Returns a new AtomicCounter builder.
      *
+     * @return the AtomicCounter builder
+     */
+    static AtomicCounterBuilder builder() {
+        return builder(AtomixChannel.instance());
+    }
+
+    /**
+     * Returns a new AtomicCounter builder.
+     *
      * @param channel the AtomixChannel
      * @return the AtomicCounter builder
      */
