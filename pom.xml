@@ -265,8 +265,7 @@ SPDX-License-Identifier: Apache-2.0
                 <configuration>
                     <instructions>
                         <Export-Package>
-                            io.atomix.api.*,
-                            io.atomix.client.*
+                            io.atomix.*
                         </Export-Package>
                         <Import-Package>
                             !sun.nio.ch,!sun.misc,!java.*,com.google.protobuf;version=2.5.0,*
