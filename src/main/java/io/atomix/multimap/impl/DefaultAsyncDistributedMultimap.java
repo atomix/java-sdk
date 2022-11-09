@@ -156,7 +156,7 @@ public class DefaultAsyncDistributedMultimap
             .thenApply(response -> true)
             .exceptionally(t -> {
                 if (Status.fromThrowable(t).getCode() == Status.Code.ALREADY_EXISTS) {
-                    return null;
+                    return false;
                 } else {
                     throw (RuntimeException) t;
                 }
