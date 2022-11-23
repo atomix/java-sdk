@@ -82,10 +82,18 @@ public class DefaultAsyncAtomicValue
     public CompletableFuture<Versioned<String>> set(String value, long version) {
         return retry(ValueGrpc.ValueStub::update, UpdateRequest.newBuilder()
             .setId(id())
+            .setPrevVersion(version)
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(
                 response.getPrevValue().getValue().toStringUtf8(),
-                response.getPrevValue().getVersion()));
+                response.getPrevValue().getVersion()))
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
+                    return null;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            });
     }
 
     @Override
