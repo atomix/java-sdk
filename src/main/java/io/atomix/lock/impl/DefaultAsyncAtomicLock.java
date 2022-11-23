@@ -94,6 +94,13 @@ public class DefaultAsyncAtomicLock
         return retry(LockGrpc.LockStub::unlock, UnlockRequest.newBuilder()
             .setId(id())
             .build())
+            .exceptionally(t -> {
+                if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
+                    return null;
+                } else {
+                    throw (RuntimeException) t;
+                }
+            })
             .thenApply(response -> null);
     }
 
