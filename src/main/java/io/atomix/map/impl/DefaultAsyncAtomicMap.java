@@ -212,6 +212,8 @@ public class DefaultAsyncAtomicMap
                             future.complete(new Versioned<>(computedValue, r.getVersion()));
                         } else if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
                             future.completeExceptionally(new ConcurrentModificationException());
+                        } else if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
+                            future.completeExceptionally(new ConcurrentModificationException());
                         } else {
                             future.completeExceptionally(t);
                         }
@@ -413,6 +415,8 @@ public class DefaultAsyncAtomicMap
             .thenApply(response -> true)
             .exceptionally(t -> {
                 if (Status.fromThrowable(t).getCode() == Status.Code.NOT_FOUND) {
+                    return false;
+                } else if (Status.fromThrowable(t).getCode() == Status.Code.ABORTED) {
                     return false;
                 } else {
                     throw (RuntimeException) t;
