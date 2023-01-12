@@ -4,6 +4,7 @@
 
 package io.atomix.value.impl;
 
+import com.google.protobuf.ByteString;
 import io.atomix.Cancellable;
 import io.atomix.api.runtime.value.v1.CloseRequest;
 import io.atomix.api.runtime.value.v1.CreateRequest;
@@ -74,6 +75,7 @@ public class DefaultAsyncAtomicValue
     public CompletableFuture<Versioned<String>> set(String value) {
         return retry(ValueGrpc.ValueStub::set, SetRequest.newBuilder()
             .setId(id())
+            .setValue(ByteString.copyFromUtf8(value))
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(value, response.getVersion()));
     }
@@ -82,6 +84,7 @@ public class DefaultAsyncAtomicValue
     public CompletableFuture<Versioned<String>> set(String value, long version) {
         return retry(ValueGrpc.ValueStub::update, UpdateRequest.newBuilder()
             .setId(id())
+            .setValue(ByteString.copyFromUtf8(value))
             .setPrevVersion(version)
             .build(), DEFAULT_TIMEOUT)
             .thenApply(response -> new Versioned<>(
