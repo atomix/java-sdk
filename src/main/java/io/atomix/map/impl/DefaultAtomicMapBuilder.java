@@ -6,7 +6,7 @@
 package io.atomix.map.impl;
 
 import io.atomix.AtomixChannel;
-import io.atomix.api.runtime.map.v1.MapGrpc;
+import io.atomix.api.map.v1.MapGrpc;
 import io.atomix.map.AsyncAtomicMap;
 import io.atomix.map.AtomicMap;
 import io.atomix.map.AtomicMapBuilder;

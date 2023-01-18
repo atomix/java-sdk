@@ -4,18 +4,18 @@
 
 package io.atomix.election.impl;
 
-import io.atomix.api.runtime.election.v1.AnointRequest;
-import io.atomix.api.runtime.election.v1.CloseRequest;
-import io.atomix.api.runtime.election.v1.CreateRequest;
-import io.atomix.api.runtime.election.v1.DemoteRequest;
-import io.atomix.api.runtime.election.v1.EnterRequest;
-import io.atomix.api.runtime.election.v1.EvictRequest;
-import io.atomix.api.runtime.election.v1.GetTermRequest;
-import io.atomix.api.runtime.election.v1.LeaderElectionGrpc;
-import io.atomix.api.runtime.election.v1.PromoteRequest;
-import io.atomix.api.runtime.election.v1.Term;
-import io.atomix.api.runtime.election.v1.WatchRequest;
-import io.atomix.api.runtime.election.v1.WithdrawRequest;
+import io.atomix.api.election.v1.AnointRequest;
+import io.atomix.api.election.v1.CloseRequest;
+import io.atomix.api.election.v1.CreateRequest;
+import io.atomix.api.election.v1.DemoteRequest;
+import io.atomix.api.election.v1.EnterRequest;
+import io.atomix.api.election.v1.EvictRequest;
+import io.atomix.api.election.v1.GetTermRequest;
+import io.atomix.api.election.v1.LeaderElectionGrpc;
+import io.atomix.api.election.v1.PromoteRequest;
+import io.atomix.api.election.v1.Term;
+import io.atomix.api.election.v1.WatchRequest;
+import io.atomix.api.election.v1.WithdrawRequest;
 import io.atomix.Cancellable;
 import io.atomix.election.AsyncLeaderElection;
 import io.atomix.election.LeaderElection;

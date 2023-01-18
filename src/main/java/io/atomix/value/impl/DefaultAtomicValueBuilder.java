@@ -6,7 +6,7 @@
 package io.atomix.value.impl;
 
 import io.atomix.AtomixChannel;
-import io.atomix.api.runtime.value.v1.ValueGrpc;
+import io.atomix.api.value.v1.ValueGrpc;
 import io.atomix.value.AsyncAtomicValue;
 import io.atomix.value.AtomicValue;
 import io.atomix.value.AtomicValueBuilder;

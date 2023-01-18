@@ -5,17 +5,17 @@
 
 package io.atomix.counter.impl;
 
-import io.atomix.api.runtime.counter.v1.CloseRequest;
-import io.atomix.api.runtime.counter.v1.CounterGrpc;
-import io.atomix.api.runtime.counter.v1.CreateRequest;
-import io.atomix.api.runtime.counter.v1.DecrementRequest;
-import io.atomix.api.runtime.counter.v1.DecrementResponse;
-import io.atomix.api.runtime.counter.v1.GetRequest;
-import io.atomix.api.runtime.counter.v1.GetResponse;
-import io.atomix.api.runtime.counter.v1.IncrementRequest;
-import io.atomix.api.runtime.counter.v1.IncrementResponse;
-import io.atomix.api.runtime.counter.v1.SetRequest;
-import io.atomix.api.runtime.counter.v1.UpdateRequest;
+import io.atomix.api.counter.v1.CloseRequest;
+import io.atomix.api.counter.v1.CounterGrpc;
+import io.atomix.api.counter.v1.CreateRequest;
+import io.atomix.api.counter.v1.DecrementRequest;
+import io.atomix.api.counter.v1.DecrementResponse;
+import io.atomix.api.counter.v1.GetRequest;
+import io.atomix.api.counter.v1.GetResponse;
+import io.atomix.api.counter.v1.IncrementRequest;
+import io.atomix.api.counter.v1.IncrementResponse;
+import io.atomix.api.counter.v1.SetRequest;
+import io.atomix.api.counter.v1.UpdateRequest;
 import io.atomix.counter.AsyncAtomicCounter;
 import io.atomix.counter.AtomicCounter;
 import io.atomix.impl.AbstractAsyncPrimitive;

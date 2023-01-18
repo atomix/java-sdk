@@ -6,7 +6,7 @@
 package io.atomix.multimap.impl;
 
 import io.atomix.AtomixChannel;
-import io.atomix.api.runtime.multimap.v1.MultiMapGrpc;
+import io.atomix.api.multimap.v1.MultiMapGrpc;
 import io.atomix.multimap.AsyncDistributedMultimap;
 import io.atomix.multimap.DistributedMultimap;
 import io.atomix.multimap.DistributedMultimapBuilder;

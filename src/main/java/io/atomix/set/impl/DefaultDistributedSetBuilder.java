@@ -6,7 +6,7 @@
 package io.atomix.set.impl;
 
 import io.atomix.AtomixChannel;
-import io.atomix.api.runtime.set.v1.SetGrpc;
+import io.atomix.api.set.v1.SetGrpc;
 import io.atomix.set.AsyncDistributedSet;
 import io.atomix.set.DistributedSet;
 import io.atomix.set.DistributedSetBuilder;

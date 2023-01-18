@@ -6,7 +6,7 @@
 package io.atomix.countermap.impl;
 
 import io.atomix.AtomixChannel;
-import io.atomix.api.runtime.countermap.v1.CounterMapGrpc;
+import io.atomix.api.countermap.v1.CounterMapGrpc;
 import io.atomix.countermap.AsyncAtomicCounterMap;
 import io.atomix.countermap.AtomicCounterMap;
 import io.atomix.countermap.AtomicCounterMapBuilder;
