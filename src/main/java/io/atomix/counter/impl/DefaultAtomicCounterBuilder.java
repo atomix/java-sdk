@@ -5,7 +5,7 @@
 
 package io.atomix.counter.impl;
 
-import io.atomix.api.runtime.counter.v1.CounterGrpc;
+import io.atomix.api.counter.v1.CounterGrpc;
 import io.atomix.AtomixChannel;
 import io.atomix.counter.AsyncAtomicCounter;
 import io.atomix.counter.AtomicCounter;

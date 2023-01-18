@@ -1,12 +1,12 @@
 package io.atomix.lock.impl;
 
-import io.atomix.api.runtime.lock.v1.CloseRequest;
-import io.atomix.api.runtime.lock.v1.CreateRequest;
-import io.atomix.api.runtime.lock.v1.GetLockRequest;
-import io.atomix.api.runtime.lock.v1.LockGrpc;
-import io.atomix.api.runtime.lock.v1.LockRequest;
-import io.atomix.api.runtime.lock.v1.LockResponse;
-import io.atomix.api.runtime.lock.v1.UnlockRequest;
+import io.atomix.api.lock.v1.CloseRequest;
+import io.atomix.api.lock.v1.CreateRequest;
+import io.atomix.api.lock.v1.GetLockRequest;
+import io.atomix.api.lock.v1.LockGrpc;
+import io.atomix.api.lock.v1.LockRequest;
+import io.atomix.api.lock.v1.LockResponse;
+import io.atomix.api.lock.v1.UnlockRequest;
 import io.atomix.impl.AbstractAsyncPrimitive;
 import io.atomix.lock.AsyncAtomicLock;
 import io.atomix.lock.AtomicLock;

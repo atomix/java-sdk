@@ -5,13 +5,13 @@
 package io.atomix.value.impl;
 
 import io.atomix.Cancellable;
-import io.atomix.api.runtime.value.v1.CloseRequest;
-import io.atomix.api.runtime.value.v1.CreateRequest;
-import io.atomix.api.runtime.value.v1.EventsRequest;
-import io.atomix.api.runtime.value.v1.GetRequest;
-import io.atomix.api.runtime.value.v1.SetRequest;
-import io.atomix.api.runtime.value.v1.UpdateRequest;
-import io.atomix.api.runtime.value.v1.ValueGrpc;
+import io.atomix.api.value.v1.CloseRequest;
+import io.atomix.api.value.v1.CreateRequest;
+import io.atomix.api.value.v1.EventsRequest;
+import io.atomix.api.value.v1.GetRequest;
+import io.atomix.api.value.v1.SetRequest;
+import io.atomix.api.value.v1.UpdateRequest;
+import io.atomix.api.value.v1.ValueGrpc;
 import io.atomix.impl.AbstractAsyncPrimitive;
 import io.atomix.time.Versioned;
 import io.atomix.value.AsyncAtomicValue;

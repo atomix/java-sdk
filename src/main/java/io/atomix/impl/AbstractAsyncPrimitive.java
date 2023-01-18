@@ -4,7 +4,7 @@
 
 package io.atomix.impl;
 
-import io.atomix.api.runtime.v1.PrimitiveId;
+import io.atomix.api.runtime.v1.PrimitiveID;
 import io.atomix.AsyncPrimitive;
 import io.atomix.Cancellable;
 import io.atomix.SyncPrimitive;
@@ -50,8 +50,8 @@ public abstract class AbstractAsyncPrimitive<A extends AsyncPrimitive<A, S>, S e
         return name;
     }
 
-    protected final PrimitiveId id() {
-        return PrimitiveId.newBuilder()
+    protected final PrimitiveID id() {
+        return PrimitiveID.newBuilder()
             .setName(name())
             .build();
     }

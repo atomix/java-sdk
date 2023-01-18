@@ -6,7 +6,7 @@
 package io.atomix.election.impl;
 
 import io.atomix.AtomixChannel;
-import io.atomix.api.runtime.election.v1.LeaderElectionGrpc;
+import io.atomix.api.election.v1.LeaderElectionGrpc;
 import io.atomix.election.AsyncLeaderElection;
 import io.atomix.election.LeaderElection;
 import io.atomix.election.LeaderElectionBuilder;

@@ -1,7 +1,7 @@
 package io.atomix.lock.impl;
 
 import io.atomix.AtomixChannel;
-import io.atomix.api.runtime.lock.v1.LockGrpc;
+import io.atomix.api.lock.v1.LockGrpc;
 import io.atomix.lock.AsyncAtomicLock;
 import io.atomix.lock.AtomicLock;
 import io.atomix.lock.AtomicLockBuilder;
