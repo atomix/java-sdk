@@ -7,6 +7,7 @@ package io.atomix.multimap;
 
 import io.atomix.AtomixChannel;
 import io.atomix.PrimitiveBuilder;
+import io.atomix.api.multimap.v1.MultiMapGrpc;
 
 import java.util.function.Function;
 
@@ -15,14 +16,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Builder for AtomicCounter.
  */
-public abstract class DistributedMultimapBuilder<K, V> extends PrimitiveBuilder<DistributedMultimapBuilder<K, V>, DistributedMultimap<K, V>> {
+public abstract class DistributedMultimapBuilder<K, V>
+        extends PrimitiveBuilder<DistributedMultimapBuilder<K, V>, DistributedMultimap<K, V>, MultiMapGrpc.MultiMapStub> {
     protected Function<K, String> keyEncoder;
     protected Function<String, K> keyDecoder;
     protected Function<V, String> valueEncoder;
     protected Function<String, V> valueDecoder;
 
     protected DistributedMultimapBuilder(AtomixChannel channel) {
-        super(channel);
+        super(channel, MultiMapGrpc.newStub(channel), channel.executor());
     }
 
     /**

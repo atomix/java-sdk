@@ -6,6 +6,7 @@
 package io.atomix.multimap.impl;
 
 import io.atomix.AtomixChannel;
+import io.atomix.api.multimap.v1.CreateRequest;
 import io.atomix.api.multimap.v1.MultiMapGrpc;
 import io.atomix.multimap.AsyncDistributedMultimap;
 import io.atomix.multimap.DistributedMultimap;
@@ -36,9 +37,16 @@ public class DefaultDistributedMultimapBuilder<K, V> extends DistributedMultimap
         if (valueDecoder == null) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("valueDecoder cannot be null"));
         }
-        return new DefaultAsyncDistributedMultimap(name(), MultiMapGrpc.newStub(channel()), channel().executor())
-            .create(tags())
-            .thenApply(multimap -> new TranscodingAsyncDistributedMultimap<>(multimap, keyEncoder, keyDecoder, valueEncoder, valueDecoder))
-            .thenApply(AsyncDistributedMultimap::sync);
+        // Creates the primitive and connect. Eventually, returns a future
+        // to be completed once the primitive is created and connected
+        DefaultAsyncDistributedMultimap rawMultiMap = new DefaultAsyncDistributedMultimap(name(), this.stub, this.executorService);
+        return retry(MultiMapGrpc.MultiMapStub::create, CreateRequest.newBuilder()
+                .setId(id())
+                .addAllTags(tags())
+                .build())
+                .thenApply(response -> new TranscodingAsyncDistributedMultimap<>(
+                        rawMultiMap, keyEncoder, keyDecoder, valueEncoder, valueDecoder))
+                .thenApply(AsyncDistributedMultimap::sync);
+
     }
 }

@@ -6,6 +6,7 @@
 package io.atomix.election.impl;
 
 import io.atomix.AtomixChannel;
+import io.atomix.api.election.v1.CreateRequest;
 import io.atomix.api.election.v1.LeaderElectionGrpc;
 import io.atomix.election.AsyncLeaderElection;
 import io.atomix.election.LeaderElection;
@@ -30,9 +31,14 @@ public class DefaultLeaderElectionBuilder<T> extends LeaderElectionBuilder<T> {
         if (decoder == null) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("decoder cannot be null"));
         }
-        return new DefaultAsyncLeaderElection(name(), LeaderElectionGrpc.newStub(channel()), channel().executor())
-            .create(tags())
-            .thenApply(election -> new TranscodingAsyncLeaderElection<>(election, encoder, decoder))
-            .thenApply(AsyncLeaderElection::sync);
+        // Creates the primitive and connect. Eventually, returns a future
+        // to be completed once the primitive is created and connected
+        DefaultAsyncLeaderElection rawLeaderElection = new DefaultAsyncLeaderElection(name(), this.stub, this.executorService);
+        return retry(LeaderElectionGrpc.LeaderElectionStub::create, CreateRequest.newBuilder()
+                .setId(id())
+                .addAllTags(tags())
+                .build())
+                .thenApply(response -> new TranscodingAsyncLeaderElection<>(rawLeaderElection, encoder, decoder))
+                .thenApply(AsyncLeaderElection::sync);
     }
 }

@@ -7,7 +7,6 @@ package io.atomix.value.impl;
 import com.google.protobuf.ByteString;
 import io.atomix.Cancellable;
 import io.atomix.api.value.v1.CloseRequest;
-import io.atomix.api.value.v1.CreateRequest;
 import io.atomix.api.value.v1.EventsRequest;
 import io.atomix.api.value.v1.GetRequest;
 import io.atomix.api.value.v1.SetRequest;
@@ -21,7 +20,6 @@ import io.atomix.value.AtomicValueEvent;
 import io.atomix.value.AtomicValueEventListener;
 import io.grpc.Status;
 
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,15 +33,6 @@ public class DefaultAsyncAtomicValue
 
     public DefaultAsyncAtomicValue(String name, ValueGrpc.ValueStub stub, ScheduledExecutorService executorService) {
         super(name, stub, executorService);
-    }
-
-    @Override
-    protected CompletableFuture<AsyncAtomicValue<String>> create(Set<String> tags) {
-        return retry(ValueGrpc.ValueStub::create, CreateRequest.newBuilder()
-            .setId(id())
-            .addAllTags(tags)
-            .build())
-            .thenApply(v -> this);
     }
 
     @Override

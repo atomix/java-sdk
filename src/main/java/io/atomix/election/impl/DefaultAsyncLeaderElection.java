@@ -6,7 +6,6 @@ package io.atomix.election.impl;
 
 import io.atomix.api.election.v1.AnointRequest;
 import io.atomix.api.election.v1.CloseRequest;
-import io.atomix.api.election.v1.CreateRequest;
 import io.atomix.api.election.v1.DemoteRequest;
 import io.atomix.api.election.v1.EnterRequest;
 import io.atomix.api.election.v1.EvictRequest;
@@ -25,7 +24,6 @@ import io.atomix.election.LeadershipEventListener;
 import io.atomix.impl.AbstractAsyncPrimitive;
 
 import java.time.Duration;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,15 +38,6 @@ public class DefaultAsyncLeaderElection
 
     public DefaultAsyncLeaderElection(String name, LeaderElectionGrpc.LeaderElectionStub stub, ScheduledExecutorService executorService) {
         super(name, stub, executorService);
-    }
-
-    @Override
-    protected CompletableFuture<AsyncLeaderElection<String>> create(Set<String> tags) {
-        return retry(LeaderElectionGrpc.LeaderElectionStub::create, CreateRequest.newBuilder()
-            .setId(id())
-            .addAllTags(tags)
-            .build())
-            .thenApply(response -> this);
     }
 
     @Override

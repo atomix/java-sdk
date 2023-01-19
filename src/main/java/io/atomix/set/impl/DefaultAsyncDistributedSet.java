@@ -10,7 +10,6 @@ import io.atomix.api.set.v1.ClearRequest;
 import io.atomix.api.set.v1.CloseRequest;
 import io.atomix.api.set.v1.ContainsRequest;
 import io.atomix.api.set.v1.ContainsResponse;
-import io.atomix.api.set.v1.CreateRequest;
 import io.atomix.api.set.v1.Element;
 import io.atomix.api.set.v1.ElementsRequest;
 import io.atomix.api.set.v1.EventsRequest;
@@ -33,7 +32,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -47,15 +45,6 @@ public class DefaultAsyncDistributedSet
 
     public DefaultAsyncDistributedSet(String name, SetGrpc.SetStub stub, ScheduledExecutorService executorService) {
         super(name, stub, executorService);
-    }
-
-    @Override
-    protected CompletableFuture<AsyncDistributedCollection<String>> create(Set<String> tags) {
-        return retry(SetGrpc.SetStub::create, CreateRequest.newBuilder()
-            .setId(id())
-            .addAllTags(tags)
-            .build())
-            .thenApply(response -> this);
     }
 
     @Override

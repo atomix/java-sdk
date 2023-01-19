@@ -6,6 +6,7 @@
 package io.atomix.value.impl;
 
 import io.atomix.AtomixChannel;
+import io.atomix.api.value.v1.CreateRequest;
 import io.atomix.api.value.v1.ValueGrpc;
 import io.atomix.value.AsyncAtomicValue;
 import io.atomix.value.AtomicValue;
@@ -30,9 +31,14 @@ public class DefaultAtomicValueBuilder<E> extends AtomicValueBuilder<E> {
         if (decoder == null) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("decoder cannot be null"));
         }
-        return new DefaultAsyncAtomicValue(name(), ValueGrpc.newStub(channel()), channel().executor())
-            .create(tags())
-            .thenApply(set -> new TranscodingAsyncAtomicValue<>(set, encoder, decoder))
-            .thenApply(AsyncAtomicValue::sync);
+        // Creates the primitive and connect. Eventually, returns a future
+        // to be completed once the primitive is created and connected
+        DefaultAsyncAtomicValue rawValue = new DefaultAsyncAtomicValue(name(), this.stub, this.executorService);
+        return retry(ValueGrpc.ValueStub::create, CreateRequest.newBuilder()
+                .setId(id())
+                .addAllTags(tags())
+                .build())
+                .thenApply(response -> new TranscodingAsyncAtomicValue<>(rawValue, encoder, decoder))
+                .thenApply(AsyncAtomicValue::sync);
     }
 }

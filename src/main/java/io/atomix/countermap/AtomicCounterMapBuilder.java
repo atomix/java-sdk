@@ -7,6 +7,7 @@ package io.atomix.countermap;
 
 import io.atomix.AtomixChannel;
 import io.atomix.PrimitiveBuilder;
+import io.atomix.api.countermap.v1.CounterMapGrpc;
 
 import java.util.function.Function;
 
@@ -15,12 +16,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Builder for AtomicCounter.
  */
-public abstract class AtomicCounterMapBuilder<K> extends PrimitiveBuilder<AtomicCounterMapBuilder<K>, AtomicCounterMap<K>> {
+public abstract class AtomicCounterMapBuilder<K>
+        extends PrimitiveBuilder<AtomicCounterMapBuilder<K>, AtomicCounterMap<K>, CounterMapGrpc.CounterMapStub> {
     protected Function<K, String> keyEncoder;
     protected Function<String, K> keyDecoder;
 
     protected AtomicCounterMapBuilder(AtomixChannel channel) {
-        super(channel);
+        super(channel, CounterMapGrpc.newStub(channel), channel.executor());
     }
 
     /**

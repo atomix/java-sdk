@@ -7,6 +7,7 @@ package io.atomix.value;
 
 import io.atomix.AtomixChannel;
 import io.atomix.PrimitiveBuilder;
+import io.atomix.api.value.v1.ValueGrpc;
 
 import java.util.function.Function;
 
@@ -15,12 +16,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Builder for AtomicValue.
  */
-public abstract class AtomicValueBuilder<V> extends PrimitiveBuilder<AtomicValueBuilder<V>, AtomicValue<V>> {
+public abstract class AtomicValueBuilder<V>
+        extends PrimitiveBuilder<AtomicValueBuilder<V>, AtomicValue<V>, ValueGrpc.ValueStub> {
     protected Function<V, String> encoder;
     protected Function<String, V> decoder;
 
     protected AtomicValueBuilder(AtomixChannel channel) {
-        super(channel);
+        super(channel, ValueGrpc.newStub(channel), channel.executor());
     }
 
     /**

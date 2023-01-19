@@ -7,12 +7,15 @@ package io.atomix.counter;
 
 import io.atomix.AtomixChannel;
 import io.atomix.PrimitiveBuilder;
+import io.atomix.api.counter.v1.CounterGrpc;
 
 /**
  * Builder for AtomicCounter.
  */
-public abstract class AtomicCounterBuilder extends PrimitiveBuilder<AtomicCounterBuilder, AtomicCounter> {
+public abstract class AtomicCounterBuilder
+        extends PrimitiveBuilder<AtomicCounterBuilder, AtomicCounter, CounterGrpc.CounterStub> {
+
     protected AtomicCounterBuilder(AtomixChannel channel) {
-        super(channel);
+        super(channel, CounterGrpc.newStub(channel), channel.executor());
     }
 }

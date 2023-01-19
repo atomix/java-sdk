@@ -1,7 +1,6 @@
 package io.atomix.lock.impl;
 
 import io.atomix.api.lock.v1.CloseRequest;
-import io.atomix.api.lock.v1.CreateRequest;
 import io.atomix.api.lock.v1.GetLockRequest;
 import io.atomix.api.lock.v1.LockGrpc;
 import io.atomix.api.lock.v1.LockRequest;
@@ -14,7 +13,6 @@ import io.grpc.Status;
 
 import java.time.Duration;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -24,15 +22,6 @@ public class DefaultAsyncAtomicLock
 
     public DefaultAsyncAtomicLock(String name, LockGrpc.LockStub stub, ScheduledExecutorService executorService) {
         super(name, stub, executorService);
-    }
-
-    @Override
-    protected CompletableFuture<AsyncAtomicLock> create(Set<String> tags) {
-        return retry(LockGrpc.LockStub::create, CreateRequest.newBuilder()
-            .setId(id())
-            .addAllTags(tags)
-            .build())
-            .thenApply(response -> this);
     }
 
     @Override

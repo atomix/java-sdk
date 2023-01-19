@@ -56,13 +56,6 @@ public abstract class AbstractAsyncPrimitive<A extends AsyncPrimitive<A, S>, S e
             .build();
     }
 
-    /**
-     * Creates the primitive and connect.Ø
-     *
-     * @return a future to be completed once the primitive is created and connected
-     */
-    protected abstract CompletableFuture<A> create(Set<String> tags);
-
     protected <U, V> CompletableFuture<V> retry(StubMethodCall<T, U, V> callback, U request) {
         return Retries.retryAsync(
             () -> execute(callback, request),

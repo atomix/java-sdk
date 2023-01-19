@@ -7,6 +7,7 @@ package io.atomix.countermap.impl;
 
 import io.atomix.AtomixChannel;
 import io.atomix.api.countermap.v1.CounterMapGrpc;
+import io.atomix.api.countermap.v1.CreateRequest;
 import io.atomix.countermap.AsyncAtomicCounterMap;
 import io.atomix.countermap.AtomicCounterMap;
 import io.atomix.countermap.AtomicCounterMapBuilder;
@@ -26,9 +27,14 @@ public class DefaultAtomicCounterMapBuilder<K> extends AtomicCounterMapBuilder<K
         if (keyEncoder == null) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("keyEncoder cannot be null"));
         }
-        return new DefaultAsyncAtomicCounterMap(name(), CounterMapGrpc.newStub(channel()), channel().executor())
-            .create(tags())
-            .thenApply(multimap -> new TranscodingAsyncAtomicCounterMap<>(multimap, keyEncoder))
-            .thenApply(AsyncAtomicCounterMap::sync);
+        // Creates the primitive and connect. Eventually, returns a future
+        // to be completed once the primitive is created and connected
+        DefaultAsyncAtomicCounterMap rawCounterMap = new DefaultAsyncAtomicCounterMap(name(), this.stub, this.executorService);
+        return retry(CounterMapGrpc.CounterMapStub::create, CreateRequest.newBuilder()
+                .setId(id())
+                .addAllTags(tags())
+                .build())
+                .thenApply(response -> new TranscodingAsyncAtomicCounterMap<>(rawCounterMap, keyEncoder))
+                .thenApply(AsyncAtomicCounterMap::sync);
     }
 }

@@ -7,6 +7,7 @@ package io.atomix.set;
 
 import io.atomix.AtomixChannel;
 import io.atomix.PrimitiveBuilder;
+import io.atomix.api.set.v1.SetGrpc;
 
 import java.util.function.Function;
 
@@ -15,12 +16,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Builder for DistributedSet.
  */
-public abstract class DistributedSetBuilder<E> extends PrimitiveBuilder<DistributedSetBuilder<E>, DistributedSet<E>> {
+public abstract class DistributedSetBuilder<E>
+        extends PrimitiveBuilder<DistributedSetBuilder<E>, DistributedSet<E>, SetGrpc.SetStub> {
     protected Function<E, String> elementEncoder;
     protected Function<String, E> elementDecoder;
 
     protected DistributedSetBuilder(AtomixChannel channel) {
-        super(channel);
+        super(channel, SetGrpc.newStub(channel), channel.executor());
     }
 
     /**

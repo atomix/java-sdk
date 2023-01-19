@@ -7,7 +7,6 @@ package io.atomix.counter.impl;
 
 import io.atomix.api.counter.v1.CloseRequest;
 import io.atomix.api.counter.v1.CounterGrpc;
-import io.atomix.api.counter.v1.CreateRequest;
 import io.atomix.api.counter.v1.DecrementRequest;
 import io.atomix.api.counter.v1.DecrementResponse;
 import io.atomix.api.counter.v1.GetRequest;
@@ -22,7 +21,6 @@ import io.atomix.impl.AbstractAsyncPrimitive;
 import io.grpc.Status;
 
 import java.time.Duration;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -35,15 +33,6 @@ public class DefaultAsyncAtomicCounter
 
     public DefaultAsyncAtomicCounter(String name, CounterGrpc.CounterStub stub, ScheduledExecutorService executorService) {
         super(name, stub, executorService);
-    }
-
-    @Override
-    protected CompletableFuture<AsyncAtomicCounter> create(Set<String> tags) {
-        return retry(CounterGrpc.CounterStub::create, CreateRequest.newBuilder()
-            .setId(id())
-            .addAllTags(tags)
-            .build())
-            .thenApply(response -> this);
     }
 
     @Override

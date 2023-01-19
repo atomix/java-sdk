@@ -5,12 +5,19 @@
 
 package io.atomix;
 
+import io.atomix.api.runtime.v1.PrimitiveID;
+import io.atomix.util.concurrent.Retries;
+import io.grpc.Status;
+import io.grpc.stub.StreamObserver;
+
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -20,13 +27,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @param <B> builder type
  * @param <P> primitive type
  */
-public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P extends SyncPrimitive> {
+public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P, T>, P extends SyncPrimitive, T> {
+    private static final Duration MAX_DELAY_BETWEEN_RETRIES = Duration.ofSeconds(5);
     private final AtomixChannel channel;
     private String name;
     private final Set<String> tags = new HashSet<>();
+    protected final T stub;
+    protected final ScheduledExecutorService executorService;
 
-    protected PrimitiveBuilder(AtomixChannel channel) {
+    protected PrimitiveBuilder(AtomixChannel channel, T stub, ScheduledExecutorService executorService) {
         this.channel = checkNotNull(channel, "primitive channel cannot be null");
+        this.stub = checkNotNull(stub, "primitive stub cannot be null");
+        this.executorService = checkNotNull(executorService, "primitive executor cannot be null");
     }
 
     /**
@@ -66,6 +78,17 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      */
     protected Set<String> tags() {
         return tags;
+    }
+
+    /**
+     * Return the primitive id.
+     *
+     * @return the primitive id
+     */
+    protected final PrimitiveID id() {
+        return PrimitiveID.newBuilder()
+                .setName(name())
+                .build();
     }
 
     /**
@@ -133,4 +156,38 @@ public abstract class PrimitiveBuilder<B extends PrimitiveBuilder<B, P>, P exten
      * @return asynchronous distributed primitive
      */
     public abstract CompletableFuture<P> buildAsync();
+
+    private <U, V> CompletableFuture<V> execute(StubMethodCall<T, U, V> callback, U request) {
+        CompletableFuture<V> future = new CompletableFuture<>();
+        StreamObserver<V> responseObserver = new StreamObserver<V>() {
+            @Override
+            public void onNext(V response) {
+                future.complete(response);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                future.completeExceptionally(t);
+            }
+
+            @Override
+            public void onCompleted() {
+
+            }
+        };
+        callback.call(stub, request, responseObserver);
+        return future;
+    }
+
+    protected <U, V> CompletableFuture<V> retry(StubMethodCall<T, U, V> callback, U request) {
+        return Retries.retryAsync(
+                () -> execute(callback, request),
+                t -> Status.fromThrowable(t).getCode() == Status.UNAVAILABLE.getCode(),
+                MAX_DELAY_BETWEEN_RETRIES,
+                executorService);
+    }
+
+    protected interface StubMethodCall<T, U, V> {
+        void call(T stub, U request, StreamObserver<V> streamObserver);
+    }
 }
