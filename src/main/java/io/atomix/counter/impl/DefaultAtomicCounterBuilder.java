@@ -7,6 +7,7 @@ package io.atomix.counter.impl;
 
 import io.atomix.api.counter.v1.CounterGrpc;
 import io.atomix.AtomixChannel;
+import io.atomix.api.counter.v1.CreateRequest;
 import io.atomix.counter.AsyncAtomicCounter;
 import io.atomix.counter.AtomicCounter;
 import io.atomix.counter.AtomicCounterBuilder;
@@ -25,8 +26,13 @@ public class DefaultAtomicCounterBuilder extends AtomicCounterBuilder {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicCounter> buildAsync() {
-        return new DefaultAsyncAtomicCounter(name(), CounterGrpc.newStub(channel()), channel().executor())
-            .create(tags())
-            .thenApply(AsyncAtomicCounter::sync);
+        // Creates the primitive and connect. Eventually, returns a future
+        // to be completed once the primitive is created and connected
+        return retry(CounterGrpc.CounterStub::create, CreateRequest.newBuilder()
+                .setId(id())
+                .addAllTags(tags())
+                .build())
+                .thenApply(response -> new DefaultAsyncAtomicCounter(name(), this.stub, this.executorService))
+                .thenApply(AsyncAtomicCounter::sync);
     }
 }

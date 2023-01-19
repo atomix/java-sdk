@@ -1,6 +1,7 @@
 package io.atomix.lock.impl;
 
 import io.atomix.AtomixChannel;
+import io.atomix.api.lock.v1.CreateRequest;
 import io.atomix.api.lock.v1.LockGrpc;
 import io.atomix.lock.AsyncAtomicLock;
 import io.atomix.lock.AtomicLock;
@@ -17,8 +18,11 @@ public class DefaultAtomicLockBuilder extends AtomicLockBuilder {
     @Override
     @SuppressWarnings("unchecked")
     public CompletableFuture<AtomicLock> buildAsync() {
-        return new DefaultAsyncAtomicLock(name(), LockGrpc.newStub(channel()), channel().executor())
-            .create(tags())
-            .thenApply(AsyncAtomicLock::sync);
+        return retry(LockGrpc.LockStub::create, CreateRequest.newBuilder()
+                .setId(id())
+                .addAllTags(tags())
+                .build())
+                .thenApply(response -> new DefaultAsyncAtomicLock(name(), this.stub, this.executorService))
+                .thenApply(AsyncAtomicLock::sync);
     }
 }

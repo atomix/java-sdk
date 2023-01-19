@@ -7,7 +7,6 @@ package io.atomix.countermap.impl;
 import io.atomix.api.countermap.v1.CounterMapGrpc;
 import io.atomix.api.countermap.v1.ClearRequest;
 import io.atomix.api.countermap.v1.CloseRequest;
-import io.atomix.api.countermap.v1.CreateRequest;
 import io.atomix.api.countermap.v1.DecrementRequest;
 import io.atomix.api.countermap.v1.DecrementResponse;
 import io.atomix.api.countermap.v1.GetRequest;
@@ -26,7 +25,6 @@ import io.atomix.countermap.AtomicCounterMap;
 import io.atomix.impl.AbstractAsyncPrimitive;
 import io.grpc.Status;
 
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -39,15 +37,6 @@ public class DefaultAsyncAtomicCounterMap
 
     public DefaultAsyncAtomicCounterMap(String name, CounterMapGrpc.CounterMapStub stub, ScheduledExecutorService executorService) {
         super(name, stub, executorService);
-    }
-
-    @Override
-    protected CompletableFuture<AsyncAtomicCounterMap<String>> create(Set<String> tags) {
-        return retry(CounterMapGrpc.CounterMapStub::create, CreateRequest.newBuilder()
-            .setId(id())
-            .addAllTags(tags)
-            .build())
-            .thenApply(response -> this);
     }
 
     @Override

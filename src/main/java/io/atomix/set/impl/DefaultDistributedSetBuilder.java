@@ -6,6 +6,7 @@
 package io.atomix.set.impl;
 
 import io.atomix.AtomixChannel;
+import io.atomix.api.set.v1.CreateRequest;
 import io.atomix.api.set.v1.SetGrpc;
 import io.atomix.set.AsyncDistributedSet;
 import io.atomix.set.DistributedSet;
@@ -30,9 +31,14 @@ public class DefaultDistributedSetBuilder<E> extends DistributedSetBuilder<E> {
         if (elementDecoder == null) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("elementDecoder cannot be null"));
         }
-        return new DefaultAsyncDistributedSet(name(), SetGrpc.newStub(channel()), channel().executor())
-            .create(tags())
-            .thenApply(set -> new TranscodingAsyncDistributedSet<>((AsyncDistributedSet<String>) set, elementEncoder, elementDecoder))
-            .thenApply(AsyncDistributedSet::sync);
+        // Creates the primitive and connect. Eventually, returns a future
+        // to be completed once the primitive is created and connected
+        DefaultAsyncDistributedSet rawSet = new DefaultAsyncDistributedSet(name(), this.stub, this.executorService);
+        return retry(SetGrpc.SetStub::create, CreateRequest.newBuilder()
+                .setId(id())
+                .addAllTags(tags())
+                .build())
+                .thenApply(response -> new TranscodingAsyncDistributedSet<>(rawSet, elementEncoder, elementDecoder))
+                .thenApply(AsyncDistributedSet::sync);
     }
 }

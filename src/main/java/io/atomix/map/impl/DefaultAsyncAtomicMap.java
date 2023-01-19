@@ -9,7 +9,6 @@ import com.google.protobuf.ByteString;
 import io.atomix.Cancellable;
 import io.atomix.api.map.v1.ClearRequest;
 import io.atomix.api.map.v1.CloseRequest;
-import io.atomix.api.map.v1.CreateRequest;
 import io.atomix.api.map.v1.EntriesRequest;
 import io.atomix.api.map.v1.EventsRequest;
 import io.atomix.api.map.v1.GetRequest;
@@ -42,7 +41,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -58,15 +56,6 @@ public class DefaultAsyncAtomicMap
 
     public DefaultAsyncAtomicMap(String name, MapGrpc.MapStub stub, ScheduledExecutorService executorService) {
         super(name, stub, executorService);
-    }
-
-    @Override
-    protected CompletableFuture<AsyncAtomicMap<String, byte[]>> create(Set<String> tags) {
-        return retry(MapGrpc.MapStub::create, CreateRequest.newBuilder()
-            .setId(id())
-            .addAllTags(tags)
-            .build())
-            .thenApply(response -> this);
     }
 
     @Override

@@ -7,6 +7,7 @@ package io.atomix.map;
 
 import io.atomix.AtomixChannel;
 import io.atomix.PrimitiveBuilder;
+import io.atomix.api.map.v1.MapGrpc;
 
 import java.util.function.Function;
 
@@ -15,14 +16,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Builder for AtomicCounter.
  */
-public abstract class AtomicMapBuilder<K, V> extends PrimitiveBuilder<AtomicMapBuilder<K, V>, AtomicMap<K, V>> {
+public abstract class AtomicMapBuilder<K, V>
+        extends PrimitiveBuilder<AtomicMapBuilder<K, V>, AtomicMap<K, V>, MapGrpc.MapStub> {
     protected Function<K, String> keyEncoder;
     protected Function<String, K> keyDecoder;
     protected Function<V, byte[]> valueEncoder;
     protected Function<byte[], V> valueDecoder;
 
     protected AtomicMapBuilder(AtomixChannel channel) {
-        super(channel);
+        super(channel, MapGrpc.newStub(channel), channel.executor());
     }
 
     /**

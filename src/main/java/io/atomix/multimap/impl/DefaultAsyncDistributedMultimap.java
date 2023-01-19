@@ -11,7 +11,6 @@ import io.atomix.api.multimap.v1.ClearRequest;
 import io.atomix.api.multimap.v1.CloseRequest;
 import io.atomix.api.multimap.v1.ContainsRequest;
 import io.atomix.api.multimap.v1.ContainsResponse;
-import io.atomix.api.multimap.v1.CreateRequest;
 import io.atomix.api.multimap.v1.EntriesRequest;
 import io.atomix.api.multimap.v1.Entry;
 import io.atomix.api.multimap.v1.EventsRequest;
@@ -54,7 +53,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,15 +69,6 @@ public class DefaultAsyncDistributedMultimap
 
     public DefaultAsyncDistributedMultimap(String name, MultiMapGrpc.MultiMapStub stub, ScheduledExecutorService executorService) {
         super(name, stub, executorService);
-    }
-
-    @Override
-    protected CompletableFuture<AsyncDistributedMultimap<String, String>> create(Set<String> tags) {
-        return retry(MultiMapGrpc.MultiMapStub::create, CreateRequest.newBuilder()
-            .setId(id())
-            .addAllTags(tags)
-            .build())
-            .thenApply(response -> this);
     }
 
     @Override

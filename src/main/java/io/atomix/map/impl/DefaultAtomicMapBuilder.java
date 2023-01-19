@@ -6,6 +6,7 @@
 package io.atomix.map.impl;
 
 import io.atomix.AtomixChannel;
+import io.atomix.api.map.v1.CreateRequest;
 import io.atomix.api.map.v1.MapGrpc;
 import io.atomix.map.AsyncAtomicMap;
 import io.atomix.map.AtomicMap;
@@ -17,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
  * Atomic counter proxy builder.
  */
 public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
+
     public DefaultAtomicMapBuilder(AtomixChannel channel) {
         super(channel);
     }
@@ -36,9 +38,15 @@ public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
         if (valueDecoder == null) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("valueDecoder cannot be null"));
         }
-        return new DefaultAsyncAtomicMap(name(), MapGrpc.newStub(channel()), channel().executor())
-            .create(tags())
-            .thenApply(map -> new TranscodingAsyncAtomicMap<>(map, keyEncoder, keyDecoder, valueEncoder, valueDecoder))
-            .thenApply(AsyncAtomicMap::sync);
+        // Creates the primitive and connect. Eventually, returns a future
+        // to be completed once the primitive is created and connected
+        DefaultAsyncAtomicMap rawMap = new DefaultAsyncAtomicMap(name(), this.stub, this.executorService);
+        return retry(MapGrpc.MapStub::create, CreateRequest.newBuilder()
+                .setId(id())
+                .addAllTags(tags())
+                .build())
+                .thenApply(response -> new TranscodingAsyncAtomicMap<>(
+                        rawMap, keyEncoder, keyDecoder, valueEncoder, valueDecoder))
+                .thenApply(AsyncAtomicMap::sync);
     }
 }
