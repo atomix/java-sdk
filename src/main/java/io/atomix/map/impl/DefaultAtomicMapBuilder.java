@@ -45,8 +45,19 @@ public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
                 .setId(id())
                 .addAllTags(tags())
                 .build())
-                .thenApply(response -> new TranscodingAsyncAtomicMap<>(
-                        rawMap, keyEncoder, keyDecoder, valueEncoder, valueDecoder))
-                .thenApply(AsyncAtomicMap::sync);
+                .thenApply(response -> {
+                    // Underlay map which wraps the gRPC "map"
+                    AsyncAtomicMap<K, V> map = new TranscodingAsyncAtomicMap<>(
+                            rawMap, keyEncoder, keyDecoder, valueEncoder, valueDecoder);
+                    // If config is enabled we further decorate with the caching wrap
+//                    if (response.hasConfig() && response.getConfig().hasCache() &&
+//                            response.getConfig().getCache().getEnabled()) {
+                    map = new CachingAsyncAtomicMap<>(map, response.getConfig().getCache().getSize());
+//                    }
+                    return map.sync();
+                });
     }
+
+
+
 }
