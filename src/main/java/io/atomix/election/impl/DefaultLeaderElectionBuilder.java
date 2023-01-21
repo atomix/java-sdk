@@ -38,7 +38,16 @@ public class DefaultLeaderElectionBuilder<T> extends LeaderElectionBuilder<T> {
                 .setId(id())
                 .addAllTags(tags())
                 .build())
-                .thenApply(response -> new TranscodingAsyncLeaderElection<>(rawLeaderElection, encoder, decoder))
-                .thenApply(AsyncLeaderElection::sync);
+                .thenApply(response -> {
+                    // Underlay election which wraps the gRPC "election"
+                    AsyncLeaderElection<T> leaderElection = new TranscodingAsyncLeaderElection<>(
+                            rawLeaderElection, encoder, decoder);
+                    // If config is enabled we further decorate with the caching wrap
+//                    if (response.hasConfig() && response.getConfig().hasCache() &&
+//                            response.getConfig().getCache().getEnabled()) {
+                    leaderElection = new CachingAsyncLeaderElection<>(leaderElection);
+//                    }
+                    return leaderElection.sync();
+                });
     }
 }
