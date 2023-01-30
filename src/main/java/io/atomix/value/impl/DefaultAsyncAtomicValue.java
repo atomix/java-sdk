@@ -12,6 +12,7 @@ import io.atomix.api.value.v1.GetRequest;
 import io.atomix.api.value.v1.SetRequest;
 import io.atomix.api.value.v1.UpdateRequest;
 import io.atomix.api.value.v1.ValueGrpc;
+import io.atomix.api.value.v1.VersionedValue;
 import io.atomix.impl.AbstractAsyncPrimitive;
 import io.atomix.time.Versioned;
 import io.atomix.value.AsyncAtomicValue;
@@ -97,21 +98,30 @@ public class DefaultAsyncAtomicValue
                 case CREATED:
                     listener.event(new AtomicValueEvent<>(
                         AtomicValueEvent.Type.CREATE,
-                        response.getEvent().getCreated().getValue().getValue().toStringUtf8(), null));
+                        toVersioned(response.getEvent().getCreated().getValue()), null));
                     break;
                 case UPDATED:
                     listener.event(new AtomicValueEvent<>(
                         AtomicValueEvent.Type.UPDATE,
-                        response.getEvent().getUpdated().getValue().getValue().toStringUtf8(),
-                        response.getEvent().getUpdated().getPrevValue().getValue().toStringUtf8()));
+                        toVersioned(response.getEvent().getUpdated().getValue()),
+                        toVersioned(response.getEvent().getUpdated().getPrevValue())));
                     break;
                 case DELETED:
                     listener.event(new AtomicValueEvent<>(
                         AtomicValueEvent.Type.DELETE,
                         null,
-                        response.getEvent().getDeleted().getValue().getValue().toStringUtf8()));
+                        toVersioned(response.getEvent().getDeleted().getValue())));
                     break;
             }
         }, executor);
+    }
+
+    private static Versioned<String> toVersioned(VersionedValue value) {
+        if (value.getVersion() == 0) {
+            return null;
+        }
+        return new Versioned<>(
+                value.getValue().toStringUtf8(),
+                value.getVersion());
     }
 }

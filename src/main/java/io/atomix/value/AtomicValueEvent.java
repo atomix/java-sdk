@@ -2,6 +2,7 @@ package io.atomix.value;
 
 import com.google.common.base.MoreObjects;
 import io.atomix.event.AbstractEvent;
+import io.atomix.time.Versioned;
 
 import java.util.Objects;
 
@@ -31,8 +32,8 @@ public final class AtomicValueEvent<V> extends AbstractEvent<AtomicValueEvent.Ty
         DELETE,
     }
 
-    private final V newValue;
-    private final V oldValue;
+    private final Versioned<V> newValue;
+    private final Versioned<V> oldValue;
 
     /**
      * Creates a new event object.
@@ -40,7 +41,7 @@ public final class AtomicValueEvent<V> extends AbstractEvent<AtomicValueEvent.Ty
      * @param newValue the new value
      * @param oldValue the old value
      */
-    public AtomicValueEvent(Type type, V newValue, V oldValue) {
+    public AtomicValueEvent(Type type, Versioned<V> newValue, Versioned<V> oldValue) {
         super(type, null);
         this.newValue = newValue;
         this.oldValue = oldValue;
@@ -51,7 +52,7 @@ public final class AtomicValueEvent<V> extends AbstractEvent<AtomicValueEvent.Ty
      *
      * @return the new value
      */
-    public V newValue() {
+    public Versioned<V> newValue() {
         return newValue;
     }
 
@@ -60,7 +61,7 @@ public final class AtomicValueEvent<V> extends AbstractEvent<AtomicValueEvent.Ty
      *
      * @return the old value
      */
-    public V oldValue() {
+    public Versioned<V> oldValue() {
         return oldValue;
     }
 

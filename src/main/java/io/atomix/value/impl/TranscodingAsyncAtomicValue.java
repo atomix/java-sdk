@@ -56,8 +56,8 @@ public class TranscodingAsyncAtomicValue<V1, V2>
     public CompletableFuture<Cancellable> listen(AtomicValueEventListener<V1> listener, Executor executor) {
         return backingValue.listen(event -> new AtomicValueEvent<>(
             AtomicValueEvent.Type.UPDATE,
-            valueDecoder.apply(event.newValue()),
-            valueDecoder.apply(event.oldValue())), executor);
+            event.newValue() != null ? event.newValue().map(valueDecoder) : null,
+            event.oldValue() != null ? event.oldValue().map(valueDecoder) : null), executor);
     }
 
     @Override
