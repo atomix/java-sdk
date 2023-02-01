@@ -50,8 +50,15 @@ public class CachingAsyncAtomicMap<K, V> extends DelegatingAsyncAtomicMap<K, V> 
     public CachingAsyncAtomicMap(AsyncAtomicMap<K, V> backingMap, long size) {
         super(backingMap);
         this.backingMap = backingMap;
-        cache = CacheBuilder.newBuilder()
-                .build(CacheLoader.from(CachingAsyncAtomicMap.super::get));
+        // it means unbounded
+        if (size == 0) {
+            cache = CacheBuilder.newBuilder()
+                    .build(CacheLoader.from(CachingAsyncAtomicMap.super::get));
+        } else {
+            cache = CacheBuilder.newBuilder()
+                    .maximumSize(size)
+                    .build(CacheLoader.from(CachingAsyncAtomicMap.super::get));
+        }
         cacheUpdater = event -> {
             Versioned<V> newValue = event.newValue();
             if (newValue == null) {
