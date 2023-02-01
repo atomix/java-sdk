@@ -43,10 +43,10 @@ public class DefaultLeaderElectionBuilder<T> extends LeaderElectionBuilder<T> {
                     AsyncLeaderElection<T> leaderElection = new TranscodingAsyncLeaderElection<>(
                             rawLeaderElection, encoder, decoder);
                     // If config is enabled we further decorate with the caching wrap
-//                    if (response.hasConfig() && response.getConfig().hasCache() &&
-//                            response.getConfig().getCache().getEnabled()) {
-                    leaderElection = new CachingAsyncLeaderElection<>(leaderElection);
-//                    }
+                    if (response.hasConfig() && response.getConfig().hasCache() &&
+                            response.getConfig().getCache().getEnabled()) {
+                        leaderElection = new CachingAsyncLeaderElection<>(leaderElection);
+                    }
                     return leaderElection.sync();
                 });
     }
