@@ -42,10 +42,10 @@ public class DefaultAtomicValueBuilder<E> extends AtomicValueBuilder<E> {
                     // Underlay value which wraps the gRPC "Value"
                     AsyncAtomicValue<E> value = new TranscodingAsyncAtomicValue<>(rawValue, encoder, decoder);
                     // If config is enabled we further decorate with the caching wrap
-//                    if (response.hasConfig() && response.getConfig().hasCache() &&
-//                            response.getConfig().getCache().getEnabled()) {
-                    value = new CachingAsyncAtomicValue<>(value);
-//                    }
+                    if (response.hasConfig() && response.getConfig().hasCache() &&
+                            response.getConfig().getCache().getEnabled()) {
+                        value = new CachingAsyncAtomicValue<>(value);
+                    }
                     return value.sync();
                 });
     }
