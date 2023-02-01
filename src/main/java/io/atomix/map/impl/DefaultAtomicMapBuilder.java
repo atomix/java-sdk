@@ -50,10 +50,10 @@ public class DefaultAtomicMapBuilder<K, V> extends AtomicMapBuilder<K, V> {
                     AsyncAtomicMap<K, V> map = new TranscodingAsyncAtomicMap<>(
                             rawMap, keyEncoder, keyDecoder, valueEncoder, valueDecoder);
                     // If config is enabled we further decorate with the caching wrap
-//                    if (response.hasConfig() && response.getConfig().hasCache() &&
-//                            response.getConfig().getCache().getEnabled()) {
-                    map = new CachingAsyncAtomicMap<>(map, response.getConfig().getCache().getSize());
-//                    }
+                    if (response.hasConfig() && response.getConfig().hasCache() &&
+                            response.getConfig().getCache().getEnabled()) {
+                        map = new CachingAsyncAtomicMap<>(map, response.getConfig().getCache().getSize());
+                    }
                     return map.sync();
                 });
     }
