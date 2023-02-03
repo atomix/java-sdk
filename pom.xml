@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
     <packaging>bundle</packaging>
     <groupId>io.atomix</groupId>
     <artifactId>atomix-sdk</artifactId>
-    <version>0.4.2-SNAPSHOT</version>
+    <version>0.5.0</version>
     <name>Atomix Java SDK</name>
 
     <properties>
